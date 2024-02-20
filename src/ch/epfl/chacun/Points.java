@@ -41,4 +41,6 @@ public final class Points {
         Preconditions.checkArgument(lakeCount > 0);
         return lakeCount*RAFT_POINTS;
     }
+
+
 }
