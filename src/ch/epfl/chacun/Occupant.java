@@ -21,11 +21,12 @@ public record Occupant(Kind kind, int zoneId) {
             case Kind.HUT -> {
                 return HUT_COUNT;
             }
-        }
+
     }
 
-    public enum Kind {
+
+    public static enum Kind {
         PAWN, HUT;
-    }
+    }}
 
 }
