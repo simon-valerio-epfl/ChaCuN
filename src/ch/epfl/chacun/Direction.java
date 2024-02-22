@@ -2,6 +2,9 @@ package ch.epfl.chacun;
 
 import java.util.List;
 
+/**
+ * Represents the four cardinal directions
+ */
 public enum Direction {
 
     N,
@@ -9,13 +12,31 @@ public enum Direction {
     S,
     W;
 
+    /**
+     * A list containing the four cardinal directions
+     */
     public static final List<Direction> ALL = List.of(Direction.values());
+
+    /**
+     * The number of cardinal directions
+     */
     public static final int COUNT = ALL.size();
 
+
+    /**
+     * Returns the direction obtained by rotating this direction
+     * @param rotation the rotation to apply
+     * @return the direction obtained by rotating this direction by the given rotation
+     */
     public final Direction rotated(Rotation rotation) {
         return ALL.get((this.ordinal() + rotation.quarterTurnsCW()) % COUNT);
     }
 
+
+    /**
+     * Returns the direction opposite to this direction
+     * @return the direction opposite to this direction
+     */
     public final Direction opposite() {
         return this.rotated(Rotation.HALF_TURN);
     }
