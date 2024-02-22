@@ -88,8 +88,8 @@ public sealed interface Zone {
      */
     record Meadow (int id, List<Animal> animals, SpecialPower specialPower) implements Zone {
         public Meadow {
+            // defensive copy
             animals = List.copyOf(animals);
-
         }
     }
 
@@ -100,19 +100,48 @@ public sealed interface Zone {
      * @author Simon Lefort (371918)
      */
     sealed interface Water extends Zone {
+        /**
+         * Gets the fish count of the water.
+         * @return the fish count of the water
+         */
         int fishCount();
     }
 
+    /**
+     * Represents a lake.
+     *
+     * @param id the id of the lake
+     * @param fishCount the fish count of the lake
+     * @param specialPower the special power of the lake
+     */
     record Lake (int id, int fishCount, SpecialPower specialPower) implements Water {
+        /**
+         * Gets the fish count of the lake.
+         * @return the fish count of the lake
+         */
         public int fishCount(){
             return fishCount;
         }
     }
 
+    /**
+     * Represents a river.
+     * @param id the id of the river
+     * @param fishCount the fish count of the river
+     * @param lake the lake of the river
+     */
     record River (int id, int fishCount, Lake lake) implements Water {
+        /**
+         * Checks if the river has a lake.
+         * @return true if the river has a lake, false otherwise
+         */
         public boolean hasLake () {
             return lake != null;
         }
+        /**
+         * Gets the fish count of the river.
+         * @return the fish count of the river
+         */
         public int fishCount (){
             return fishCount;
         }
