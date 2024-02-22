@@ -31,7 +31,6 @@ public record Pos (int x, int y) {
      * @return the next position obtained by moving in the specified direction
      */
     public Pos neighbor (Direction direction) {
-        // todo: check out of bounds?
         return switch (direction){
             case N -> translated(0,-1);
             case E -> translated(1, 0);
