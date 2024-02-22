@@ -1,6 +1,5 @@
 package ch.epfl.chacun;
 
-import java.util.NoSuchElementException;
 import java.util.Objects;
 
 public record Occupant(Kind kind, int zoneId) {
@@ -13,23 +12,15 @@ public record Occupant(Kind kind, int zoneId) {
         Preconditions.checkArgument(zoneId >= 0);
     }
 
-
-    //TODO Handle this method
     public static int occupantsCount (Kind kind) {
-        switch (kind) {
-            case Kind.PAWN -> {
-                return PAWN_COUNT;
-            }
-            case Kind.HUT -> {
-                return HUT_COUNT;
-            }
-            default -> {throw new NoSuchElementException();
-            }
-        }
+        return switch (kind) {
+            case Kind.PAWN -> PAWN_COUNT;
+            case Kind.HUT -> HUT_COUNT;
+        };
     }
 
 
-    public static enum Kind {
+    public enum Kind {
         PAWN, HUT;
     }
 
