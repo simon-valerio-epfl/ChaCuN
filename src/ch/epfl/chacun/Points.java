@@ -25,34 +25,34 @@ public final class Points {
      */
     public static final int CLOSED_RIVER_FISH_POINTS = 1;
     /**
-     * Number of gained points per mammoth.
+     * Number of gained points per mammoth in a meadow at the end of the game.
      */
     public static final int MAMMOTH_POINTS = 3;
     /**
-     * Number of gained points per aurochs.
+     * Number of gained points per aurochs in a meadow at the end of the game.
      */
     public static final int AUROCHS_POINTS = 2;
     /**
-     * Number of gained points per deer.
+     * Number of gained points per deer in a meadow at the end of the game.
      */
     public static final int DEER_POINTS = 1;
     /**
-     * Number of gained points per logboat.
+     * Number of gained points per logboat when placed.
      */
     public static final int LOGBOAT_POINTS = 2;
     /**
-     * Number of gained points per raft.
+     * Number of gained points per raft at the end of the game.
      */
     public static final int RAFT_POINTS = 1;
     /**
-     * Number of gained points per fisher hut.
+     * Number of gained points per fisher hut in a river system at the end of the game.
      */
     public static final int FISHER_HUT_POINTS = 1;
 
     /**
-     * Returns the number of points gained by a player when a forest is closed.
-     * @param tileCount the number of tiles in the forest
-     * @param mushroomGroupCount the number of mushroom groups in the forest
+     * Returns the number of points gained by a player when a forest is closed
+     * @param tileCount the number of tiles in the forest, at least 2
+     * @param mushroomGroupCount the number of mushroom groups in the forest (non negative)
      * @return the number of points gained by a player when a forest is closed
      */
     public static int forClosedForest(int tileCount, int mushroomGroupCount){
@@ -62,36 +62,36 @@ public final class Points {
     }
 
     /**
-     * Returns the number of points gained by a player when a river is closed.
-     * @param tileCount the number of tiles in the river
-     * @param fishCount the number of fish in the river
+     * Returns the number of points gained by a player when a river is closed
+     * @param tileCount the number of tiles in the river (at least 2)
+     * @param fishCount the number of fish in the river (non negative)
      * @return the number of points gained by a player when a river is closed
      */
     public static int forClosedRiver(int tileCount, int fishCount){
         Preconditions.checkArgument(tileCount > 1);
+        Preconditions.checkArgument(fishCount >= 0);
         return tileCount*CLOSED_RIVER_TILE_POINTS + fishCount*CLOSED_RIVER_FISH_POINTS;
     }
 
     /**
      * Returns the number of points gained by a player per meadow
-     * @param mammothCount the number of mammoths in the meadow
-     * @param aurochsCount the number of aurochs in the meadow
-     * @param deerCount the number of deers in the meadow
-     * @return the number of points gained by a player per meadow
+     * @param mammothCount the number of mammoths in the meadow (non negative)
+     * @param aurochsCount the number of aurochs in the meadow (non negative)
+     * @param deerCount the number of deers in the meadow (after the tiger's buffet!) (non negative)
+     * @return the number of points gained by a player per meadow at the end of the game
      */
     public static int forMeadow(int mammothCount, int aurochsCount, int deerCount){
         Preconditions.checkArgument(mammothCount >= 0);
         Preconditions.checkArgument(aurochsCount >= 0);
         Preconditions.checkArgument(deerCount >= 0);
+
         return mammothCount*MAMMOTH_POINTS + aurochsCount*AUROCHS_POINTS + deerCount*DEER_POINTS;
     }
 
-    // TODO: check comments below??
-
     /**
-     * Returns the number of points gained by a player per river system
-     * @param fishCount the number of fish in the lake
-     * @return the number of points gained by a player per river system
+     * Returns the number of points gained by a player per river system at the end of the game
+     * @param fishCount the number of fish in the lake (non negative)
+     * @return the number of points gained by a player per river system at the end of the game
      */
     public static int forRiverSystem(int fishCount) {
         Preconditions.checkArgument(fishCount >= 0);
@@ -99,9 +99,9 @@ public final class Points {
     }
 
     /**
-     * Returns the number of points gained by a player per logboat
-     * @param lakeCount the number of lakes
-     * @return the number of points gained by a player per logboat
+     * Returns the number of points gained by a player per logboat when he places it
+     * @param lakeCount the number of lakes a positive number
+     * @return the number of points gained by a player per logboat when he places it
      */
     public static int forLogboat(int lakeCount) {
         Preconditions.checkArgument(lakeCount > 0);
@@ -109,9 +109,9 @@ public final class Points {
     }
 
     /**
-     * Returns the number of points gained by a player per raft
-     * @param lakeCount the number of lakes
-     * @return the number of points gained by a player per raft
+     * Returns the number of points gained by a player per raft at the end of the game
+     * @param lakeCount the number of lakes at least 1
+     * @return the number of points gained by a player per raft at the end of the game
      */
     public static int forRaft(int lakeCount) {
         Preconditions.checkArgument(lakeCount > 0);
