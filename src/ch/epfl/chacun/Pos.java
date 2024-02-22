@@ -9,6 +9,7 @@ public record Pos (int x, int y) {
     }
 
     public Pos neighbor (Direction direction) {
+        // todo: check out of bounds?
         return switch (direction){
             case N -> translated(0,-1);
             case E -> translated(1, 0);
