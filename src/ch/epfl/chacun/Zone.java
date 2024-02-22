@@ -1,6 +1,5 @@
 package ch.epfl.chacun;
 
-import java.time.ZoneId;
 import java.util.List;
 
 /**
@@ -73,6 +72,9 @@ public sealed interface Zone {
      * Represents a forest.
      * @param id the id of the forest
      * @param kind the kind of the forest
+     *
+     * @author Valerio De Santis (373247)
+     * @author Simon Lefort (371918)
      */
     record Forest (int id, Kind kind) implements Zone {
         public enum Kind {
@@ -85,6 +87,9 @@ public sealed interface Zone {
      * @param id the id of the meadow
      * @param animals the animals in the meadow
      * @param specialPower the special power of the meadow
+     *
+     * @author Valerio De Santis (373247)
+     * @author Simon Lefort (371918)
      */
     record Meadow (int id, List<Animal> animals, SpecialPower specialPower) implements Zone {
         public Meadow {
@@ -113,6 +118,9 @@ public sealed interface Zone {
      * @param id the id of the lake
      * @param fishCount the fish count of the lake
      * @param specialPower the special power of the lake
+     *
+     * @author Valerio De Santis (373247)
+     * @author Simon Lefort (371918)
      */
     record Lake (int id, int fishCount, SpecialPower specialPower) implements Water {
         /**
@@ -129,6 +137,10 @@ public sealed interface Zone {
      * @param id the id of the river
      * @param fishCount the fish count of the river
      * @param lake the lake of the river
+     *
+     *
+     * @author Valerio De Santis (373247)
+     * @author Simon Lefort (371918)
      */
     record River (int id, int fishCount, Lake lake) implements Water {
         /**

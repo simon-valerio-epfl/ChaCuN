@@ -4,6 +4,9 @@ import java.util.List;
 
 /**
  * Represents the four cardinal directions
+ *
+ * @author Valerio De Santis (373247)
+ * @author Simon Lefort (371918)
  */
 public enum Direction {
 

@@ -8,6 +8,9 @@ import java.util.Objects;
  * An occupant is defined by its kind and the id of the zone where it is
  * @param kind non null
  * @param zoneId non negative
+ *
+ * @author Valerio De Santis (373247)
+ * @author Simon Lefort (371918)
  */
 public record Occupant(Kind kind, int zoneId) {
 
@@ -30,7 +33,7 @@ public record Occupant(Kind kind, int zoneId) {
 
     /**
      * Returns the number of occupants of the given kind
-     * @param kind non null, the kind of occupant
+     * @param kind non-null, the kind of occupant
      * @return the number of occupants of the given kind
      */
     public static int occupantsCount (Kind kind) {
@@ -42,6 +45,9 @@ public record Occupant(Kind kind, int zoneId) {
 
     /**
      * Represents the different kinds of occupant
+     *
+     * @author Valerio De Santis (373247)
+     * @author Simon Lefort (371918)
      */
     public enum Kind {
         PAWN, HUT;
