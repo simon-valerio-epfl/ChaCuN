@@ -77,6 +77,12 @@ public sealed interface Zone {
      * @author Simon Lefort (371918)
      */
     record Forest (int id, Kind kind) implements Zone {
+        /**
+         * Represents the different kinds of forest
+         *
+         * @author Valerio De Santis (373247)
+         * @author Simon Lefort (371918)
+         */
         public enum Kind {
             PLAIN, WITH_MENHIR, WITH_MUSHROOMS;
         }
@@ -92,8 +98,10 @@ public sealed interface Zone {
      * @author Simon Lefort (371918)
      */
     record Meadow (int id, List<Animal> animals, SpecialPower specialPower) implements Zone {
+        /**
+         * Defensive copy of the animals list
+         */
         public Meadow {
-            // defensive copy
             animals = List.copyOf(animals);
         }
     }
