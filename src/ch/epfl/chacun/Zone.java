@@ -59,7 +59,7 @@ public sealed interface Zone {
     }
 
     /**
-     * Represents a special power.
+     * Represents a special power a zone can have
      *
      * @author Valerio De Santis (373247)
      * @author Simon Lefort (371918)
