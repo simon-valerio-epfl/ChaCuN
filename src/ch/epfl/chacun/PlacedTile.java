@@ -24,7 +24,7 @@ public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos 
     }
 
     public TileSide side(Direction direction) {
-        return tile.sides().get(direction.rotated(rotation).ordinal());
+        return tile.sides().get(direction.rotated(rotation.negated()).ordinal());
     }
 
     public Zone zoneWithId (int id) {

@@ -1,14 +1,14 @@
 package ch.epfl.chacun;
 
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.util.List;
 
-public class GameTest {
+class PlacedTileTest {
 
-        //Zone forestZone = new Zone.Forest(1, Zone.Forest.Kind.PLAIN);
-
-        //Zone lakeZone = new Zone.Lake(3, 12, null);
-        //Zone riverZone = new Zone.River(2, 12, new Zone.Lake(3, 12, null));
-        //Zone jungleZone = new Zone.Forest(4, Zone.Forest.Kind.CORNER);
+    @Test
+    public void testSideReturnsCorrectValue() {
         Zone.Meadow meadow = new Zone.Meadow(613, List.of(new Animal(6131, Animal.Kind.AUROCHS)), Zone.Meadow.SpecialPower.HUNTING_TRAP);
         Zone.Meadow meadow2 = new Zone.Meadow(614, List.of(new Animal(6141, Animal.Kind.MAMMOTH)), null);
         Zone.Forest forest2 = new Zone.Forest(615, Zone.Forest.Kind.PLAIN);
@@ -19,6 +19,13 @@ public class GameTest {
         TileSide meadowSide2 = new TileSide.Meadow(meadow2);
         Tile tile = new Tile(1, Tile.Kind.START, forestSide, meadowSide, forestSide2, meadowSide2);
         PlayerColor Habib = PlayerColor.RED;
-        PlacedTile placedTile = new PlacedTile(tile, Habib, Rotation.RIGHT, new Pos(0, 0));
+
+        PlacedTile placedTileRight = new PlacedTile(tile, Habib, Rotation.RIGHT, new Pos(0, 0));
+        assertEquals(meadowSide2, placedTileRight.side(Direction.N));
+        assertEquals(forestSide, placedTileRight.side(Direction.E));
+
+        PlacedTile placedTileLeft = new PlacedTile(tile, Habib, Rotation.LEFT, new Pos(0, 0));
+        assertEquals(meadowSide, placedTileLeft.side(Direction.N));
+    }
 
 }
