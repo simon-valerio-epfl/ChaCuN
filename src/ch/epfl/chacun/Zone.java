@@ -135,7 +135,8 @@ public sealed interface Zone {
          * Gets the fish count of the lake.
          * @return the fish count of the lake
          */
-        public int fishCount(){
+        @Override
+        public int fishCount() {
             return fishCount;
         }
     }
@@ -162,7 +163,8 @@ public sealed interface Zone {
          * Gets the fish count of the river.
          * @return the fish count of the river
          */
-        public int fishCount (){
+        @Override
+        public int fishCount() {
             return fishCount;
         }
     }
