@@ -130,6 +130,12 @@ public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos 
         return meadowZones;
     }
 
+
+    /**
+     * Gets the set of the potential occupants that the player can place on the tile
+     * depending on the zones of the tile
+     * @return the set of potential occupants that the player can place on the tile
+     */
     public Set<Occupant> potentialOccupants() {
         Set<Occupant> potentialOccupants = new HashSet<>();
         if (placer == null) {
@@ -154,6 +160,11 @@ public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos 
          return potentialOccupants;
     }
 
+    /**
+     * Adds an occupant to the placed tile if there is none yet, throws an exception otherwise
+     * @param occupant the occupant to add
+     * @return the placed tile with the added occupant
+     */
     public PlacedTile withOccupant(Occupant occupant){
         if (this.occupant == null) {
             return new PlacedTile(tile, placer, rotation, pos, occupant);
@@ -161,6 +172,10 @@ public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos 
         throw new IllegalArgumentException();
     }
 
+    /**
+     * Removes the occupant from the placed tile if there is one, throws an exception otherwise
+     * @return the placed tile with no occupant
+     */
     public PlacedTile withNoOccupant () {
         return new PlacedTile(tile, placer, rotation, pos);
     }
