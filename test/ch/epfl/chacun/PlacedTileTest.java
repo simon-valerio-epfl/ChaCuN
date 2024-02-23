@@ -101,4 +101,55 @@ class PlacedTileTest {
         assertNull(placedTile2.specialPowerZone());
     }
 
+    @Test
+    public void testPotentialOccupantsReturnsCorrectValue() {
+        Zone.Meadow meadow = new Zone.Meadow(613, List.of(new Animal(6131, Animal.Kind.AUROCHS)), Zone.Meadow.SpecialPower.HUNTING_TRAP);
+        Zone.Meadow meadow2 = new Zone.Meadow(614, List.of(new Animal(6141, Animal.Kind.MAMMOTH)), null);
+        Zone.Forest forest2 = new Zone.Forest(615, Zone.Forest.Kind.PLAIN);
+        Zone.Forest forest = new Zone.Forest(612, Zone.Forest.Kind.WITH_MENHIR);
+        TileSide forestSide = new TileSide.Forest(forest);
+        TileSide meadowSide = new TileSide.Meadow(meadow);
+        TileSide forestSide2 = new TileSide.Forest(forest2);
+        TileSide meadowSide2 = new TileSide.Meadow(meadow2);
+        Tile tile = new Tile(1, Tile.Kind.START, forestSide, meadowSide, forestSide2, meadowSide2);
+        PlayerColor Habib = PlayerColor.RED;
+
+        PlacedTile placedTile = new PlacedTile(tile, Habib, Rotation.RIGHT, new Pos(0, 0));
+
+        Set<Occupant> set = new HashSet<>();
+        set.add(new Occupant(Occupant.Kind.PAWN, 613));
+        set.add(new Occupant(Occupant.Kind.PAWN, 614));
+        set.add(new Occupant(Occupant.Kind.PAWN, 615));
+        set.add(new Occupant(Occupant.Kind.PAWN, 612));
+
+        assertEquals(set, placedTile.potentialOccupants());
+
+        PlacedTile placedTile2 = new PlacedTile(tile, null, Rotation.RIGHT, new Pos(0, 0));
+
+        assertEquals(new HashSet<>(), placedTile2.potentialOccupants());
+
+        Zone.River river = new Zone.River(623, 3, null);
+        Zone.Lake lake = new Zone.Lake(628, 0, Zone.SpecialPower.LOGBOAT);
+        Zone.River river2 = new Zone.River(624, 2, lake);
+
+        TileSide riverSide1 = new TileSide.River(meadow, river, meadow2);
+        TileSide riverSide2 = new TileSide.River(meadow2, river2, meadow);
+
+        Tile tile2 = new Tile(1, Tile.Kind.START, forestSide, riverSide1, riverSide2, meadowSide2);
+        PlacedTile placedTile3 = new PlacedTile(tile2, Habib, Rotation.RIGHT, new Pos(0, 0));
+
+        Set<Occupant> set2 = new HashSet<>();
+        set2.add(new Occupant(Occupant.Kind.PAWN, 623));
+        set2.add(new Occupant(Occupant.Kind.PAWN, 624));
+        set2.add(new Occupant(Occupant.Kind.HUT, 628));
+        set2.add(new Occupant(Occupant.Kind.HUT, 623));
+
+        set2.add(new Occupant(Occupant.Kind.PAWN, 613));
+        set2.add(new Occupant(Occupant.Kind.PAWN, 614));
+        set2.add(new Occupant(Occupant.Kind.PAWN, 612));
+
+
+        assertEquals(set2, placedTile3.potentialOccupants());
+    }
+
 }
