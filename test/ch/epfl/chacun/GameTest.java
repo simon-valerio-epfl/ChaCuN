@@ -9,7 +9,20 @@ public class GameTest {
         //Zone lakeZone = new Zone.Lake(3, 12, null);
         //Zone riverZone = new Zone.River(2, 12, new Zone.Lake(3, 12, null));
         //Zone jungleZone = new Zone.Forest(4, Zone.Forest.Kind.CORNER);
-        Zone.Meadow meadow = new Zone.Meadow(613, List.of(new Animal(6131, Animal.Kind.AUROCHS)), Zone.Meadow.SpecialPower.HUNTING_TRAP);
+
+
+    /**
+     * Create a meadow zone with a hunting trap special power
+     * Create a meadow zone with a mammoth
+     * Create a forest zone with a plain kind
+     * Create a forest zone with a menhir kind
+     * Create two tile sides with the first meadow zone and the first forest zone
+     * Create two tile sides with the second meadow zone and the second forest zone
+     * Create a tile with the four tile sides
+     * Create a player color
+     * Create a placed tile with the tile, the player color, a rotation and a position
+     */
+    Zone.Meadow meadow = new Zone.Meadow(613, List.of(new Animal(6131, Animal.Kind.AUROCHS)), Zone.Meadow.SpecialPower.HUNTING_TRAP);
         Zone.Meadow meadow2 = new Zone.Meadow(614, List.of(new Animal(6141, Animal.Kind.MAMMOTH)), null);
         Zone.Forest forest2 = new Zone.Forest(615, Zone.Forest.Kind.PLAIN);
         Zone.Forest forest = new Zone.Forest(612, Zone.Forest.Kind.WITH_MENHIR);
@@ -23,6 +36,6 @@ public class GameTest {
 
 
 
-    
+
 
 }
