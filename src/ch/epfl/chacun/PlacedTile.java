@@ -1,7 +1,7 @@
 package ch.epfl.chacun;
 
-import java.util.HashSet;
 import java.util.Objects;
+import java.util.HashSet;
 import java.util.Set;
 
 public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos pos, Occupant occupant) {
@@ -85,6 +85,30 @@ public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos 
             }
         }
         return meadowZones;
+    }
+
+    public Set<Occupant> potentialOccupants() {
+        Set<Occupant> potentialOccupants = new HashSet<>();
+        if (placer == null) {
+            return potentialOccupants;
+        }
+        for (Zone zone: this.tile.sideZones()) {
+            Occupant potentialOccupant = new Occupant(Occupant.Kind.PAWN, zone.id());
+            potentialOccupants.add(potentialOccupant);
+            if (zone instanceof Zone.River river) {
+                if (!river.hasLake()) {
+                    Occupant potentialRiverOccupant = new Occupant(Occupant.Kind.HUT, zone.id());
+                    potentialOccupants.add(potentialRiverOccupant);
+                }
+            }
+        }
+        for (Zone zone: this.tile.zones()) {
+            if (zone instanceof Zone.Lake lake) {
+                Occupant potentialLakeOccupant = new Occupant(Occupant.Kind.HUT, zone.id());
+                potentialOccupants.add(potentialLakeOccupant);
+            }
+        }
+         return potentialOccupants;
     }
 
     public PlacedTile withOccupant(Occupant occupant){

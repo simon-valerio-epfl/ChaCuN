@@ -20,10 +20,14 @@ public record TileDecks (List<Tile> startTiles, List<Tile> normalTiles, List<Til
         };
     }
 
-    private Tile getLastCardOrNull(List<Tile> deck) {
+    /**
+     * Gets the first card of a deck or null if the latter is empty
+     * @param deck
+     * @return the first card of a deck or null if the latter is empty
+     */
+    private Tile getFirstCard(List<Tile> deck) {
         return deck.isEmpty() ? null : deck.getFirst();
     }
-
     private List<Tile> drawCardFromDeck (List<Tile> deck) {
         if (deck.isEmpty()) {
             throw new IllegalArgumentException();
@@ -35,9 +39,9 @@ public record TileDecks (List<Tile> startTiles, List<Tile> normalTiles, List<Til
 
     public Tile topTile (Tile.Kind kind) {
         return switch (kind) {
-            case START -> getLastCardOrNull(startTiles);
-            case NORMAL -> getLastCardOrNull(normalTiles);
-            case MENHIR -> getLastCardOrNull(menhirTiles);
+            case START -> getFirstCard(startTiles);
+            case NORMAL -> getFirstCard(normalTiles);
+            case MENHIR -> getFirstCard(menhirTiles);
         };
     }
 
@@ -45,8 +49,6 @@ public record TileDecks (List<Tile> startTiles, List<Tile> normalTiles, List<Til
      *
      * @param kind
      * @return
-     *
-     * @throws IllegalArgumentException if the deck is empty
      */
     public TileDecks withTopTileDrawn (Tile.Kind kind) {
         return switch (kind) {

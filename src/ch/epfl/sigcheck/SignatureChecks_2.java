@@ -114,9 +114,9 @@ final class SignatureChecks_2 {
     ch.epfl.chacun.TileSide.River v04;
     ch.epfl.chacun.Zone.Meadow v05;
     ch.epfl.chacun.Zone.River v06;
-    java.lang.Object v07;
+    Object v07;
     int v08;
-    java.lang.String v09;
+    String v09;
     ch.epfl.chacun.TileSide.Meadow v10;
     ch.epfl.chacun.TileSide.Forest v11;
     ch.epfl.chacun.Zone.Forest v12;
