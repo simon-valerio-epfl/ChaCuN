@@ -28,4 +28,9 @@ class PlacedTileTest {
         assertEquals(meadowSide, placedTileLeft.side(Direction.N));
     }
 
+    @Test
+    public void test() {
+
+    }
+
 }
