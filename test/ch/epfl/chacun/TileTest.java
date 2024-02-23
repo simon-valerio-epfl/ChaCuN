@@ -1,9 +1,9 @@
 package ch.epfl.chacun;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class Tile {
+class TileTest {
 
     @Test
     public void testIsSameKind () {
