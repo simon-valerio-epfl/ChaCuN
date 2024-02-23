@@ -152,7 +152,7 @@ class PlacedTileTest {
     }
 
     @Test
-    public void testWithOccupantThrows() {
+    public void testWithOccupantWorks() {
         Zone.Meadow meadow = new Zone.Meadow(613, List.of(new Animal(6131, Animal.Kind.AUROCHS)), Zone.Meadow.SpecialPower.HUNTING_TRAP);
         Zone.Meadow meadow2 = new Zone.Meadow(614, List.of(new Animal(6141, Animal.Kind.MAMMOTH)), null);
         Zone.Forest forest2 = new Zone.Forest(615, Zone.Forest.Kind.PLAIN);
@@ -174,6 +174,10 @@ class PlacedTileTest {
 
         PlacedTile withOccupant = placedTile.withOccupant(new Occupant(Occupant.Kind.PAWN, 613));
         assertEquals(occupant, withOccupant.occupant());
+
+        assertEquals(613, withOccupant.idOfZoneOccupiedBy(Occupant.Kind.PAWN));
+        assertEquals(-1, withOccupant.idOfZoneOccupiedBy(Occupant.Kind.HUT));
+
     }
 
 }
