@@ -34,17 +34,6 @@ public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos 
             }
         }
         throw new IllegalArgumentException();
-        /*
-            we could concatenate all the zones into an array, for all the tile sides
-            then add the lakes (but how?)
-            and use allZones[id]
-
-            new ArrayList<>().addAll(Arrays.asList(
-                    tile.n().zones(),
-                    tile.e().zones()
-            )).get(id);
-            tile.sides();
-         */
     }
 
     public Zone specialPowerZone(){
