@@ -1,7 +1,10 @@
 package ch.epfl.chacun;
 
 import java.util.*;
-
+/**
+ * Represents a tile in the game
+ * @param id the id of the tile
+ */
 public record Tile(int id, Kind kind, TileSide n, TileSide e, TileSide s, TileSide w) {
 
     public List<TileSide> sides () {

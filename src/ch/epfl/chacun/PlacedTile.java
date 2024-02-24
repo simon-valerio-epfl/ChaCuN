@@ -7,16 +7,17 @@ import java.util.Set;
 
 /**
  * Represents a placed tile in the game.
+ * @param tile non null the tile to place
+ * @param placer the player placing the tile
+ * @param rotation non null the rotation of the tile when placed
+ * @param pos non null the position of the tile when placed on the board
+ * @param occupant an occupant on the tile, null if the player decided not to place any
  */
+
 public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos pos, Occupant occupant) {
 
     /**
-     * Constructor for PlacedTile
-     * @param tile non null the tile to place
-     * @param placer the player placing the tile
-     * @param rotation non null the rotation of the tile when placed
-     * @param pos non null the position of the tile when placed on the board
-     * @param occupant an occupant on the tile, null if the player decided not to place any
+     * Constructor for PlacedTile, validating the parameters
      */
     public PlacedTile {
         Objects.requireNonNull(tile);
@@ -25,12 +26,7 @@ public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos 
     }
 
     /**
-     * Constructor for PlacedTile, if the player decides not to place any occupant
-     * it will be null by default
-     * @param tile non null the tile to place
-     * @param placer the player placing the tile
-     * @param rotation non null the rotation of the tile when placed
-     * @param pos non null the position of the tile when placed on the board
+     * Constructor for PlacedTile, with no occupant
      */
     public PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos pos) {
         this(tile, placer, rotation, pos, null);
@@ -180,6 +176,12 @@ public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos 
         return new PlacedTile(tile, placer, rotation, pos);
     }
 
+
+    /**
+     * Gets the id of the zone occupied by the given kind of occupant if present, -1 otherwise
+     * @param occupantKind the kind of occupant to check
+     * @return the id of the zone occupied by the given kind of occupant if present, -1 otherwise
+     */
     public int idOfZoneOccupiedBy (Occupant.Kind occupantKind) {
         if (occupant != null && occupantKind.equals(occupant.kind())) {
             return occupant.zoneId();
