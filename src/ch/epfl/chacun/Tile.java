@@ -8,7 +8,7 @@ import java.util.*;
 public record Tile(int id, Kind kind, TileSide n, TileSide e, TileSide s, TileSide w) {
 
     public List<TileSide> sides () {
-        return new ArrayList<>(Arrays.asList(n, e, s, w));
+        return List.of(n, e, s, w);
     }
 
     public Set<Zone> sideZones() {

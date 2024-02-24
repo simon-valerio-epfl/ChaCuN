@@ -37,7 +37,7 @@ public sealed interface TileSide {
          */
         @Override
         public List<Zone> zones() {
-            return Collections.singletonList(forest);
+            return List.of(forest);
         }
 
         @Override
@@ -58,7 +58,7 @@ public sealed interface TileSide {
          */
         @Override
         public List<Zone> zones() {
-            return Collections.singletonList(meadow);
+            return List.of(meadow);
         }
 
         @Override
@@ -83,7 +83,7 @@ public sealed interface TileSide {
          */
         @Override
         public List<Zone> zones() {
-            return new ArrayList<>(Arrays.asList(meadow1, river, meadow2));
+            return List.of(meadow1, river, meadow2);
         }
 
         @Override
