@@ -4,6 +4,11 @@ import java.util.*;
 /**
  * Represents a tile in the game
  * @param id the id of the tile
+ * @param kind the kind of the tile (start, normal, menhir)
+ * @param n the north side of the tile
+ * @param e the east side of the tile
+ * @param s the south side of the tile
+ * @param w the west side of the tile
  */
 public record Tile(int id, Kind kind, TileSide n, TileSide e, TileSide s, TileSide w) {
 
