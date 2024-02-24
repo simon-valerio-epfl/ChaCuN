@@ -9,6 +9,9 @@ import java.util.*;
  * @param e the east side of the tile
  * @param s the south side of the tile
  * @param w the west side of the tile
+ *
+ * @author Valerio De Santis (373247)
+ * @author Simon Lefort (371918)
  */
 public record Tile(int id, Kind kind, TileSide n, TileSide e, TileSide s, TileSide w) {
 

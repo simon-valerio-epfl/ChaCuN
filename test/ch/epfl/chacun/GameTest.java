@@ -8,7 +8,7 @@ public class GameTest {
 
     //Zone lakeZone = new Zone.Lake(3, 12, null);
     //Zone riverZone = new Zone.River(2, 12, new Zone.Lake(3, 12, null));
-    //Zone jungleZone = new Zone.Forest(4, Zone.Forest.Kind.CORNER);
+    //Zone jungleZone = new Zone.Forest(4, ZONE.Forest.WITH_MUSHROOMS);
 
 
     /**

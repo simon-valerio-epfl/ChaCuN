@@ -12,6 +12,9 @@ import java.util.Set;
  * @param rotation non null the rotation of the tile when placed
  * @param pos non null the position of the tile when placed on the board
  * @param occupant an occupant on the tile, null if the player decided not to place any
+ *
+ * @author Valerio De Santis (373247)
+ * @author Simon Lefort (371918)
  */
 
 public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos pos, Occupant occupant) {

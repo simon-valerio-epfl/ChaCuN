@@ -9,6 +9,9 @@ import java.util.function.Predicate;
  * @param startTiles the start tiles deck (the first card of the game)
  * @param normalTiles the normal tiles deck
  * @param menhirTiles the menhir tiles deck
+ *
+ * @author Valerio De Santis (373247)
+ * @author Simon Lefort (371918)
  */
 public record TileDecks (List<Tile> startTiles, List<Tile> normalTiles, List<Tile> menhirTiles) {
 
