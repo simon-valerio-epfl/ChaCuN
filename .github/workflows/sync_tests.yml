@@ -1,0 +1,15 @@
+name: Trigger test schinc
+
+on: [push]
+
+jobs:
+  http_request_job:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      
+    - name: Send webhook
+      run: |
+        curl -X POST -H "Authorization: Bearer ${{ secrets.PAT }}" -H "Content-Type: application/json" -d '{"event_type":"webhook"}' https://api.github.com/repos/simon-valerio-epfl/ChaCuN-tests/dispatches
+
