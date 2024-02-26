@@ -1,0 +1,23 @@
+name: Run tests
+
+on: [push]
+
+jobs:
+  run_tests_job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Open scripts/run_tests
+        run: |
+          cd scripts/run_tests
+
+      - name: Unzip library
+        run: |
+          unzip library.zip
+
+      - name: Run tests
+        run: |
+          ./run_tests.sh
+
