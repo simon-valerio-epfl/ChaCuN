@@ -165,7 +165,7 @@ public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos 
      * @return the placed tile with the added occupant
      */
     public PlacedTile withOccupant(Occupant occupant){
-        if (this.occupant == null) {
+        if (this.occupant == null || tile.kind().equals(Tile.Kind.START)) {
             return new PlacedTile(tile, placer, rotation, pos, occupant);
         }
         throw new IllegalArgumentException();
