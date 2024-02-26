@@ -94,7 +94,11 @@ public record TileDecks (List<Tile> startTiles, List<Tile> normalTiles, List<Til
      * @return the tile decks, with the necessary tiles drawn
      */
     public TileDecks withTopTileDrawnUntil (Tile.Kind kind, Predicate<Tile> predicate) {
-       return this;
+        TileDecks verifiedDecks = new TileDecks(startTiles, normalTiles, menhirTiles);
+        boolean deckIsEmpty = verifiedDecks.deckSize(kind) == 0;
+        if (deckIsEmpty) return verifiedDecks;
+        boolean predicateIsVerified = predicate.test(verifiedDecks.topTile(kind));
+        return predicateIsVerified ? verifiedDecks : withTopTileDrawn(kind).withTopTileDrawnUntil(kind, predicate);
     }
 
 }
