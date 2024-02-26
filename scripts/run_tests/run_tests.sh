@@ -2,7 +2,7 @@
 
 echo "Compilation en cours..."
 
-/usr/bin/javac -version
+javac -version
 
 # ChaCuN/scripts/run_tests
 ROOT_DIR=../..
