@@ -1,5 +1,9 @@
 #!/bin/bash
 
+echo "Compilation en cours..."
+
+/usr/bin/javac -version
+
 # ChaCuN/scripts/run_tests
 ROOT_DIR=../..
 
