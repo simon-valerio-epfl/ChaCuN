@@ -15,13 +15,15 @@ JAR_PATHS=$(grep -oP 'jar://\$MAVEN_REPOSITORY\$\K[^!]*' "${ROOT_DIR}/.idea/libr
 
 # Construire le chemin de classe en remplaçant $MAVEN_REPOSITORY$ par le chemin réel
 CLASSPATH=""
-for PATH in $JAR_PATHS; do
-    JAR="${MAVEN_REPOSITORY}/${PATH}"
+for JARPATH in $JAR_PATHS; do
+    JAR="${MAVEN_REPOSITORY}${JARPATH}"
     CLASSPATH="${CLASSPATH}:${JAR}"
 done
 
 # Supprimer le premier caractère ':' du CLASSPATH
 CLASSPATH=${CLASSPATH:1}
+
+echo $CLASSPATH
 
 find "${ROOT_DIR}/src/ch/epfl/chacun" -name "*.java" > src_files.txt
 find "${ROOT_DIR}/test/ch/epfl/chacun" -name "*.java" > test_files.txt
@@ -32,6 +34,6 @@ rm -rf ./out
 javac -d out/production/classes @src_files.txt
 # build test class
 javac -d out/test/classes -classpath out/production/classes:"$CLASSPATH" @test_files.txt
-java -jar junit-platform-console-standalone-1.10.2.jar execute -cp out/production/classes:out/test/classes --select-package ch.epfl.chacun
+java -jar junit-platform-console-standalone-1.10.2.jar execute -cp out/production/classes:out/test/classes: --select-package ch.epfl.chacun
 
 echo "Compilation terminée."

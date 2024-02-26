@@ -3,4 +3,5 @@ out
 submissions
 discord.xml
 
-*_files.txt
+scripts/run_tests/*_files.txt
+scripts/run_tests/lib
