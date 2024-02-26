@@ -15,7 +15,7 @@ jobs:
 
       - name: Unzip library
         run: |
-          unzip library.zip
+          unzip lib.zip
 
       - name: Run tests
         run: |
