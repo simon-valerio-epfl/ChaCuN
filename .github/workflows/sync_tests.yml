@@ -1,6 +1,9 @@
 name: Trigger test schinc
 
-on: [push]
+on:
+  push:
+    paths:
+      - 'test/**'
 
 jobs:
   http_request_job:
