@@ -136,7 +136,24 @@ public record Area<Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, i
     }
     
     public Set<PlayerColor> majorityOccupants() {
+        int[] count = new int[PlayerColor.values().length];
+        int maxOccupantCount = 0;
 
+        Set<PlayerColor> majority = new HashSet<>();
+
+        for (PlayerColor occupant : occupants) {
+            count[occupant.ordinal()]++;
+            // we found a player with more occupants
+            if (count[occupant.ordinal()] > maxOccupantCount) {
+                majority.clear();
+                maxOccupantCount = count[occupant.ordinal()];
+            }
+            // we found a new player with the highest occupant count
+            if (count[occupant.ordinal()] == maxOccupantCount) {
+                majority.add(occupant);
+            }
+        }
+        return majority;
     }
 
     public Area<Z> connectTo(Area<Z> that) {
