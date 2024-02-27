@@ -134,7 +134,7 @@ public record Area<Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, i
     public boolean isOccupied() {
         return !occupants.isEmpty();
     }
-    
+
     public Set<PlayerColor> majorityOccupants() {
         int[] count = new int[PlayerColor.values().length];
         int maxOccupantCount = 0;
@@ -157,7 +157,20 @@ public record Area<Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, i
     }
 
     public Area<Z> connectTo(Area<Z> that) {
-
+        //we create a new set containing all the zones in the two areas
+        Set<Z> connectedZones = Set.copyOf(this.zones);
+        connectedZones.addAll(that.zones);
+        //we create a new list containing all the occupants in the two areas
+        List<PlayerColor> connectedOccupants = new ArrayList<>(this.occupants);
+        connectedOccupants.addAll(that.occupants);
+        //we calculate the number of open connections in the new area
+        //by subtracting 2 from the sum of the open connections in the two areas if they are different,
+        //or by subtracting 2 from the open connections in the current area if it is the same area
+        //(we compare their references to know if they are the same area)
+        int connectedOpenConnections = this==that
+                ? this.openConnections()-2
+                : this.openConnections() + that.openConnections() - 2;
+        return new Area<>(connectedZones, connectedOccupants, connectedOpenConnections);
     }
 
 }
