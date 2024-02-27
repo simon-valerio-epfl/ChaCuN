@@ -184,9 +184,6 @@ public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos 
      * @return the id of the zone occupied by the given kind of occupant if present, -1 otherwise
      */
     public int idOfZoneOccupiedBy (Occupant.Kind occupantKind) {
-        if (occupant != null && occupantKind.equals(occupant.kind())) {
-            return occupant.zoneId();
-        }
-        return -1;
+        return occupant != null && occupantKind.equals(occupant.kind()) ? occupant.zoneId() : -1;
     }
 }

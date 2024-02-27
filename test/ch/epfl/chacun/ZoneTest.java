@@ -58,4 +58,10 @@ class ZoneTest {
         mutableAnimals.clear();
         assertEquals(immutableAnimals, meadow.animals());
     }
+
+    @Test
+    void streamWorking() {
+        var meadow = new Zone.Meadow(0, List.of(), null);
+        assertEquals(0, meadow.animals().stream().filter(animal -> animal.equals(Animal.Kind.DEER)).count());
+    }
 }
