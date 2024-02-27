@@ -168,7 +168,7 @@ public record Area<Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, i
         //or by subtracting 2 from the open connections in the current area if it is the same area
         //(we compare their references to know if they are the same area)
         int connectedOpenConnections = this == that
-                ? this.openConnections()-2
+                ? this.openConnections() - 2
                 : this.openConnections() + that.openConnections() - 2;
         return new Area<>(connectedZones, connectedOccupants, connectedOpenConnections);
     }
