@@ -70,15 +70,17 @@ public record Area<Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, i
         Set<Zone.Lake> addedLakes = new HashSet<Zone.Lake>();
         return river.zones()
                 .stream()
-                // we map every zone to the nu
+                // we map every zone to the number of fishes we will add
+                // because of it
                 .mapToInt((zone) ->
-                        // fishes in the river
+                        // we sum the fishes in the river...
                         zone.fishCount() +
-                        // fishes in the lakes IFF the lake has not been added yet
+                        // ...and the fishes in the neighbouring lakes (only once!)
                         (zone.hasLake() && addedLakes.add(zone.lake())
                                 ? zone.lake().fishCount()
                                 : 0
                         ))
+                // we sum the number of fishes we got in every zone
                 .sum();
     }
 
