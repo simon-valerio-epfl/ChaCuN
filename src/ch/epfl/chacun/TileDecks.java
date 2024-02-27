@@ -56,11 +56,10 @@ public record TileDecks (List<Tile> startTiles, List<Tile> normalTiles, List<Til
      * @return the deck without the first card
      */
     private List<Tile> drawCardFromDeck (List<Tile> deck) {
-        if (deck.isEmpty()) {
-            throw new IllegalArgumentException();
-        }
+        Preconditions.checkArgument(!deck.isEmpty());
         return deck.subList(1, deck.size()); // returns a new list without the first card
     }
+
     /**
      * Gets the top tile of the deck of the given kind, returning the first card of the deck
      * @param kind the kind of deck to get the top tile from
