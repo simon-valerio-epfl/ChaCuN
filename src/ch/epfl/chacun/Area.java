@@ -135,6 +135,12 @@ public record Area<Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, i
         return !occupants.isEmpty();
     }
 
+    /**
+     * Returns the set of players having the majority of occupants
+     * in the current instance of area.
+     *
+     * @return the set of players having the majority of occupants in this area
+     */
     public Set<PlayerColor> majorityOccupants() {
         int[] count = new int[PlayerColor.values().length];
         int maxOccupantCount = 0;
@@ -147,8 +153,11 @@ public record Area<Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, i
             if (count[occupant.ordinal()] > maxOccupantCount) {
                 majority.clear();
                 maxOccupantCount = count[occupant.ordinal()];
+                // we don't do majority.add(occupant) here
+                // as we'll do it in the next if block anyway
             }
-            // we found a new player with the highest occupant count
+            // the current player is one of those having the highest occupant count
+            // (for now)
             if (count[occupant.ordinal()] == maxOccupantCount) {
                 majority.add(occupant);
             }
@@ -156,6 +165,12 @@ public record Area<Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, i
         return majority;
     }
 
+
+    /**
+     * Connects the current instance of area to the given one.
+     * @param that the area to connect the current instance of area to
+     * @return the area obtained by connecting the current instance of area to the given one
+     */
     public Area<Z> connectTo(Area<Z> that) {
         //we create a new set containing all the zones in the two areas
         Set<Z> connectedZones = new HashSet<>(Set.copyOf(this.zones));
