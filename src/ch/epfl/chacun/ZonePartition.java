@@ -24,12 +24,12 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
         throw new IllegalArgumentException();
     }
 
-    public final class Builder<Z extends Zone> {
+    public static final class Builder<Z extends Zone> {
 
-        private Set<Area<Z>> areas;
+        private final Set<Area<Z>> areas;
 
         public Builder(ZonePartition<Z> partition) {
-            areas = partition.areas;
+            areas = new HashSet<>(partition.areas());
         }
 
         void addSingleton (Z zone, int openConnections) {
@@ -43,10 +43,7 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
                     if (!area.occupants().isEmpty()) {
                         throw new IllegalArgumentException();
                     }
-                    // todo find a better solution?
-                    List<PlayerColor> occupants = new ArrayList<>(area.occupants());
-                    occupants.add(color);
-                    Area<Z> newArea = new Area<>(area.zones(), occupants, area.openConnections());
+                    Area<Z> newArea = new Area<>(area.zones(), List.of(color), area.openConnections());
                     areas.add(newArea);
                     areas.remove(area);
                     areaFound = true;
