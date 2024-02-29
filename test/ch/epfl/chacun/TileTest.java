@@ -49,7 +49,6 @@ public class TileTest {
         assertEquals(expectedSizeZones2, tile2.sideZones());
 
         expectedSizeZones2.add(lakeZone);
-
         assertEquals(expectedSizeZones2, tile2.zones());
     }
 
