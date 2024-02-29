@@ -3,7 +3,7 @@ package ch.epfl.chacun;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class TileSideTest {
+class InitialTileSideTest {
 
     @Test
     public void testIsSameKind () {

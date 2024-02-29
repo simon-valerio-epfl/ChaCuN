@@ -3,12 +3,11 @@ package ch.epfl.chacun;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-class PlacedTileTest {
+class InitialPlacedTileTest {
 
     @Test
     public void testSideReturnsCorrectValue() {
