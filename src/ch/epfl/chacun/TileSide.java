@@ -8,6 +8,9 @@ import java.util.List;
 
 /**
  * Represents the border of a tile in the game.
+ *
+ * @author Valerio De Santis (373247)
+ * @author Simon Lefort (371918)
  */
 public sealed interface TileSide {
 
@@ -24,10 +27,12 @@ public sealed interface TileSide {
      */
     boolean isSameKindAs(TileSide that);
 
-
     /**
      * Represents a forest tile side
      * @param forest the forest zone
+     *
+     * @author Valerio De Santis (373247)
+     * @author Simon Lefort (371918)
      */
     record Forest (Zone.Forest forest) implements TileSide {
 
@@ -49,6 +54,9 @@ public sealed interface TileSide {
     /**
      * Represents a meadow tile side
      * @param meadow a meadow zone
+     *
+     * @author Valerio De Santis (373247)
+     * @author Simon Lefort (371918)
      */
     record Meadow (Zone.Meadow meadow) implements TileSide {
 
@@ -73,6 +81,9 @@ public sealed interface TileSide {
      * @param meadow1 the first meadow zone bordering the river (ClockWise order)
      * @param river the river zone
      * @param meadow2 the second meadow zone bordering the river (CW order)
+     *
+     * @author Valerio De Santis (373247)
+     * @author Simon Lefort (371918)
      */
     record River (Zone.Meadow meadow1, Zone.River river, Zone.Meadow meadow2) implements TileSide {
 
