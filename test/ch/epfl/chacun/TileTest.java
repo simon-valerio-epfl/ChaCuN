@@ -21,7 +21,6 @@ public class TileTest {
         TileSide meadowSide2 = new TileSide.Meadow(meadow2);
         Tile tile = new Tile(1, Tile.Kind.START, forestSide, meadowSide, forestSide2, meadowSide2);
 
-
         Set<Zone> expectedSizeZones = new HashSet<>();
         expectedSizeZones.add(forest);
         expectedSizeZones.add(forest2);
