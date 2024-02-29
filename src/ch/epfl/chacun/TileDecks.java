@@ -57,6 +57,9 @@ public record TileDecks (List<Tile> startTiles, List<Tile> normalTiles, List<Til
      */
     private List<Tile> drawCardFromDeck (List<Tile> deck) {
         Preconditions.checkArgument(!deck.isEmpty());
+        // size() returns the index of the last element +1
+        // subList() takes the index of the first element (inclusive)
+        // and the index of the last element (exclusive)
         return deck.subList(1, deck.size()); // returns a new list without the first card
     }
 
@@ -75,7 +78,7 @@ public record TileDecks (List<Tile> startTiles, List<Tile> normalTiles, List<Til
 
     /**
      * Draws the top tile of the deck of the given kind returning the deck without the first card
-     * @param kind the kind of deck to draw the top tile from
+     * @param kind the kind of deck to draw the top tile from (not empty, otherwise throws an illegal argument exception)
      * @return the deck without the top tile
      */
     public TileDecks withTopTileDrawn (Tile.Kind kind) {
@@ -93,11 +96,10 @@ public record TileDecks (List<Tile> startTiles, List<Tile> normalTiles, List<Til
      * @return the tile decks, with the necessary tiles drawn
      */
     public TileDecks withTopTileDrawnUntil (Tile.Kind kind, Predicate<Tile> predicate) {
-        TileDecks verifiedDecks = new TileDecks(startTiles, normalTiles, menhirTiles);
-        boolean deckIsEmpty = verifiedDecks.deckSize(kind) == 0;
-        if (deckIsEmpty) return verifiedDecks;
-        boolean predicateIsVerified = predicate.test(verifiedDecks.topTile(kind));
-        return predicateIsVerified ? verifiedDecks : withTopTileDrawn(kind).withTopTileDrawnUntil(kind, predicate);
+        boolean deckIsEmpty = this.deckSize(kind) == 0;
+        if (deckIsEmpty) return this;
+        boolean predicateIsVerified = predicate.test(this.topTile(kind));
+        return predicateIsVerified ? this : withTopTileDrawn(kind).withTopTileDrawnUntil(kind, predicate);
     }
 
 }

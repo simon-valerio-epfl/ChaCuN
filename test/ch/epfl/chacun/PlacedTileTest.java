@@ -111,7 +111,7 @@ class PlacedTileTest {
         TileSide meadowSide = new TileSide.Meadow(meadow);
         TileSide forestSide2 = new TileSide.Forest(forest2);
         TileSide meadowSide2 = new TileSide.Meadow(meadow2);
-        Tile tile = new Tile(1, Tile.Kind.START, forestSide, meadowSide, forestSide2, meadowSide2);
+        Tile tile = new Tile(1, Tile.Kind.NORMAL, forestSide, meadowSide, forestSide2, meadowSide2);
         PlayerColor Habib = PlayerColor.RED;
 
         PlacedTile placedTile = new PlacedTile(tile, Habib, Rotation.RIGHT, new Pos(0, 0));
@@ -135,7 +135,7 @@ class PlacedTileTest {
         TileSide riverSide1 = new TileSide.River(meadow, river, meadow2);
         TileSide riverSide2 = new TileSide.River(meadow2, river2, meadow);
 
-        Tile tile2 = new Tile(1, Tile.Kind.START, forestSide, riverSide1, riverSide2, meadowSide2);
+        Tile tile2 = new Tile(1, Tile.Kind.NORMAL, forestSide, riverSide1, riverSide2, meadowSide2);
         PlacedTile placedTile3 = new PlacedTile(tile2, Habib, Rotation.RIGHT, new Pos(0, 0));
 
         Set<Occupant> set2 = new HashSet<>();

@@ -140,6 +140,7 @@ public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos 
         if (placer == null) {
             return potentialOccupants;
         }
+        // each side zone can have a pawn, and if it's a river, a hut (if there is no lake)
         for (Zone zone: this.tile.sideZones()) {
             Occupant potentialOccupant = new Occupant(Occupant.Kind.PAWN, zone.id());
             potentialOccupants.add(potentialOccupant);
@@ -151,7 +152,7 @@ public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos 
             }
         }
         for (Zone zone: this.tile.zones()) {
-            if (zone instanceof Zone.Lake lake) {
+            if (zone instanceof Zone.Lake) {
                 Occupant potentialLakeOccupant = new Occupant(Occupant.Kind.HUT, zone.id());
                 potentialOccupants.add(potentialLakeOccupant);
             }
@@ -165,7 +166,7 @@ public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos 
      * @return the placed tile with the added occupant
      */
     public PlacedTile withOccupant(Occupant occupant){
-        Preconditions.checkArgument(this.occupant == null && !kind().equals(Tile.Kind.START));
+        Preconditions.checkArgument(this.occupant == null);
         return new PlacedTile(tile, placer, rotation, pos, occupant);
     }
 
@@ -176,7 +177,6 @@ public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos 
     public PlacedTile withNoOccupant () {
         return new PlacedTile(tile, placer, rotation, pos);
     }
-
 
     /**
      * Gets the id of the zone occupied by the given kind of occupant if present, -1 otherwise
