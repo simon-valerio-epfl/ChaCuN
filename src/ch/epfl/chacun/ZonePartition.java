@@ -5,16 +5,34 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Represents a zone partition
+ * @param areas the areas in the zone partition
+ * @param <Z> the type of the areas
+ */
 public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
 
+    /**
+     * Creates a new zone partition and does a defensive copy
+     * of the set of areas (to make it unmodifiable)
+     * @param areas the areas in the zone partition
+     */
     public ZonePartition {
         areas = Set.copyOf(areas);
     }
 
+    /**
+     * Creates a zone partition without any area
+     */
     public ZonePartition () {
         this(Set.of());
     }
 
+    /**
+     * Returns the area that contains the specified zone
+     * @param zone the zone we are looking for
+     * @return the area that contains the specified zone
+     */
     public Area<Z> areaContaining(Z zone) {
         for (Area<Z> area: areas) {
             if (area.zones().contains(zone)) {
