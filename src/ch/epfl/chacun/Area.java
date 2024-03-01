@@ -120,6 +120,14 @@ public record Area<Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, i
                 .sum();
     }
 
+    public static int lakeCount(Area<Zone.Water> riverSystem) {
+        return (int) riverSystem.zones().stream().filter(zone -> zone instanceof Zone.Water.Lake).count();
+    }
+
+    public static int riverSystemFishCount(Area<Zone.Water> riverSystem) {
+        return riverSystem.zones().stream().mapToInt(Zone.Water::fishCount).sum();
+    }
+
     /**
      * Checks whether the current instance of area is closed.
      * @return  whether the current instance of area is closed
