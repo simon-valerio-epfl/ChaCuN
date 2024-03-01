@@ -28,18 +28,22 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
         this(Set.of());
     }
 
-    /**
-     * Returns the area that contains the specified zone
-     * @param zone the zone we are looking for
-     * @return the area that contains the specified zone
-     */
-    public Area<Z> areaContaining(Z zone) {
+    private static <Z extends Zone> Area<Z> areaContaining(Z zone, Set<Area<Z>> areas) {
         for (Area<Z> area: areas) {
             if (area.zones().contains(zone)) {
                 return area;
             }
         }
         throw new IllegalArgumentException();
+    }
+
+    /**
+     * Returns the area that contains the specified zone
+     * @param zone the zone we are looking for
+     * @return the area that contains the specified zone
+     */
+    public Area<Z> areaContaining(Z zone) {
+        return ZonePartition.areaContaining(zone, areas);
     }
 
     public static final class Builder<Z extends Zone> {
@@ -59,27 +63,15 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
         }
 
         public void addInitialOccupant (Z zone, PlayerColor color) {
-            boolean areaFound = false;
-            for (Area<Z> area: areas) {
-                if (area.zones().contains(zone)) {
-                    areas.add(area.withInitialOccupant(color));
-                    areas.remove(area);
-                    areaFound = true;
-                }
-            }
-            if (!areaFound) throw new IllegalArgumentException();
+            Area<Z> area = ZonePartition.areaContaining(zone, areas);
+            areas.add(area.withInitialOccupant(color));
+            areas.remove(area);
         }
 
         public void removeOccupant(Z zone, PlayerColor color) {
-            boolean areaFound = false;
-            for (Area<Z> area: areas) {
-                if (area.zones().contains(zone)) {
-                    areas.add(area.withoutOccupant(color));
-                    areas.remove(area);
-                    areaFound = true;
-                }
-            }
-            if (!areaFound) throw new IllegalArgumentException();
+            Area<Z> area = ZonePartition.areaContaining(zone, areas);
+            areas.add(area.withoutOccupant(color));
+            areas.remove(area);
         }
 
         public void removeAllOccupantsOf(Area<Z> area) {
@@ -89,18 +81,12 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
         }
 
         public void union(Z zone1, Z zone2) {
-            for (Area<Z> area1: areas) {
-                if (area1.zones().contains(zone1)) {
-                    for (Area<Z> area2: areas) {
-                        if (area2.zones().contains(zone2)) {
-                            Area<Z> newBiggerArea = area1.connectTo(area2);
-                            areas.remove(area1);
-                            areas.remove(area2);
-                            areas.add(newBiggerArea);
-                        }
-                    }
-                }
-            }
+            Area<Z> area1 = ZonePartition.areaContaining(zone1, areas);
+            Area<Z> area2 = ZonePartition.areaContaining(zone2, areas);
+            Area<Z> newBiggerArea = area1.connectTo(area2);
+            areas.remove(area1);
+            areas.remove(area2);
+            areas.add(newBiggerArea);
         }
 
         public ZonePartition<Z> build() {
