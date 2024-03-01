@@ -121,7 +121,7 @@ public record Area<Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, i
     }
 
     public static int lakeCount(Area<Zone.Water> riverSystem) {
-        return (int) riverSystem.zones().stream().filter(zone -> zone instanceof Zone.Water.Lake).count();
+        return (int) riverSystem.zones().stream().filter(zone -> zone instanceof Zone.Lake).count();
     }
 
     public static int riverSystemFishCount(Area<Zone.Water> riverSystem) {
