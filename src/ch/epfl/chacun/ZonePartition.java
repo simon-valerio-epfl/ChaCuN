@@ -29,7 +29,9 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
         private final Set<Area<Z>> areas = new HashSet<>();
 
         public Builder(ZonePartition<Z> partition) {
-            areas.addAll(Set.copyOf(partition.areas()));
+            // partition.areas() is already unmodifiable, we do not need to
+            // call Set.of() here
+            areas.addAll(partition.areas());
         }
 
         public void addSingleton (Z zone, int openConnections) {
