@@ -24,30 +24,27 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
         throw new IllegalArgumentException();
     }
 
-    public final class Builder<Z extends Zone> {
+    public static final class Builder<Z extends Zone> {
 
-        private Set<Area<Z>> areas;
+        private final Set<Area<Z>> areas = new HashSet<>();
 
         public Builder(ZonePartition<Z> partition) {
-            areas = partition.areas;
+            // ZonePartition is immutable, so we do not need to
+            // call Set.copyOf() here as the areas of partitions will never change
+            // we don't use the areas = partition.areas() syntax because we
+            // want 'areas' to refer to a modifiable object
+            areas.addAll(partition.areas());
         }
 
-        void addSingleton (Z zone, int openConnections) {
+        public void addSingleton (Z zone, int openConnections) {
             areas.add(new Area<>(Set.of(zone), List.of(), openConnections));
         }
 
-        void addInitialOccupant (Z zone, PlayerColor color) {
+        public void addInitialOccupant (Z zone, PlayerColor color) {
             boolean areaFound = false;
             for (Area<Z> area: areas) {
                 if (area.zones().contains(zone)) {
-                    if (!area.occupants().isEmpty()) {
-                        throw new IllegalArgumentException();
-                    }
-                    // todo find a better solution?
-                    List<PlayerColor> occupants = new ArrayList<>(area.occupants());
-                    occupants.add(color);
-                    Area<Z> newArea = new Area<>(area.zones(), occupants, area.openConnections());
-                    areas.add(newArea);
+                    areas.add(area.withInitialOccupant(color));
                     areas.remove(area);
                     areaFound = true;
                 }
@@ -59,13 +56,7 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
             boolean areaFound = false;
             for (Area<Z> area: areas) {
                 if (area.zones().contains(zone)) {
-                    if (!area.occupants().contains(color)) {
-                        throw new IllegalArgumentException();
-                    }
-                    List<PlayerColor> occupants = new ArrayList<>(area.occupants());
-                    occupants.remove(color);
-                    Area<Z> newArea = new Area<>(area.zones(), occupants, area.openConnections());
-                    areas.add(newArea);
+                    areas.add(area.withoutOccupant(color));
                     areas.remove(area);
                     areaFound = true;
                 }
@@ -76,7 +67,7 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
         public void removeAllOccupantsOf(Area<Z> area) {
             boolean areaIsFound = areas.remove(area);
             if (!areaIsFound) throw new IllegalArgumentException();
-            areas.add(new Area<>(area.zones(), List.of(), area.openConnections()));
+            areas.add(area.withoutOccupants());
         }
 
         public void union(Z zone1, Z zone2) {

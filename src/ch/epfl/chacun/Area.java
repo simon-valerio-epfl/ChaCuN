@@ -120,6 +120,14 @@ public record Area<Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, i
                 .sum();
     }
 
+    public static int lakeCount(Area<Zone.Water> riverSystem) {
+        return (int) riverSystem.zones().stream().filter(zone -> zone instanceof Zone.Lake).count();
+    }
+
+    public static int riverSystemFishCount(Area<Zone.Water> riverSystem) {
+        return riverSystem.zones().stream().mapToInt(Zone.Water::fishCount).sum();
+    }
+
     /**
      * Checks whether the current instance of area is closed.
      * @return  whether the current instance of area is closed
@@ -186,6 +194,35 @@ public record Area<Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, i
                 ? this.openConnections() - 2
                 : this.openConnections() + that.openConnections() - 2;
         return new Area<>(connectedZones, connectedOccupants, connectedOpenConnections);
+    }
+
+    public Zone zoneWithSpecialPower (Zone.SpecialPower specialPower) {
+        for (Zone zone: zones) {
+            if (zone.specialPower().equals(specialPower)) {
+                return zone;
+            }
+        }
+        return null;
+    }
+
+    public Area<Z> withInitialOccupant (PlayerColor occupant) {
+        Preconditions.checkArgument(occupants.isEmpty());
+        return new Area<>(this.zones, List.of(occupant), this.openConnections);
+    }
+
+    public Area<Z> withoutOccupant (PlayerColor occupant) {
+        Preconditions.checkArgument(occupants.contains(occupant));
+        List<PlayerColor> newOccupants = new ArrayList<>(occupants);
+        newOccupants.remove(occupant);
+        return new Area<>(this.zones, newOccupants, this.openConnections);
+    }
+
+    public Area<Z> withoutOccupants () {
+        return new Area<>(this.zones, List.of(), this.openConnections);
+    }
+
+    public Set<Integer> tileIds() {
+        return this.zones.stream().map(Zone::tileId).collect(Collectors.toSet());
     }
 
 }
