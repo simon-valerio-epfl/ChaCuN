@@ -21,3 +21,5 @@ java -jar junit-platform-console-standalone-1.10.2.jar execute -cp out/productio
 grep -q "failures=\"0\"" reports/TEST-junit-jupiter.xml || exit 1
 
 echo "Compilation terminée."
+
+exit 0
