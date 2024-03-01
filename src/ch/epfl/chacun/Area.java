@@ -188,4 +188,13 @@ public record Area<Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, i
         return new Area<>(connectedZones, connectedOccupants, connectedOpenConnections);
     }
 
+    public Zone zoneWithSpecialPower (Zone.SpecialPower specialPower) {
+        for (Zone zone: zones) {
+            if (zone.specialPower().equals(specialPower)) {
+                return zone;
+            }
+        }
+        return null;
+    }
+
 }

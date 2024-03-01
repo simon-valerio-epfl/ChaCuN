@@ -26,17 +26,17 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
 
     public static final class Builder<Z extends Zone> {
 
-        private final Set<Area<Z>> areas;
+        private final Set<Area<Z>> areas = new HashSet<>();
 
         public Builder(ZonePartition<Z> partition) {
-            areas = new HashSet<>(partition.areas());
+            areas.addAll(partition.areas());
         }
 
-        void addSingleton (Z zone, int openConnections) {
+        public void addSingleton (Z zone, int openConnections) {
             areas.add(new Area<>(Set.of(zone), List.of(), openConnections));
         }
 
-        void addInitialOccupant (Z zone, PlayerColor color) {
+        public void addInitialOccupant (Z zone, PlayerColor color) {
             boolean areaFound = false;
             for (Area<Z> area: areas) {
                 if (area.zones().contains(zone)) {
