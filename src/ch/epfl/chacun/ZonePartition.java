@@ -30,7 +30,7 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
 
         public Builder(ZonePartition<Z> partition) {
             // partition.areas() is already unmodifiable, we do not need to
-            // call Set.of() here
+            // call Set.copyOf() here
             areas.addAll(partition.areas());
         }
 
