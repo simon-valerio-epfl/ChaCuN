@@ -197,4 +197,22 @@ public record Area<Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, i
         return null;
     }
 
+    public Area<Z> withInitialOccupant (PlayerColor occupant) {
+        return new Area<>(this.zones, List.of(occupant), this.openConnections);
+    }
+
+    public Area<Z> withoutOccupant (PlayerColor occupant) {
+        List<PlayerColor> newOccupants = new ArrayList<>(occupants);
+        newOccupants.remove(occupant);
+        return new Area<>(this.zones, newOccupants, this.openConnections);
+    }
+
+    public Area<Z> withoutOccupants () {
+        return new Area<>(this.zones, List.of(), this.openConnections);
+    }
+
+    public Set<Integer> tileIds() {
+        return this.zones.stream().map(Zone::tileId).collect(Collectors.toSet());
+    }
+
 }
