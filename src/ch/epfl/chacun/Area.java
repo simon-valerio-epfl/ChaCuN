@@ -206,10 +206,12 @@ public record Area<Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, i
     }
 
     public Area<Z> withInitialOccupant (PlayerColor occupant) {
+        Preconditions.checkArgument(occupants.isEmpty());
         return new Area<>(this.zones, List.of(occupant), this.openConnections);
     }
 
     public Area<Z> withoutOccupant (PlayerColor occupant) {
+        Preconditions.checkArgument(occupants.contains(occupant));
         List<PlayerColor> newOccupants = new ArrayList<>(occupants);
         newOccupants.remove(occupant);
         return new Area<>(this.zones, newOccupants, this.openConnections);

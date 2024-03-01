@@ -40,11 +40,7 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
             boolean areaFound = false;
             for (Area<Z> area: areas) {
                 if (area.zones().contains(zone)) {
-                    if (!area.occupants().isEmpty()) {
-                        throw new IllegalArgumentException();
-                    }
-                    Area<Z> newArea = new Area<>(area.zones(), List.of(color), area.openConnections());
-                    areas.add(newArea);
+                    areas.add(area.withInitialOccupant(color));
                     areas.remove(area);
                     areaFound = true;
                 }
@@ -56,13 +52,7 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
             boolean areaFound = false;
             for (Area<Z> area: areas) {
                 if (area.zones().contains(zone)) {
-                    if (!area.occupants().contains(color)) {
-                        throw new IllegalArgumentException();
-                    }
-                    List<PlayerColor> occupants = new ArrayList<>(area.occupants());
-                    occupants.remove(color);
-                    Area<Z> newArea = new Area<>(area.zones(), occupants, area.openConnections());
-                    areas.add(newArea);
+                    areas.add(area.withoutOccupant(color));
                     areas.remove(area);
                     areaFound = true;
                 }
@@ -73,7 +63,7 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
         public void removeAllOccupantsOf(Area<Z> area) {
             boolean areaIsFound = areas.remove(area);
             if (!areaIsFound) throw new IllegalArgumentException();
-            areas.add(new Area<>(area.zones(), List.of(), area.openConnections()));
+            areas.add(area.withoutOccupants());
         }
 
         public void union(Z zone1, Z zone2) {
