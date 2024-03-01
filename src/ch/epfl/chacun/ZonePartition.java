@@ -31,8 +31,8 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
         public Builder(ZonePartition<Z> partition) {
             // ZonePartition is immutable, so we do not need to
             // call Set.copyOf() here as the areas of partitions will never change
-            // we don't use the areas = partition.areas() syntax because we  
-            // to refer to a modifiable object
+            // we don't use the areas = partition.areas() syntax because we
+            // want 'areas' to refer to a modifiable object
             areas.addAll(partition.areas());
         }
 
