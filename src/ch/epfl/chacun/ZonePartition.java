@@ -29,8 +29,10 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
         private final Set<Area<Z>> areas = new HashSet<>();
 
         public Builder(ZonePartition<Z> partition) {
-            // partition.areas() is already unmodifiable, we do not need to
-            // call Set.copyOf() here
+            // ZonePartition is immutable, so we do not need to
+            // call Set.copyOf() here as the areas of partitions will never change
+            // we don't use the areas = partition.areas() syntax because we  
+            // to refer to a modifiable object
             areas.addAll(partition.areas());
         }
 
