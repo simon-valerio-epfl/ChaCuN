@@ -29,7 +29,7 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
         private final Set<Area<Z>> areas = new HashSet<>();
 
         public Builder(ZonePartition<Z> partition) {
-            areas.addAll(partition.areas());
+            areas.addAll(Set.copyOf(partition.areas()));
         }
 
         public void addSingleton (Z zone, int openConnections) {
