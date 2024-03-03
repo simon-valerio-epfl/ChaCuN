@@ -1,6 +1,5 @@
 package ch.epfl.chacun;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -28,6 +27,13 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
         this(Set.of());
     }
 
+    /**
+     * Returns the area that contains the specified zone, or throws an exception
+     * if the zone is not in any area
+     * @param zone the zone we are looking for
+     * @param areas the set of areas to search in
+     * @return the area that contains the specified zone
+     */
     private static <Z extends Zone> Area<Z> areaContaining(Z zone, Set<Area<Z>> areas) {
         for (Area<Z> area: areas) {
             if (area.zones().contains(zone)) {
@@ -42,14 +48,23 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
      * @param zone the zone we are looking for
      * @return the area that contains the specified zone
      */
+    //TODO: this method exists both in a public and private form, should we keep the private?
     public Area<Z> areaContaining(Z zone) {
         return ZonePartition.areaContaining(zone, areas);
     }
 
+    /**
+     * A builder for ZonePartition
+     * @param <Z> the type of zones forming the areas
+     */
     public static final class Builder<Z extends Zone> {
 
         private final Set<Area<Z>> areas = new HashSet<>();
 
+        /**
+         * Creates a new builder for a zone partition with the same areas as the given one
+         * @param partition the zone partition to copy
+         */
         public Builder(ZonePartition<Z> partition) {
             // ZonePartition is immutable, so we do not need to
             // call Set.copyOf() here as the areas of partitions will never change
@@ -58,28 +73,57 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
             areas.addAll(partition.areas());
         }
 
+        /**
+         * Adds a new area (with no initial occupant) to the zone partition builder
+         * @param zone the zone forming the area to add
+         * @param openConnections the number of open connections of the area to add
+         */
         public void addSingleton (Z zone, int openConnections) {
             areas.add(new Area<>(Set.of(zone), List.of(), openConnections));
         }
 
+        /**
+         * Replaces the area containing the given zone with a new area identical to the former,
+         * but having the given color as initial occupant
+         * @param zone the zone contained by the area where we want to add the occupant
+         * @param color the color of the initial occupant of the area
+         */
         public void addInitialOccupant (Z zone, PlayerColor color) {
             Area<Z> area = ZonePartition.areaContaining(zone, areas);
             areas.add(area.withInitialOccupant(color));
             areas.remove(area);
         }
 
+        /**
+         * Replaces the area containing the given zone with a new area identical to the former,
+         * but without an occupant of the given color
+         * @param zone the zone contained by the area where we want to remove the occupant
+         * @param color the color of the occupant to remove
+         */
         public void removeOccupant(Z zone, PlayerColor color) {
             Area<Z> area = ZonePartition.areaContaining(zone, areas);
             areas.add(area.withoutOccupant(color));
             areas.remove(area);
         }
 
+/**
+         * Replaces the given area with a new area identical to the former,
+         * but without any occupant, throws an exception if the area is not in the partition
+         * @param area the area to remove all the occupants from
+         */
         public void removeAllOccupantsOf(Area<Z> area) {
             boolean areaIsFound = areas.remove(area);
             if (!areaIsFound) throw new IllegalArgumentException();
             areas.add(area.withoutOccupants());
         }
-
+        /**
+         * Unites the areas containing the given zones, throwing an exception
+         * if one of the zones is not in any area (areaContaining() will throw an exception)
+         * Finally, removes the two areas from the partition builder and adds a
+         * new bigger area resulting from their union
+         * @param zone1 the first zone whose area we want to unite
+         * @param zone2 the second zone whose area we want to unite
+         */
         public void union(Z zone1, Z zone2) {
             Area<Z> area1 = ZonePartition.areaContaining(zone1, areas);
             Area<Z> area2 = ZonePartition.areaContaining(zone2, areas);
@@ -89,6 +133,10 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
             areas.add(newBiggerArea);
         }
 
+        /**
+         * Builds the zone partition, which will be immutable
+         * @return the zone partition built
+         */
         public ZonePartition<Z> build() {
             return new ZonePartition<>(areas);
         }

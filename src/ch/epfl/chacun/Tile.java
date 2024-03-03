@@ -1,6 +1,9 @@
 package ch.epfl.chacun;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 /**
  * Represents a tile in the game
  * @param id the id of the tile
