@@ -184,6 +184,7 @@ public record Area<Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, i
         Set<Z> connectedZones = new HashSet<>(Set.copyOf(this.zones));
         connectedZones.addAll(that.zones);
         //we create a new list containing all the occupants in the two areas
+        // todo make sure to add this behavior to the tests
         List<PlayerColor> connectedOccupants = this.equals(that) ? this.occupants : new ArrayList<>(List.copyOf(this.occupants));
         if (!this.equals(that)) connectedOccupants.addAll(that.occupants);
         //we calculate the number of open connections in the new area
