@@ -59,7 +59,7 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
      */
     public static final class Builder<Z extends Zone> {
 
-        private final Set<Area<Z>> areas = new HashSet<>();
+        private final Set<Area<Z>> areas;
 
         /**
          * Creates a new builder for a zone partition with the same areas as the given one
@@ -70,7 +70,7 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
             // call Set.copyOf() here as the areas of partitions will never change
             // we don't use the areas = partition.areas() syntax because we
             // want 'areas' to refer to a modifiable object
-            areas.addAll(partition.areas());
+            areas = new HashSet<>(partition.areas());
         }
 
         /**
