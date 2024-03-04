@@ -199,7 +199,7 @@ public record Area<Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, i
 
     public Zone zoneWithSpecialPower (Zone.SpecialPower specialPower) {
         for (Zone zone: zones) {
-            if (zone.specialPower().equals(specialPower)) {
+            if (zone.specialPower() != null && zone.specialPower().equals(specialPower)) {
                 return zone;
             }
         }
