@@ -160,7 +160,7 @@ public sealed interface Zone {
             return lake != null;
         }
         /**
-         * Gets the fish count of the river.
+         * Gets the fish count of the river (not including the lake if there is one).
          * @return the fish count of the river
          */
         @Override
