@@ -171,4 +171,40 @@ public class InitialAreaTest {
         assertNull(area2.zoneWithSpecialPower(Zone.Meadow.SpecialPower.HUNTING_TRAP));
     }
 
+    @Test
+    public void areaWithInitialOccupant() {
+        Area<Zone.Forest> area = new Area<>(Set.of(), List.of(), 0);
+        Area<Zone.Forest> area2 = area.withInitialOccupant(PlayerColor.BLUE);
+        assertEquals(List.of(PlayerColor.BLUE), area2.occupants());
+        assertThrows(IllegalArgumentException.class, () -> area2.withInitialOccupant(PlayerColor.BLUE));
+    }
+
+    @Test
+    public void areaWithoutOccupant() {
+        Area<Zone.Forest> area = new Area<>(Set.of(), List.of(PlayerColor.BLUE), 0);
+        Area<Zone.Forest> area2 = area.withoutOccupant(PlayerColor.BLUE);
+        assertEquals(List.of(), area2.occupants());
+        assertThrows(IllegalArgumentException.class, () -> area2.withoutOccupant(PlayerColor.BLUE));
+        Area<Zone.Forest> area3 = new Area<>(Set.of(), List.of(PlayerColor.BLUE, PlayerColor.BLUE), 0);
+        Area<Zone.Forest> area4 = area3.withoutOccupant(PlayerColor.BLUE);
+        assertEquals(List.of(PlayerColor.BLUE), area4.occupants());
+    }
+
+    @Test
+    public void areaWithoutOccupants() {
+        Area<Zone.Forest> area = new Area<>(Set.of(), List.of(PlayerColor.BLUE), 0);
+        Area<Zone.Forest> area2 = area.withoutOccupants();
+        assertEquals(List.of(), area2.occupants());
+        assertEquals(area2, area2.withoutOccupants());
+    }
+
+    @Test
+    public void areaTileIds() {
+        Zone.Forest forest = new Zone.Forest(0, Zone.Forest.Kind.PLAIN);
+        Area<Zone.Forest> area = new Area<>(Set.of(forest), List.of(), 0);
+        assertEquals(Set.of(0), area.tileIds());
+        Area<Zone.Forest> area2 = new Area<>(Set.of(), List.of(), 0);
+        assertEquals(Set.of(), area2.tileIds());
+    }
+
 }
