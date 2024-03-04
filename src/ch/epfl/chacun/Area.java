@@ -181,7 +181,7 @@ public record Area<Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, i
      */
     public Area<Z> connectTo(Area<Z> that) {
         //we create a new set containing all the zones in the two areas
-        Set<Z> connectedZones = new HashSet<>(Set.copyOf(this.zones));
+        Set<Z> connectedZones = new HashSet<>(this.zones);
         connectedZones.addAll(that.zones);
         //we create a new list containing all the occupants in the two areas
         // todo make sure to add this behavior to the tests
