@@ -137,4 +137,38 @@ public class InitialAreaTest {
         // IMPORTANT! should not be 6!
     }
 
+    @Test
+    public void areaConnectTo() {
+        Zone.Lake lake = new Zone.Lake(0, 3, null);
+        Zone.River river = new Zone.River(1, 2, lake);
+        Zone.River river2 = new Zone.River(2, 1, lake);
+        Area<Zone.Water> area = new Area<>(Set.of(river, river2), List.of(), 0);
+        Zone.Lake lake2 = new Zone.Lake(3, 3, null);
+        Area<Zone.Water> area2 = new Area<>(Set.of(lake2), List.of(), 0);
+        assertThrows(IllegalArgumentException.class, () -> area.connectTo(area2)); // no open connections
+
+        Zone.River river3 = new Zone.River(4, 2, lake2);
+        Area<Zone.Water> area3 = new Area<>(Set.of(river3), List.of(), 1);
+        Area<Zone.Water> area4 = new Area<>(Set.of(lake2), List.of(), 2);
+        Area<Zone.Water> area5 = area3.connectTo(area4);
+        assertEquals(Set.of(river3, lake2), area5.zones());
+        assertEquals(1, area5.openConnections());
+
+        Area<Zone.Water> area6 = new Area<>(Set.of(river3), List.of(PlayerColor.BLUE), 2);
+        Area<Zone.Water> area7 = area6.connectTo(area6);
+        assertEquals(List.of(PlayerColor.BLUE), area7.occupants());
+        assertEquals(0, area7.openConnections());
+    }
+
+    @Test
+    public void areaSpecialPower() {
+        Zone.Meadow meadow = new Zone.Meadow(0, List.of(), Zone.Meadow.SpecialPower.HUNTING_TRAP);
+        Area<Zone.Meadow> area = new Area<>(Set.of(meadow), List.of(), 0);
+        assertEquals(meadow, area.zoneWithSpecialPower(Zone.Meadow.SpecialPower.HUNTING_TRAP));
+
+        Zone.Lake lake = new Zone.Lake(1, 3, null);
+        Area<Zone.Water> area2 = new Area<>(Set.of(lake), List.of(), 0);
+        assertNull(area2.zoneWithSpecialPower(Zone.Meadow.SpecialPower.HUNTING_TRAP));
+    }
+
 }
