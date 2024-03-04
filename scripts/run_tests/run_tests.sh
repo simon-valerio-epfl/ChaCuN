@@ -18,7 +18,7 @@ javac -d out/production/classes @src_files.txt
 javac -d out/test/classes -classpath out/production/classes:junit-platform-console-standalone-1.10.2.jar @test_files.txt
 java -jar junit-platform-console-standalone-1.10.2.jar execute -cp out/production/classes:out/test/classes: --select-package ch.epfl.chacun --reports-dir reports
 
-grep -q "failures=\"0\"" reports/TEST-junit-jupiter.xml || exit 1
+grep -q "failures=\"0\"" reports/TEST-junit-jupiter.xml && grep -q "errors=\"0\"" reports/TEST-junit-jupiter.xml || exit 1
 
 echo "Compilation terminée."
 
