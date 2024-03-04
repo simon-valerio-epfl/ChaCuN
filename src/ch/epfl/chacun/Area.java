@@ -24,10 +24,15 @@ public record Area<Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, i
      * @param occupants the players having put an occupant in one of the area's zones
      * @param openConnections non-negative, the number of open connections the area has
      */
-    public Area  {
+    public Area {
         Preconditions.checkArgument(openConnections >= 0);
         zones = Set.copyOf(zones);
-        occupants = Collections.unmodifiableList(sortOccupants(occupants));
+        // occupants = List.copyOf(sortOccupants(occupants));
+        // we use unmodifiableList rather than copyOf as we know
+        // that sortOccupants won't modify the list nor give
+        // access to the object to external users. We avoid this
+        // way copying our list because it is not necessary
+        occupants = Collections.unmodifiableList(copyAndSortOccupants(occupants));
     }
 
     /**
@@ -36,7 +41,8 @@ public record Area<Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, i
      *
      * @param occupants the list of players to sort
      */
-    private List<PlayerColor> sortOccupants(List<PlayerColor> occupants) {
+    private List<PlayerColor> copyAndSortOccupants(List<PlayerColor> occupants) {
+        // a player color is an immutable object
         List<PlayerColor> sortedOccupants = new ArrayList<>(occupants);
         Collections.sort(sortedOccupants);
         return sortedOccupants;
@@ -181,19 +187,19 @@ public record Area<Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, i
      */
     public Area<Z> connectTo(Area<Z> that) {
         //we create a new set containing all the zones in the two areas
-        Set<Z> connectedZones = new HashSet<>(this.zones);
+        Set<Z> connectedZones = new HashSet<>(zones);
         connectedZones.addAll(that.zones);
         //we create a new list containing all the occupants in the two areas
         // todo make sure to add this behavior to the tests
-        List<PlayerColor> connectedOccupants = this.equals(that) ? this.occupants : new ArrayList<>(List.copyOf(this.occupants));
+        List<PlayerColor> connectedOccupants = this.equals(that) ? occupants : new ArrayList<>(List.copyOf(occupants));
         if (!this.equals(that)) connectedOccupants.addAll(that.occupants);
         //we calculate the number of open connections in the new area
         //by subtracting 2 from the sum of the open connections in the two areas if they are different,
         //or by subtracting 2 from the open connections in the current area if it is the same area
         //(we compare their references to know if they are the same area)
         int connectedOpenConnections = this.equals(that)
-                ? this.openConnections() - 2
-                : this.openConnections() + that.openConnections() - 2;
+                ? openConnections - 2
+                : openConnections + that.openConnections() - 2;
         return new Area<>(connectedZones, connectedOccupants, connectedOpenConnections);
     }
 
@@ -207,23 +213,23 @@ public record Area<Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, i
     }
 
     public Area<Z> withInitialOccupant (PlayerColor occupant) {
-        Preconditions.checkArgument(occupants.isEmpty());
-        return new Area<>(this.zones, List.of(occupant), this.openConnections);
+        Preconditions.checkArgument(!isOccupied());
+        return new Area<>(zones, List.of(occupant), openConnections);
     }
 
     public Area<Z> withoutOccupant (PlayerColor occupant) {
         Preconditions.checkArgument(occupants.contains(occupant));
         List<PlayerColor> newOccupants = new ArrayList<>(occupants);
         newOccupants.remove(occupant);
-        return new Area<>(this.zones, newOccupants, this.openConnections);
+        return new Area<>(zones, newOccupants, openConnections);
     }
 
     public Area<Z> withoutOccupants () {
-        return new Area<>(this.zones, List.of(), this.openConnections);
+        return new Area<>(zones, List.of(), openConnections);
     }
 
     public Set<Integer> tileIds() {
-        return this.zones.stream().map(Zone::tileId).collect(Collectors.toSet());
+        return zones.stream().map(Zone::tileId).collect(Collectors.toSet());
     }
 
 }
