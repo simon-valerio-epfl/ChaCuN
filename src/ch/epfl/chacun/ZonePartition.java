@@ -129,7 +129,8 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
             Area<Z> area2 = ZonePartition.areaContaining(zone2, areas);
             Area<Z> newBiggerArea = area1.connectTo(area2);
             areas.remove(area1);
-            areas.remove(area2);
+            // TODO: make sure to add this to the tests
+            if (!area1.equals(area2)) areas.remove(area2);
             areas.add(newBiggerArea);
         }
 

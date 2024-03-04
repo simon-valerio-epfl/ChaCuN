@@ -27,7 +27,7 @@ public record Area<Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, i
     public Area  {
         Preconditions.checkArgument(openConnections >= 0);
         zones = Set.copyOf(zones);
-        occupants = List.copyOf(sortOccupants(occupants));
+        occupants = Collections.unmodifiableList(sortOccupants(occupants));
     }
 
     /**
@@ -184,13 +184,13 @@ public record Area<Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, i
         Set<Z> connectedZones = new HashSet<>(Set.copyOf(this.zones));
         connectedZones.addAll(that.zones);
         //we create a new list containing all the occupants in the two areas
-        List<PlayerColor> connectedOccupants = new ArrayList<>(List.copyOf(this.occupants));
-        connectedOccupants.addAll(that.occupants);
+        List<PlayerColor> connectedOccupants = this.equals(that) ? this.occupants : new ArrayList<>(List.copyOf(this.occupants));
+        if (!this.equals(that)) connectedOccupants.addAll(that.occupants);
         //we calculate the number of open connections in the new area
         //by subtracting 2 from the sum of the open connections in the two areas if they are different,
         //or by subtracting 2 from the open connections in the current area if it is the same area
         //(we compare their references to know if they are the same area)
-        int connectedOpenConnections = this == that
+        int connectedOpenConnections = this.equals(that)
                 ? this.openConnections() - 2
                 : this.openConnections() + that.openConnections() - 2;
         return new Area<>(connectedZones, connectedOccupants, connectedOpenConnections);
