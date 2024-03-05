@@ -10,7 +10,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         messages = List.copyOf(messages);
     }
 
-    Map<PlayerColor, Integer> points() {
+    public Map<PlayerColor, Integer> points() {
         // todo: make sure to test this
         // todo: might need improvements
         return messages.stream()
@@ -24,7 +24,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
                 );
     }
 
-    MessageBoard withScoredForest(Area<Zone.Forest> forest) {
+    public MessageBoard withScoredForest(Area<Zone.Forest> forest) {
         if (!forest.isOccupied()) return this;
         List<Message> newMessages = new ArrayList<>(messages);
         int tileCount = forest.tileIds().size();
@@ -42,7 +42,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         return new MessageBoard(textMaker, newMessages);
     }
 
-    MessageBoard withClosedForestWithMenhir(PlayerColor player, Area<Zone.Forest> forest) {
+    public MessageBoard withClosedForestWithMenhir(PlayerColor player, Area<Zone.Forest> forest) {
         List<Message> newMessages = new ArrayList<>(messages);
         newMessages.add(
                 new Message(
@@ -55,7 +55,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         return new MessageBoard(textMaker, newMessages);
     }
 
-    MessageBoard withScoredRiver(Area<Zone.River> river) {
+    public MessageBoard withScoredRiver(Area<Zone.River> river) {
         if (!river.isOccupied()) return this;
         List<Message> newMessages = new ArrayList<>(messages);
         int tileCount = river.tileIds().size();
@@ -73,7 +73,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         return new MessageBoard(textMaker, newMessages);
     }
 
-    MessageBoard withScoredHuntingTrap(PlayerColor scorer, Area<Zone.Meadow> adjacentMeadow) {
+    public MessageBoard withScoredHuntingTrap(PlayerColor scorer, Area<Zone.Meadow> adjacentMeadow) {
         // important to understand
         // adjacentMeadow is an area created specifically for the hunting trap
         // therefore it contains the right zones
@@ -105,7 +105,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         return new MessageBoard(textMaker, newMessages);
     }
 
-    MessageBoard withScoredLogboat(PlayerColor scorer, Area<Zone.Water> riverSystem) {
+    public MessageBoard withScoredLogboat(PlayerColor scorer, Area<Zone.Water> riverSystem) {
         if (!riverSystem.isOccupied()) return this;
         List<Message> newMessages = new ArrayList<>(messages);
         int lakeCount = Area.lakeCount(riverSystem);
@@ -121,7 +121,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         return new MessageBoard(textMaker, newMessages);
     }
 
-    MessageBoard withScoredMeadow(Area<Zone.Meadow> meadow, Set<Animal> cancelledAnimals) {
+    public MessageBoard withScoredMeadow(Area<Zone.Meadow> meadow, Set<Animal> cancelledAnimals) {
         if (!meadow.isOccupied()) return this;
         List<Message> newMessages = new ArrayList<>(messages);
         Set<Animal> animals = Area.animals(meadow, cancelledAnimals);
@@ -146,7 +146,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         return new MessageBoard(textMaker, newMessages);
     }
 
-    MessageBoard withScoredRiverSystem(Area<Zone.Water> riverSystem) {
+    public MessageBoard withScoredRiverSystem(Area<Zone.Water> riverSystem) {
         if (!riverSystem.isOccupied()) return this;
         List<Message> newMessages = new ArrayList<>(messages);
         int fishCount = Area.riverSystemFishCount(riverSystem);
@@ -164,7 +164,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         return new MessageBoard(textMaker, newMessages);
     }
 
-    MessageBoard withScoredPitTrap(Area<Zone.Meadow> adjacentMeadow, Set<Animal> cancelledAnimals) {
+    public MessageBoard withScoredPitTrap(Area<Zone.Meadow> adjacentMeadow, Set<Animal> cancelledAnimals) {
         if (!adjacentMeadow.isOccupied()) return this;
         List<Message> newMessages = new ArrayList<>(messages);
         Set<Animal> animals = Area.animals(adjacentMeadow, cancelledAnimals);
@@ -189,7 +189,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         return new MessageBoard(textMaker, newMessages);
     }
 
-    MessageBoard withScoredRaft(Area<Zone.Water> riverSystem) {
+    public MessageBoard withScoredRaft(Area<Zone.Water> riverSystem) {
         if (!riverSystem.isOccupied()) return this;
         List<Message> newMessages = new ArrayList<>(messages);
         int lakeCount = Area.lakeCount(riverSystem);
@@ -206,7 +206,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         return new MessageBoard(textMaker, newMessages);
     }
 
-    MessageBoard withWinners(Set<PlayerColor> winners, int points) {
+    public MessageBoard withWinners(Set<PlayerColor> winners, int points) {
         List<Message> newMessages = new ArrayList<>(messages);
         newMessages.add(
                 new Message(

@@ -6,7 +6,7 @@ import java.util.Set;
 public record ZonePartitions (
         // we don't copy the zone partitions we take as arguments
         // because they're already immutable
-        ZonePartition<Zone.Forest> forest,
+        ZonePartition<Zone.Forest> forests,
         ZonePartition<Zone.Meadow> meadows,
         ZonePartition<Zone.River> rivers,
         ZonePartition<Zone.Water> riverSystems
@@ -25,7 +25,7 @@ public record ZonePartitions (
         private final ZonePartition.Builder<Zone.Water> riverSystems;
 
         public Builder (ZonePartitions initial) {
-            forests = new ZonePartition.Builder<>(initial.forest);
+            forests = new ZonePartition.Builder<>(initial.forests);
             meadows = new ZonePartition.Builder<>(initial.meadows);
             rivers = new ZonePartition.Builder<>(initial.rivers);
             riverSystems = new ZonePartition.Builder<>(initial.riverSystems);
