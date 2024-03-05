@@ -3,11 +3,52 @@ package ch.epfl.chacun;
 import java.util.*;
 import java.util.stream.Collectors;
 
+interface MeadowMessageFunction {
+    String apply(Set<PlayerColor> scorers, Integer points, Map<Animal.Kind, Integer> animalPoints);
+}
+
 public record MessageBoard(TextMaker textMaker, List<Message> messages) {
 
     public MessageBoard {
         Objects.requireNonNull(textMaker); // todo: not specified, should we check for null?
         messages = List.copyOf(messages);
+    }
+
+    private Map<Animal.Kind, Integer> forMeadowAnimalPoints (Set<Animal> animals) {
+        int mammothCount = (int) animals.stream().filter(a -> a.kind() == Animal.Kind.MAMMOTH).count();
+        int aurochsCount = (int) animals.stream().filter(a -> a.kind() == Animal.Kind.AUROCHS).count();
+        int deerCount = (int) animals.stream().filter(a -> a.kind() == Animal.Kind.DEER).count();
+        return Map.of(
+                Animal.Kind.MAMMOTH, mammothCount,
+                Animal.Kind.AUROCHS, aurochsCount,
+                Animal.Kind.DEER, deerCount
+        );
+    }
+    private int forMeadowTotalPoints (Set<Animal> animals) {
+        Map<Animal.Kind, Integer> points = forMeadowAnimalPoints(animals);
+        return Points.forMeadow(points.get(Animal.Kind.MAMMOTH), points.get(Animal.Kind.AUROCHS), points.get(Animal.Kind.DEER));
+    }
+
+    private MessageBoard withScoredMeadowGeneric (
+            Area<Zone.Meadow> meadow,
+            Set<Animal> cancelledAnimals,
+            Set<PlayerColor> scorers,
+            MeadowMessageFunction getMessage
+    ) {
+        if (!meadow.isOccupied()) return this;
+        List<Message> newMessages = new ArrayList<>(messages);
+        Set<Animal> animals = Area.animals(meadow, cancelledAnimals);
+        int points = forMeadowTotalPoints(animals);
+        if (points == 0) return this;
+        newMessages.add(
+                new Message(
+                        getMessage.apply(scorers, points, forMeadowAnimalPoints(animals)),
+                        points,
+                        scorers,
+                        meadow.tileIds()
+                )
+        );
+        return new MessageBoard(textMaker, newMessages);
     }
 
     public Map<PlayerColor, Integer> points() {
@@ -78,31 +119,13 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         // adjacentMeadow is an area created specifically for the hunting trap
         // therefore it contains the right zones
         // the ones from the main meadow, and the ones from the 8 neighboring tiles
-        if (!adjacentMeadow.isOccupied()) return this;
-        List<Message> newMessages = new ArrayList<>(messages);
-
-        Set<Animal> animals = Area.animals(adjacentMeadow, Set.of());
-        int mammothCount = (int) animals.stream().filter(a -> a.kind() == Animal.Kind.MAMMOTH).count();
-        int aurochsCount = (int) animals.stream().filter(a -> a.kind() == Animal.Kind.AUROCHS).count();
-        int deerCount = (int) animals.stream().filter(a -> a.kind() == Animal.Kind.DEER).count();
-        int points = Points.forMeadow(mammothCount, aurochsCount, deerCount);
-
-        if (points == 0) return this;
-
-        Set<PlayerColor> majorityOccupants = adjacentMeadow.majorityOccupants();
-        newMessages.add(
-                new Message(
-                        textMaker.playerScoredHuntingTrap(scorer, points, Map.of(
-                                Animal.Kind.MAMMOTH, mammothCount,
-                                Animal.Kind.AUROCHS, aurochsCount,
-                                Animal.Kind.DEER, deerCount
-                        )),
-                        points,
-                        majorityOccupants,
-                        adjacentMeadow.tileIds()
-                )
+        return withScoredMeadowGeneric(
+                adjacentMeadow,
+                Set.of(),
+                Set.of(scorer),
+                (Set<PlayerColor> scorers, Integer points, Map<Animal.Kind, Integer> animalPoints) ->
+                        textMaker.playerScoredHuntingTrap(scorer, points, animalPoints)
         );
-        return new MessageBoard(textMaker, newMessages);
     }
 
     public MessageBoard withScoredLogboat(PlayerColor scorer, Area<Zone.Water> riverSystem) {
@@ -122,28 +145,12 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
     }
 
     public MessageBoard withScoredMeadow(Area<Zone.Meadow> meadow, Set<Animal> cancelledAnimals) {
-        if (!meadow.isOccupied()) return this;
-        List<Message> newMessages = new ArrayList<>(messages);
-        Set<Animal> animals = Area.animals(meadow, cancelledAnimals);
-        int mammothCount = (int) animals.stream().filter(a -> a.kind() == Animal.Kind.MAMMOTH).count();
-        int aurochsCount = (int) animals.stream().filter(a -> a.kind() == Animal.Kind.AUROCHS).count();
-        int deerCount = (int) animals.stream().filter(a -> a.kind() == Animal.Kind.DEER).count();
-        int points = Points.forMeadow(mammothCount, aurochsCount, deerCount);
-        if (points == 0) return this;
-        Set<PlayerColor> majorityOccupants = meadow.majorityOccupants();
-        newMessages.add(
-                new Message(
-                        textMaker.playersScoredMeadow(majorityOccupants, points, Map.of(
-                                Animal.Kind.MAMMOTH, mammothCount,
-                                Animal.Kind.AUROCHS, aurochsCount,
-                                Animal.Kind.DEER, deerCount
-                        )),
-                        points,
-                        majorityOccupants,
-                        meadow.tileIds()
-                )
+        return withScoredMeadowGeneric(
+                meadow,
+                cancelledAnimals,
+                meadow.majorityOccupants(),
+                textMaker::playersScoredMeadow
         );
-        return new MessageBoard(textMaker, newMessages);
     }
 
     public MessageBoard withScoredRiverSystem(Area<Zone.Water> riverSystem) {
@@ -165,28 +172,12 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
     }
 
     public MessageBoard withScoredPitTrap(Area<Zone.Meadow> adjacentMeadow, Set<Animal> cancelledAnimals) {
-        if (!adjacentMeadow.isOccupied()) return this;
-        List<Message> newMessages = new ArrayList<>(messages);
-        Set<Animal> animals = Area.animals(adjacentMeadow, cancelledAnimals);
-        int mammothCount = (int) animals.stream().filter(a -> a.kind() == Animal.Kind.MAMMOTH).count();
-        int aurochsCount = (int) animals.stream().filter(a -> a.kind() == Animal.Kind.AUROCHS).count();
-        int deerCount = (int) animals.stream().filter(a -> a.kind() == Animal.Kind.DEER).count();
-        int points = Points.forMeadow(mammothCount, aurochsCount, deerCount);
-        if (points == 0) return this;
-        Set<PlayerColor> majorityOccupants = adjacentMeadow.majorityOccupants();
-        newMessages.add(
-                new Message(
-                        textMaker.playersScoredPitTrap(majorityOccupants, points, Map.of(
-                                Animal.Kind.MAMMOTH, mammothCount,
-                                Animal.Kind.AUROCHS, aurochsCount,
-                                Animal.Kind.DEER, deerCount
-                        )),
-                        points,
-                        majorityOccupants,
-                        adjacentMeadow.tileIds()
-                )
+        return withScoredMeadowGeneric(
+                adjacentMeadow,
+                cancelledAnimals,
+                adjacentMeadow.majorityOccupants(),
+                textMaker::playersScoredPitTrap
         );
-        return new MessageBoard(textMaker, newMessages);
     }
 
     public MessageBoard withScoredRaft(Area<Zone.Water> riverSystem) {
