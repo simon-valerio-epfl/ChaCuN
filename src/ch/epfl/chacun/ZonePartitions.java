@@ -100,7 +100,47 @@ public record ZonePartitions (
                     meadows.union(m1, m3);
                     meadows.union(m2, m4);
                 }
+                default -> throw new IllegalArgumentException();
             }
         }
+
+        // todo: shouldn't this use potentialOccupants() ? will it be done before?
+        public void addInitialOccupant(PlayerColor occupant, Occupant.Kind occupantKind, Zone occupiedZone) {
+            switch (occupiedZone) {
+                case Zone.Meadow meadow when occupantKind.equals(Occupant.Kind.PAWN) ->
+                    meadows.addInitialOccupant(meadow, occupant);
+                case Zone.Forest forest when occupantKind.equals(Occupant.Kind.PAWN) ->
+                    forests.addInitialOccupant(forest, occupant);
+                case Zone.River river ->
+                    rivers.addInitialOccupant(river, occupant);
+                case Zone.Lake lake ->
+                    riverSystems.addInitialOccupant(lake, occupant);
+                default -> throw new IllegalArgumentException();
+            }
+        }
+
+        // todo: do we need more checks here?
+        public void removePawn(PlayerColor occupant, Zone occupiedZone) {
+            switch (occupiedZone) {
+                case Zone.Meadow meadow -> meadows.removeOccupant(meadow, occupant);
+                case Zone.Forest forest -> forests.removeOccupant(forest, occupant);
+                case Zone.River river -> rivers.removeOccupant(river, occupant);
+                case Zone.Lake lake -> riverSystems.removeOccupant(lake, occupant);
+                default -> throw new IllegalArgumentException();
+            }
+        }
+
+        public void clearGatherers(Area<Zone.Forest> forest) {
+            forests.removeAllOccupantsOf(forest);
+        }
+
+        public void clearFishers(Area<Zone.River> river) {
+            rivers.removeAllOccupantsOf(river);
+        }
+
+        public ZonePartitions build() {
+            return new ZonePartitions(forests.build(), meadows.build(), rivers.build(), riverSystems.build());
+        }
+
     }
 }
