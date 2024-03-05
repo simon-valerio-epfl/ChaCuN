@@ -105,7 +105,7 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
             areas.remove(area);
         }
 
-/**
+        /**
          * Replaces the given area with a new area identical to the former,
          * but without any occupant, throws an exception if the area is not in the partition
          * @param area the area to remove all the occupants from
