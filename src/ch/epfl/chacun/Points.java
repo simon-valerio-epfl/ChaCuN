@@ -11,43 +11,43 @@ public final class Points {
     /**
      * Number of gained points per tile when a forest is closed.
      */
-    public static final int CLOSED_FOREST_TILE_POINTS = 2;
+    private static final int CLOSED_FOREST_TILE_POINTS = 2;
     /**
      * Number of gained points per mushroom group when a forest is closed.
      */
-    public static final int CLOSED_FOREST_MUSHROOM_POINTS = 3;
+    private static final int CLOSED_FOREST_MUSHROOM_POINTS = 3;
     /**
      * Number of gained points per tile when a river is closed.
      */
-    public static final int CLOSED_RIVER_TILE_POINTS = 1;
+    private static final int CLOSED_RIVER_TILE_POINTS = 1;
     /**
      * Number of gained points per fish when a river is closed.
      */
-    public static final int CLOSED_RIVER_FISH_POINTS = 1;
+    private static final int CLOSED_RIVER_FISH_POINTS = 1;
     /**
      * Number of gained points per mammoth in a meadow at the end of the game.
      */
-    public static final int MAMMOTH_POINTS = 3;
+    private static final int MAMMOTH_POINTS = 3;
     /**
      * Number of gained points per aurochs in a meadow at the end of the game.
      */
-    public static final int AUROCHS_POINTS = 2;
+    private static final int AUROCHS_POINTS = 2;
     /**
      * Number of gained points per deer in a meadow at the end of the game.
      */
-    public static final int DEER_POINTS = 1;
+    private static final int DEER_POINTS = 1;
     /**
      * Number of gained points per logboat when placed.
      */
-    public static final int LOGBOAT_POINTS = 2;
+    private static final int LOGBOAT_POINTS = 2;
     /**
      * Number of gained points per raft at the end of the game.
      */
-    public static final int RAFT_POINTS = 1;
+    private static final int RAFT_POINTS = 1;
     /**
      * Number of gained points per fisher hut in a river system at the end of the game.
      */
-    public static final int FISHER_HUT_POINTS = 1;
+    private static final int FISHER_HUT_POINTS = 1;
 
     /**
      * Returns the number of points gained by a player when a forest is closed

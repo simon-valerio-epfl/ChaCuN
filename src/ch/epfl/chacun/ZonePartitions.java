@@ -111,10 +111,21 @@ public record ZonePartitions (
                     meadows.addInitialOccupant(meadow, occupant);
                 case Zone.Forest forest when occupantKind.equals(Occupant.Kind.PAWN) ->
                     forests.addInitialOccupant(forest, occupant);
-                case Zone.River river ->
+                case Zone.River river when occupantKind.equals(Occupant.Kind.PAWN) ->
                     rivers.addInitialOccupant(river, occupant);
-                case Zone.Lake lake ->
+                /*
+                teacher comment to understand:
+
+                The type of occupant given lets you know which partition to modify,
+                pawns can only occupy rivers, not river systems,
+                and huts can only occupy river systems, not rivers.
+                (They can be placed on rivers, but then occupy the river system containing the river.
+                the hydrographic network containing the river, not the river itself).
+                 */
+                case Zone.Lake lake when occupantKind.equals(Occupant.Kind.HUT) ->
                     riverSystems.addInitialOccupant(lake, occupant);
+                case Zone.River river when occupantKind.equals(Occupant.Kind.HUT) ->
+                    riverSystems.addInitialOccupant(river, occupant);
                 default -> throw new IllegalArgumentException();
             }
         }
