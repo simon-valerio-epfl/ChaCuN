@@ -165,6 +165,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
     public MessageBoard withWinners(Set<PlayerColor> winners, int points) {
         return withNewMessage(
                 textMaker.playersWon(winners, points),
+                // see https://edstem.org/eu/courses/1101/discussion/93737?answer=175785
                 0,
                 winners,
                 Set.of()
