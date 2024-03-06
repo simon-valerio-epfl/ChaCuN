@@ -32,7 +32,9 @@ public record Tile(int id, Kind kind, TileSide n, TileSide e, TileSide s, TileSi
      * @return all the side zones of the tile
      */
     public Set<Zone> sideZones() {
-        Set<Zone> sideZones = new HashSet<>();
+        int maxZonesPerSide = 3;
+        int initialCapacity = maxZonesPerSide * Direction.ALL.size();
+        Set<Zone> sideZones = new HashSet<>(initialCapacity);
         for (TileSide side: this.sides()) {
             sideZones.addAll(side.zones());
         }

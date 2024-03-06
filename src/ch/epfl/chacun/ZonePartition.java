@@ -115,6 +115,7 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
             if (!areaIsFound) throw new IllegalArgumentException();
             areas.add(area.withoutOccupants());
         }
+
         /**
          * Unites the areas containing the given zones, throwing an exception
          * if one of the zones is not in any area (areaContaining() will throw an exception)
@@ -128,8 +129,10 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
             Area<Z> area2 = ZonePartition.areaContaining(zone2, areas);
             Area<Z> newBiggerArea = area1.connectTo(area2);
             areas.remove(area1);
-            // TODO: make sure to add this to the tests
-            if (!area1.equals(area2)) areas.remove(area2);
+            // here we do not need to check whether
+            // area1 == area2, because .remove will just return false
+            // if that's the case
+            areas.remove(area2);
             areas.add(newBiggerArea);
         }
 

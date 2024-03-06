@@ -11,14 +11,12 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
     }
 
     private Map<Animal.Kind, Integer> forMeadowAnimalPoints (Set<Animal> animals) {
-        int mammothCount = (int) animals.stream().filter(a -> a.kind() == Animal.Kind.MAMMOTH).count();
-        int aurochsCount = (int) animals.stream().filter(a -> a.kind() == Animal.Kind.AUROCHS).count();
-        int deerCount = (int) animals.stream().filter(a -> a.kind() == Animal.Kind.DEER).count();
-        return Map.of(
-                Animal.Kind.MAMMOTH, mammothCount,
-                Animal.Kind.AUROCHS, aurochsCount,
-                Animal.Kind.DEER, deerCount
-        );
+        // see https://edstem.org/eu/courses/1101/discussion/93404?comment=175157
+        Map<Animal.Kind, Integer> count = new HashMap<>();
+        for (Animal animal: animals) {
+            count.put(animal.kind(), count.getOrDefault(animal.kind(), 0) + 1);
+        }
+        return count;
     }
     private int forMeadowTotalPoints (Set<Animal> animals) {
         Map<Animal.Kind, Integer> points = forMeadowAnimalPoints(animals);
