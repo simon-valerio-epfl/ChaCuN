@@ -186,7 +186,7 @@ public record Area<Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, i
                 majority.add(occupant);
             }
         }
-        return majority;
+        return Collections.unmodifiableSet(majority);
     }
 
 
@@ -270,6 +270,7 @@ public record Area<Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, i
     public Set<Integer> tileIds() {
         // we create a stream containing the tile ids of all the zones in the area,
         // mapping every zone to its tile id and collecting the results in a set
+        //TODO: check if we have to make it unmodifiable
         return zones.stream().map(Zone::tileId).collect(Collectors.toSet());
     }
 
