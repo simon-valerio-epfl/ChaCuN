@@ -126,10 +126,20 @@ public record Area<Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, i
                 .sum();
     }
 
+    /**
+     * Counts the number of lakes in a certain river system.
+     * @param riverSystem the river system to check
+     * @return the number of lakes in the given river system
+     */
     public static int lakeCount(Area<Zone.Water> riverSystem) {
         return (int) riverSystem.zones().stream().filter(zone -> zone instanceof Zone.Lake).count();
     }
 
+    /**
+     * Counts the number of fishes in a certain river system.
+     * @param riverSystem the river system to check
+     * @return the number of fishes in the given river system
+     */
     public static int riverSystemFishCount(Area<Zone.Water> riverSystem) {
         return riverSystem.zones().stream().mapToInt(Zone.Water::fishCount).sum();
     }
@@ -176,7 +186,7 @@ public record Area<Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, i
                 majority.add(occupant);
             }
         }
-        return majority;
+        return Collections.unmodifiableSet(majority);
     }
 
 
@@ -203,6 +213,12 @@ public record Area<Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, i
         return new Area<>(connectedZones, connectedOccupants, connectedOpenConnections);
     }
 
+    /**
+     * Returns the zone with the given special power in the current instance of area,
+     * or null if there is none.
+     * @param specialPower the special power to look for
+     * @return the zone with the given special power in the current instance of area, or null if there is none
+     */
     public Zone zoneWithSpecialPower (Zone.SpecialPower specialPower) {
         for (Zone zone: zones) {
             if (zone.specialPower() != null && zone.specialPower().equals(specialPower)) {
@@ -212,11 +228,25 @@ public record Area<Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, i
         return null;
     }
 
+    /**
+     * Returns the area obtained by adding the given occupant to the current instance of area.
+     * It is important to note that the method returns a new area, and does not modify the current one.
+     * The area must have no occupants before calling this method.
+     * @param occupant the occupant to add
+     * @return the new area obtained by adding the given occupant to the current instance of area
+     */
     public Area<Z> withInitialOccupant (PlayerColor occupant) {
         Preconditions.checkArgument(!isOccupied());
         return new Area<>(zones, List.of(occupant), openConnections);
     }
 
+    /**
+     * Returns the area obtained by removing the given occupant from the current instance of area.
+     * It is important to note that the method returns a new area, and does not modify the current one.
+     * The area must have the given occupant before calling this method.
+     * @param occupant the occupant to remove
+     * @return the new area obtained by removing the given occupant from the current instance of area
+     */
     public Area<Z> withoutOccupant (PlayerColor occupant) {
         Preconditions.checkArgument(occupants.contains(occupant));
         List<PlayerColor> newOccupants = new ArrayList<>(occupants);
@@ -224,11 +254,23 @@ public record Area<Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, i
         return new Area<>(zones, newOccupants, openConnections);
     }
 
+    /**
+     * Returns the area obtained by removing all the occupants from the current instance of area.
+     * It is important to note that the method returns a new area, and does not modify the current one.
+     * @return the new area obtained by removing all the occupants from the current instance of area
+     */
     public Area<Z> withoutOccupants () {
         return new Area<>(zones, List.of(), openConnections);
     }
 
+    /**
+     * Returns the set of tile ids of all the zones in the current instance of area.
+     * @return the set of tile ids of all the zones in the current instance of area
+     */
     public Set<Integer> tileIds() {
+        // we create a stream containing the tile ids of all the zones in the area,
+        // mapping every zone to its tile id and collecting the results in a set
+        //TODO: check if we have to make it unmodifiable
         return zones.stream().map(Zone::tileId).collect(Collectors.toSet());
     }
 
