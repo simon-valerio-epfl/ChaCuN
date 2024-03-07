@@ -18,6 +18,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         }
         return count;
     }
+
     private int forMeadowTotalPoints (Set<Animal> animals) {
         Map<Animal.Kind, Integer> points = forMeadowAnimalPoints(animals);
         return Points.forMeadow(points.get(Animal.Kind.MAMMOTH), points.get(Animal.Kind.AUROCHS), points.get(Animal.Kind.DEER));

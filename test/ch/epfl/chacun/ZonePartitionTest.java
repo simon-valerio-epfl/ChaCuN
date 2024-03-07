@@ -69,9 +69,24 @@ class ZonePartitionTest {
         assertEquals(2, builder.build().areas().size());
         builder.addInitialOccupant(meadow, PlayerColor.RED);
         assertEquals(1, builder.build().areaContaining(meadow).occupants().size());
-        builder.removeAllOccupantsOf(area);
+        builder.removeAllOccupantsOf(builder.build().areaContaining(meadow));
         ZonePartition<Zone.Meadow> zonePartition = builder.build();
         assertEquals(0, zonePartition.areaContaining(meadow).occupants().size());
+    }
+
+    @Test
+    public void testUnion() {
+        Zone.Meadow meadow = new Zone.Meadow(0, List.of(),null);
+        Zone.Meadow meadow1 = new Zone.Meadow(1, List.of(),null);
+        Area<Zone.Meadow> area = new Area<>(Set.of(meadow), List.of(), 2);
+
+        ZonePartition.Builder<Zone.Meadow> builder = new ZonePartition.Builder<>(new ZonePartition<>(Set.of(area)));
+        builder.addSingleton(meadow1, 2);
+
+        builder.union(meadow, meadow1);
+        ZonePartition<Zone.Meadow> zonePartition = builder.build();
+        assertEquals(1, zonePartition.areas().size());
+        assertEquals(2, zonePartition.areas().stream().findFirst().get().openConnections());
     }
 
 }
