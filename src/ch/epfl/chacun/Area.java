@@ -268,13 +268,9 @@ public record Area<Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, i
      * @return the set of tile ids of all the zones in the current instance of area
      */
     public Set<Integer> tileIds() {
-<<<<<<< Updated upstream
-        return zones.stream().map(Zone::tileId).collect(Collectors.toSet());
-=======
         // we create a stream containing the tile ids of all the zones in the area,
         // mapping every zone to its tile id and collecting the results in a set
-        return this.zones.stream().map(Zone::tileId).collect(Collectors.toSet());
->>>>>>> Stashed changes
+        return zones.stream().map(Zone::tileId).collect(Collectors.toSet());
     }
 
 }
