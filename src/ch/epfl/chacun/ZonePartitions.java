@@ -126,7 +126,6 @@ public record ZonePartitions (
             }
         }
 
-        // todo: shouldn't this use potentialOccupants() ? will it be done before?
         public void addInitialOccupant(PlayerColor occupant, Occupant.Kind occupantKind, Zone occupiedZone) {
             switch (occupiedZone) {
                 case Zone.Meadow meadow when occupantKind.equals(Occupant.Kind.PAWN) ->
@@ -144,10 +143,9 @@ public record ZonePartitions (
                 (They can be placed on rivers, but then occupy the river system containing the river.
                 the hydrographic network containing the river, not the river itself).
                  */
-                case Zone.Lake lake when occupantKind.equals(Occupant.Kind.HUT) ->
-                    riverSystems.addInitialOccupant(lake, occupant);
-                case Zone.River river when occupantKind.equals(Occupant.Kind.HUT) ->
-                    riverSystems.addInitialOccupant(river, occupant);
+                // we regroup the cases lake and river under the water type
+                case Zone.Water water when occupantKind.equals(Occupant.Kind.HUT) ->
+                    riverSystems.addInitialOccupant(water, occupant);
                 default -> throw new IllegalArgumentException();
             }
         }
@@ -156,6 +154,8 @@ public record ZonePartitions (
             switch (occupiedZone) {
                 case Zone.Meadow meadow -> meadows.removeOccupant(meadow, occupant);
                 case Zone.Forest forest -> forests.removeOccupant(forest, occupant);
+                // we can safely remove an occupant from the 'rivers' zone partition,
+                // the huts only being in the 'riverSystems' zone partition
                 case Zone.River river -> rivers.removeOccupant(river, occupant);
                 default -> throw new IllegalArgumentException();
             }
