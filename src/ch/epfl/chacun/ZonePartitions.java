@@ -1,5 +1,15 @@
 package ch.epfl.chacun;
 
+/**
+ * Represents the partitions of the areas of the game
+ * @param forests the partition of the forests
+ * @param meadows the partition of the meadows
+ * @param rivers the partition of the rivers
+ * @param riverSystems the partition of the river systems
+ *
+ * @author Valerio De Santis (373247)
+ * @author Simon Lefort (371918)
+ */
 public record ZonePartitions (
         // we don't copy the zone partitions we take as arguments
         // because they're already immutable
@@ -8,6 +18,7 @@ public record ZonePartitions (
         ZonePartition<Zone.River> rivers,
         ZonePartition<Zone.Water> riverSystems
 ) {
+
     public final static ZonePartitions EMPTY = new ZonePartitions(
             new ZonePartition<>(),
             new ZonePartition<>(),
@@ -15,12 +26,22 @@ public record ZonePartitions (
             new ZonePartition<>()
     );
 
-    public static class Builder {
+    /**
+     * Represents a builder for ZonePartitions
+     *
+     * @author Valerio De Santis (373247)
+     * @author Simon Lefort (371918)
+     */
+    public final static class Builder {
         private final ZonePartition.Builder<Zone.Forest> forests;
         private final ZonePartition.Builder<Zone.Meadow> meadows;
         private final ZonePartition.Builder<Zone.River> rivers;
         private final ZonePartition.Builder<Zone.Water> riverSystems;
 
+        /**
+         * Creates a new builder for ZonePartitions
+         * @param initial the initial zone partitions
+         */
         public Builder (ZonePartitions initial) {
             forests = new ZonePartition.Builder<>(initial.forests);
             meadows = new ZonePartition.Builder<>(initial.meadows);
@@ -28,6 +49,10 @@ public record ZonePartitions (
             riverSystems = new ZonePartition.Builder<>(initial.riverSystems);
         }
 
+        /**
+         * Adds a tile to the zone partitions
+         * @param tile the tile to add
+         */
         public void addTile(Tile tile) {
 
             // indexed by local zoneId
