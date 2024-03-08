@@ -51,6 +51,7 @@ public record ZonePartitions (
 
         /**
          * Adds a tile to the zone partitions
+         * by creating new areas for each zone of the tile
          * @param tile the tile to add
          */
         public void addTile(Tile tile) {
@@ -110,6 +111,11 @@ public record ZonePartitions (
 
         }
 
+        /**
+         * Connects two sides together, updating the partitions accordingly
+         * @param s1 the first side
+         * @param s2 the second side
+         */
         public void connectSides(TileSide s1, TileSide s2) {
             switch(s1) {
                 case TileSide.Meadow(Zone.Meadow m1)
@@ -126,6 +132,15 @@ public record ZonePartitions (
             }
         }
 
+        /**
+         * Adds an initial occupant to the zone partitions
+         * occupant given lets us know which partition to modify
+         * huts can only occupy river systems, not rivers
+         * they can be placed on rivers, but then occupy the river system containing the river
+         * @param occupant the color of the initial occupant
+         * @param occupantKind the kind of the initial occupant (HUT or PAWN)
+         * @param occupiedZone the zone where the initial occupant is
+         */
         public void addInitialOccupant(PlayerColor occupant, Occupant.Kind occupantKind, Zone occupiedZone) {
             switch (occupiedZone) {
                 case Zone.Meadow meadow when occupantKind.equals(Occupant.Kind.PAWN) ->
@@ -134,15 +149,6 @@ public record ZonePartitions (
                     forests.addInitialOccupant(forest, occupant);
                 case Zone.River river when occupantKind.equals(Occupant.Kind.PAWN) ->
                     rivers.addInitialOccupant(river, occupant);
-                /*
-                teacher comment to understand:
-
-                The type of occupant given lets you know which partition to modify,
-                pawns can only occupy rivers, not river systems,
-                and huts can only occupy river systems, not rivers.
-                (They can be placed on rivers, but then occupy the river system containing the river.
-                the hydrographic network containing the river, not the river itself).
-                 */
                 // we regroup the cases lake and river under the water type
                 case Zone.Water water when occupantKind.equals(Occupant.Kind.HUT) ->
                     riverSystems.addInitialOccupant(water, occupant);
