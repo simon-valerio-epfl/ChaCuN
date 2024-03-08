@@ -50,7 +50,7 @@ public record Occupant(Kind kind, int zoneId) {
      * @author Simon Lefort (371918)
      */
     public enum Kind {
-        PAWN, HUT;
+        PAWN, HUT
     }
 
 }

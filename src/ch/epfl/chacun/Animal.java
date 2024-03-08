@@ -23,6 +23,6 @@ public record Animal (int id, Kind kind) {
      * @author Simon Lefort (371918)
      */
     public enum Kind {
-        MAMMOTH, AUROCHS, DEER, TIGER;
+        MAMMOTH, AUROCHS, DEER, TIGER
     }
 }

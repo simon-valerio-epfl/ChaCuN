@@ -7,10 +7,10 @@ import java.util.Set;
 
 /**
  * Represents a placed tile in the game.
- * @param tile non null the tile to place
+ * @param tile non-null the tile to place
  * @param placer the player placing the tile
- * @param rotation non null the rotation of the tile when placed
- * @param pos non null the position of the tile when placed on the board
+ * @param rotation non-null the rotation of the tile when placed
+ * @param pos non-null the position of the tile when placed on the board
  * @param occupant an occupant on the tile, null if the player decided not to place any
  *
  * @author Valerio De Santis (373247)

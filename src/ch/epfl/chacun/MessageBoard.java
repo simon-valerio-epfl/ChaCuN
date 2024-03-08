@@ -24,7 +24,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
     }
 
     private MessageBoard withNewMessage(String text, int count, Set<PlayerColor> scorers, Set<Integer> tileIds) {
-        // we instante this as an array list because we will only add messages at the end
+        // we instantiate this as an array list because we will only add messages at the end
         List<Message> newMessages = new ArrayList<>(messages);
         newMessages.add(new Message(text, count, scorers, tileIds));
         return new MessageBoard(textMaker, newMessages);

@@ -52,7 +52,7 @@ public final class Points {
     /**
      * Returns the number of points gained by a player when a forest is closed
      * @param tileCount the number of tiles in the forest, at least 2
-     * @param mushroomGroupCount the number of mushroom groups in the forest (non negative)
+     * @param mushroomGroupCount the number of mushroom groups in the forest (non-negative)
      * @return the number of points gained by a player when a forest is closed
      */
     public static int forClosedForest(int tileCount, int mushroomGroupCount){
@@ -64,7 +64,7 @@ public final class Points {
     /**
      * Returns the number of points gained by a player when a river is closed
      * @param tileCount the number of tiles in the river (at least 2)
-     * @param fishCount the number of fish in the river (non negative)
+     * @param fishCount the number of fish in the river (non-negative)
      * @return the number of points gained by a player when a river is closed
      */
     public static int forClosedRiver(int tileCount, int fishCount){
@@ -75,9 +75,9 @@ public final class Points {
 
     /**
      * Returns the number of points gained by a player per meadow
-     * @param mammothCount the number of mammoths in the meadow (non negative)
-     * @param aurochsCount the number of aurochs in the meadow (non negative)
-     * @param deerCount the number of deers in the meadow (after the tiger's buffet!) (non negative)
+     * @param mammothCount the number of mammoths in the meadow (non-negative)
+     * @param aurochsCount the number of aurochs in the meadow (non-negative)
+     * @param deerCount the number of deers in the meadow (after the tiger's buffet!) (non-negative)
      * @return the number of points gained by a player per meadow at the end of the game
      */
     public static int forMeadow(int mammothCount, int aurochsCount, int deerCount){

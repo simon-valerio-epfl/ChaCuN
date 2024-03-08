@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
  * @author Valerio De Santis (373247)
  * @author Simon Lefort (371918)
  */
-public record Area<Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, int openConnections) {
+public record Area <Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, int openConnections) {
 
     /**
      * Checks that the given openConnections is non-negative, and initializes the area
