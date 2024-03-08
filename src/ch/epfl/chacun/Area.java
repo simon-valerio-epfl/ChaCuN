@@ -27,7 +27,7 @@ public record Area <Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, 
     public Area {
         Preconditions.checkArgument(openConnections >= 0);
         zones = Set.copyOf(zones);
-        // occupants = List.copyOf(sortOccupants(occupants));
+        // occupants = List.copyOf(copyAndSortOccupants(occupants));
         // we use unmodifiableList rather than copyOf as we know
         // that sortOccupants won't modify the list nor give
         // access to the object to external users. We avoid this

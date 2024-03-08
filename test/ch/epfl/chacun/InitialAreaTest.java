@@ -42,6 +42,8 @@ public class InitialAreaTest {
         Zone.Forest forestWithout = new Zone.Forest(0, Zone.Forest.Kind.PLAIN);
         Area<Zone.Forest> areaWithout = new Area<>(Set.of(forestWithout), occupants, 0);
         assertFalse(Area.hasMenhir(areaWithout));
+        Area<Zone.Forest> areaWithBoth = new Area<>(Set.of(forestWithout, forestWith), List.of(), 0);
+        assertTrue(Area.hasMenhir(areaWithBoth));
     }
 
     @Test
@@ -110,9 +112,12 @@ public class InitialAreaTest {
         Area<Zone.River> area2 = new Area<>(Set.of(river2), List.of(), 0);
         assertEquals(0, Area.riverFishCount(area2));
         Zone.Lake lake = new Zone.Lake(2, 5, null);
-        Zone.River river3 = new Zone.River(3, 0, lake);
+        Zone.River river3 = new Zone.River(3, 1, lake);
+        Zone.River river32 = new Zone.River(4, 4, lake);
         Area<Zone.River> area3 = new Area<>(Set.of(river3), List.of(), 0);
-        assertEquals(5, Area.riverFishCount(area3));
+        Area<Zone.River> area32 = new Area<>(Set.of(river32, river3), List.of(), 0);
+        assertEquals(6, Area.riverFishCount(area3));
+        assertEquals(10, Area.riverFishCount(area32));
         Zone.River river4 = new Zone.River(4, 0, null);
         Area<Zone.River> area4 = new Area<>(Set.of(river4), List.of(), 0);
         assertEquals(0, Area.riverFishCount(area4));
