@@ -85,4 +85,29 @@ public class InitialZonePartitionsTest {
         // TODO: add rivers
     }
 
+    @Test
+    void testAddInitialOccupant() {
+        Zone.Meadow meadow = new Zone.Meadow(560, List.of(), null);
+        Zone.Meadow meadow1 = new Zone.Meadow(562, List.of(), null);
+
+        Zone.Forest forest = new Zone.Forest(561, Zone.Forest.Kind.WITH_MENHIR);
+        Zone.Lake lake = new Zone.Lake(568, 1, null);
+        Zone.River river = new Zone.River(563, 0, lake);
+
+        TileSide.Meadow meadowSide = new TileSide.Meadow(meadow);
+        TileSide.Forest forestSide = new TileSide.Forest(forest);
+        TileSide.Forest forestSide1 = new TileSide.Forest(forest);
+        TileSide.River riverSide = new TileSide.River(meadow1, river, meadow);
+
+        Tile tile = new Tile(0, Tile.Kind.NORMAL, meadowSide, forestSide, forestSide1, riverSide);
+
+        ZonePartitions zonePartitions = ZonePartitions.EMPTY;
+        ZonePartitions.Builder builder = new ZonePartitions.Builder(zonePartitions);
+
+        builder.addTile(tile);
+
+        builder.addInitialOccupant(PlayerColor.RED, Occupant.Kind.HUT, river);
+        assertEquals(1, builder.build().riverSystems().areaContaining(river).occupants().size());
+    }
+
 }
