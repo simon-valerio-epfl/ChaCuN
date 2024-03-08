@@ -166,23 +166,26 @@ public record Area <Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, 
      * @return the set of players having the majority of occupants in this area
      */
     public Set<PlayerColor> majorityOccupants() {
+        // creates a 0-valued array that will store the number
+        // of occupants owned by each player
         int[] count = new int[PlayerColor.values().length];
         int maxOccupantCount = 0;
 
         Set<PlayerColor> majority = new HashSet<>();
 
         for (PlayerColor occupant : occupants) {
-            count[occupant.ordinal()]++;
+            int playerColorIdx = occupant.ordinal();
+            count[playerColorIdx]++;
             // we found a player with more occupants
-            if (count[occupant.ordinal()] > maxOccupantCount) {
+            if (count[playerColorIdx] > maxOccupantCount) {
                 majority.clear();
-                maxOccupantCount = count[occupant.ordinal()];
+                maxOccupantCount = count[playerColorIdx];
                 // we don't do majority.add(occupant) here
                 // as we'll do it in the next if block anyway
             }
             // the current player is one of those having the highest occupant count
             // (for now)
-            if (count[occupant.ordinal()] == maxOccupantCount) {
+            if (count[playerColorIdx] == maxOccupantCount) {
                 majority.add(occupant);
             }
         }
@@ -200,7 +203,7 @@ public record Area <Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, 
         Set<Z> connectedZones = new HashSet<>(zones);
         connectedZones.addAll(that.zones);
         //we create a new list containing all the occupants in the two areas
-        List<PlayerColor> connectedOccupants = this.equals(that) ? occupants : new ArrayList<>(List.copyOf(occupants));
+        List<PlayerColor> connectedOccupants = new ArrayList<>(occupants);
         if (!this.equals(that)) connectedOccupants.addAll(that.occupants);
         //we calculate the number of open connections in the new area
         //by subtracting 2 from the sum of the open connections in the two areas if they are different,
