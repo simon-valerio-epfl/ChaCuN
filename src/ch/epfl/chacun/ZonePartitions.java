@@ -156,6 +156,13 @@ public record ZonePartitions (
             }
         }
 
+        /**
+         * removes a pawn of the given player color from the given zone
+         * throws an exception if the zone is not of the right type, namely if it's a lake,
+         * or if the given zone does not contain a pawn of the given player color
+         * @param occupant the player color of the pawn to remove
+         * @param occupiedZone the zone to remove the pawn from
+         */
         public void removePawn(PlayerColor occupant, Zone occupiedZone) {
             switch (occupiedZone) {
                 case Zone.Meadow meadow -> meadows.removeOccupant(meadow, occupant);
@@ -167,14 +174,26 @@ public record ZonePartitions (
             }
         }
 
+        /**
+         * removes all the gatherers from the given forest
+         * @param forest the forest to remove the gatherers from
+         */
         public void clearGatherers(Area<Zone.Forest> forest) {
             forests.removeAllOccupantsOf(forest);
         }
 
+        /**
+         * removes all the fishers from the given river
+         * @param river the river to remove the fishers from
+         */
         public void clearFishers(Area<Zone.River> river) {
             rivers.removeAllOccupantsOf(river);
         }
 
+        /**
+         * Builds the zone partitions, returning an immutable zonePartitions
+         * @return the zone partitions
+         */
         public ZonePartitions build() {
             return new ZonePartitions(forests.build(), meadows.build(), rivers.build(), riverSystems.build());
         }
