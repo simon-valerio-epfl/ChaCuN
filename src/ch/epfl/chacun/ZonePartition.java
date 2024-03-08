@@ -100,7 +100,9 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
          * @param color the color of the occupant to remove
          */
         public void removeOccupant(Z zone, PlayerColor color) {
+            // throws an exception if the zone does not belong to the partition
             Area<Z> area = ZonePartition.areaContaining(zone, areas);
+            // throws an exception if the area does not contain an occupant of the given colour
             areas.add(area.withoutOccupant(color));
             areas.remove(area);
         }
@@ -125,6 +127,7 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
          * @param zone2 the second zone whose area we want to unite
          */
         public void union(Z zone1, Z zone2) {
+            // throws an exception if one of the zones does not belong to the partition
             Area<Z> area1 = ZonePartition.areaContaining(zone1, areas);
             Area<Z> area2 = ZonePartition.areaContaining(zone2, areas);
             Area<Z> newBiggerArea = area1.connectTo(area2);
