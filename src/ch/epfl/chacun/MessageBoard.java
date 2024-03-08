@@ -31,8 +31,6 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
     }
 
     public Map<PlayerColor, Integer> points() {
-        // todo: make sure to test this
-        // todo: might need improvements
         return messages.stream()
                 .flatMap(m -> m.scorers().stream().map(s -> Map.entry(s, m.points())))
                 .collect(
