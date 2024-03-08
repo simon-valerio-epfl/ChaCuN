@@ -206,5 +206,4 @@ public class InitialAreaTest {
         Area<Zone.Forest> area2 = new Area<>(Set.of(), List.of(), 0);
         assertEquals(Set.of(), area2.tileIds());
     }
-
 }

@@ -48,7 +48,6 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
      * @param zone the zone we are looking for
      * @return the area that contains the specified zone
      */
-    //TODO: this method exists both in a public and private form, should we keep the private?
     public Area<Z> areaContaining(Z zone) {
         return ZonePartition.areaContaining(zone, areas);
     }
@@ -106,7 +105,7 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
             areas.remove(area);
         }
 
-/**
+        /**
          * Replaces the given area with a new area identical to the former,
          * but without any occupant, throws an exception if the area is not in the partition
          * @param area the area to remove all the occupants from
@@ -116,6 +115,7 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
             if (!areaIsFound) throw new IllegalArgumentException();
             areas.add(area.withoutOccupants());
         }
+
         /**
          * Unites the areas containing the given zones, throwing an exception
          * if one of the zones is not in any area (areaContaining() will throw an exception)
@@ -129,8 +129,10 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
             Area<Z> area2 = ZonePartition.areaContaining(zone2, areas);
             Area<Z> newBiggerArea = area1.connectTo(area2);
             areas.remove(area1);
-            // TODO: make sure to add this to the tests
-            if (!area1.equals(area2)) areas.remove(area2);
+            // here we do not need to check whether
+            // area1 == area2, because .remove will just return false
+            // if that's the case
+            areas.remove(area2);
             areas.add(newBiggerArea);
         }
 

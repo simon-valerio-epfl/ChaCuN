@@ -186,7 +186,7 @@ public record Area<Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, i
                 majority.add(occupant);
             }
         }
-        return Collections.unmodifiableSet(majority);
+        return majority;
     }
 
 

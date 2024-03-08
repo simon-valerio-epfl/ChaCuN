@@ -1,12 +1,9 @@
 package ch.epfl.chacun;
 
-import java.util.List;
-import java.util.Set;
-
 public record ZonePartitions (
         // we don't copy the zone partitions we take as arguments
         // because they're already immutable
-        ZonePartition<Zone.Forest> forest,
+        ZonePartition<Zone.Forest> forests,
         ZonePartition<Zone.Meadow> meadows,
         ZonePartition<Zone.River> rivers,
         ZonePartition<Zone.Water> riverSystems
@@ -25,7 +22,7 @@ public record ZonePartitions (
         private final ZonePartition.Builder<Zone.Water> riverSystems;
 
         public Builder (ZonePartitions initial) {
-            forests = new ZonePartition.Builder<>(initial.forest);
+            forests = new ZonePartition.Builder<>(initial.forests);
             meadows = new ZonePartition.Builder<>(initial.meadows);
             rivers = new ZonePartition.Builder<>(initial.rivers);
             riverSystems = new ZonePartition.Builder<>(initial.riverSystems);
@@ -87,5 +84,69 @@ public record ZonePartitions (
             }
 
         }
+
+        public void connectSides(TileSide s1, TileSide s2) {
+            switch(s1) {
+                case TileSide.Meadow(Zone.Meadow m1)
+                    when s2 instanceof TileSide.Meadow(Zone.Meadow m2) -> meadows.union(m1, m2);
+                case TileSide.Forest(Zone.Forest f1)
+                    when s2 instanceof TileSide.Forest(Zone.Forest f2) -> forests.union(f1, f2);
+                case TileSide.River(Zone.Meadow m1, Zone.River r2, Zone.Meadow m2)
+                    when s2 instanceof TileSide.River(Zone.Meadow m3, Zone.River r4, Zone.Meadow m4) -> {
+                    rivers.union(r2, r4);
+                    meadows.union(m1, m3);
+                    meadows.union(m2, m4);
+                }
+                default -> throw new IllegalArgumentException();
+            }
+        }
+
+        // todo: shouldn't this use potentialOccupants() ? will it be done before?
+        public void addInitialOccupant(PlayerColor occupant, Occupant.Kind occupantKind, Zone occupiedZone) {
+            switch (occupiedZone) {
+                case Zone.Meadow meadow when occupantKind.equals(Occupant.Kind.PAWN) ->
+                    meadows.addInitialOccupant(meadow, occupant);
+                case Zone.Forest forest when occupantKind.equals(Occupant.Kind.PAWN) ->
+                    forests.addInitialOccupant(forest, occupant);
+                case Zone.River river when occupantKind.equals(Occupant.Kind.PAWN) ->
+                    rivers.addInitialOccupant(river, occupant);
+                /*
+                teacher comment to understand:
+
+                The type of occupant given lets you know which partition to modify,
+                pawns can only occupy rivers, not river systems,
+                and huts can only occupy river systems, not rivers.
+                (They can be placed on rivers, but then occupy the river system containing the river.
+                the hydrographic network containing the river, not the river itself).
+                 */
+                case Zone.Lake lake when occupantKind.equals(Occupant.Kind.HUT) ->
+                    riverSystems.addInitialOccupant(lake, occupant);
+                case Zone.River river when occupantKind.equals(Occupant.Kind.HUT) ->
+                    riverSystems.addInitialOccupant(river, occupant);
+                default -> throw new IllegalArgumentException();
+            }
+        }
+
+        public void removePawn(PlayerColor occupant, Zone occupiedZone) {
+            switch (occupiedZone) {
+                case Zone.Meadow meadow -> meadows.removeOccupant(meadow, occupant);
+                case Zone.Forest forest -> forests.removeOccupant(forest, occupant);
+                case Zone.River river -> rivers.removeOccupant(river, occupant);
+                default -> throw new IllegalArgumentException();
+            }
+        }
+
+        public void clearGatherers(Area<Zone.Forest> forest) {
+            forests.removeAllOccupantsOf(forest);
+        }
+
+        public void clearFishers(Area<Zone.River> river) {
+            rivers.removeAllOccupantsOf(river);
+        }
+
+        public ZonePartitions build() {
+            return new ZonePartitions(forests.build(), meadows.build(), rivers.build(), riverSystems.build());
+        }
+
     }
 }
