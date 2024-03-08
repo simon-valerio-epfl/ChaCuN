@@ -112,10 +112,11 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         Set<Animal> animals = Area.animals(meadow, cancelledAnimals);
         int points = forMeadowTotalAnimals(animals);
         if (points == 0) return this;
+        Set<PlayerColor> majorityOccupants = meadow.majorityOccupants();
         return withNewMessage(
-                textMaker.playersScoredMeadow(meadow.majorityOccupants(), points, forMeadowAnimalPoints(animals)),
+                textMaker.playersScoredMeadow(majorityOccupants, points, forMeadowAnimalPoints(animals)),
                 points,
-                meadow.majorityOccupants(),
+                majorityOccupants,
                 meadow.tileIds()
         );
     }
@@ -139,10 +140,11 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         Set<Animal> animals = Area.animals(adjacentMeadow, cancelledAnimals);
         int points = forMeadowTotalAnimals(animals);
         if (points == 0) return this;
+        Set<PlayerColor> majorityOccupants = adjacentMeadow.majorityOccupants();
         return withNewMessage(
-                textMaker.playersScoredPitTrap(adjacentMeadow.majorityOccupants(), points, forMeadowAnimalPoints(animals)),
+                textMaker.playersScoredPitTrap(majorityOccupants, points, forMeadowAnimalPoints(animals)),
                 points,
-                adjacentMeadow.majorityOccupants(),
+                majorityOccupants,
                 adjacentMeadow.tileIds()
         );
     }
