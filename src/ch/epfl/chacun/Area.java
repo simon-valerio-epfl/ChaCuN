@@ -200,7 +200,6 @@ public record Area<Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, i
         Set<Z> connectedZones = new HashSet<>(zones);
         connectedZones.addAll(that.zones);
         //we create a new list containing all the occupants in the two areas
-        // todo make sure to add this behavior to the tests
         List<PlayerColor> connectedOccupants = this.equals(that) ? occupants : new ArrayList<>(List.copyOf(occupants));
         if (!this.equals(that)) connectedOccupants.addAll(that.occupants);
         //we calculate the number of open connections in the new area
@@ -270,7 +269,6 @@ public record Area<Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, i
     public Set<Integer> tileIds() {
         // we create a stream containing the tile ids of all the zones in the area,
         // mapping every zone to its tile id and collecting the results in a set
-        //TODO: check if we have to make it unmodifiable
         return zones.stream().map(Zone::tileId).collect(Collectors.toSet());
     }
 
