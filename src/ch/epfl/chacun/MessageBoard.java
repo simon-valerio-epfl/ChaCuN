@@ -18,7 +18,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         return count;
     }
 
-    private int forMeadowTotalPoints (Set<Animal> animals) {
+    private int forMeadowTotalAnimals (Set<Animal> animals) {
         Map<Animal.Kind, Integer> points = forMeadowAnimalPoints(animals);
         return Points.forMeadow(points.get(Animal.Kind.MAMMOTH), points.get(Animal.Kind.AUROCHS), points.get(Animal.Kind.DEER));
     }
@@ -87,7 +87,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         // therefore it contains the right zones
         // the ones from the main meadow, and the ones from the 8 neighboring tiles
         Set<Animal> animals = Area.animals(adjacentMeadow, Set.of());
-        int points = forMeadowTotalPoints(animals);
+        int points = forMeadowTotalAnimals(animals);
         if (points == 0) return this;
         return withNewMessage(
                 textMaker.playerScoredHuntingTrap(scorer, points, forMeadowAnimalPoints(animals)),
@@ -112,7 +112,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
     public MessageBoard withScoredMeadow(Area<Zone.Meadow> meadow, Set<Animal> cancelledAnimals) {
         if (!meadow.isOccupied()) return this;
         Set<Animal> animals = Area.animals(meadow, cancelledAnimals);
-        int points = forMeadowTotalPoints(animals);
+        int points = forMeadowTotalAnimals(animals);
         if (points == 0) return this;
         return withNewMessage(
                 textMaker.playersScoredMeadow(meadow.majorityOccupants(), points, forMeadowAnimalPoints(animals)),
@@ -139,7 +139,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
     public MessageBoard withScoredPitTrap(Area<Zone.Meadow> adjacentMeadow, Set<Animal> cancelledAnimals) {
         if (!adjacentMeadow.isOccupied()) return this;
         Set<Animal> animals = Area.animals(adjacentMeadow, cancelledAnimals);
-        int points = forMeadowTotalPoints(animals);
+        int points = forMeadowTotalAnimals(animals);
         if (points == 0) return this;
         return withNewMessage(
                 textMaker.playersScoredPitTrap(adjacentMeadow.majorityOccupants(), points, forMeadowAnimalPoints(animals)),
