@@ -1,7 +1,8 @@
 package ch.epfl.chacun;
 
 /**
- * Represents the partitions of the areas of the game
+ * Represents the different partitions of the zones
+ * belonging to the tiles that have already been placed on the board
  * @param forests the partition of the forests
  * @param meadows the partition of the meadows
  * @param rivers the partition of the rivers
@@ -18,7 +19,9 @@ public record ZonePartitions (
         ZonePartition<Zone.River> rivers,
         ZonePartition<Zone.Water> riverSystems
 ) {
-
+    /**
+     * Represents the empty zone partitions
+     */
     public final static ZonePartitions EMPTY = new ZonePartitions(
             new ZonePartition<>(),
             new ZonePartition<>(),
@@ -39,8 +42,9 @@ public record ZonePartitions (
         private final ZonePartition.Builder<Zone.Water> riverSystems;
 
         /**
-         * Creates a new builder for ZonePartitions
-         * @param initial the initial zone partitions
+         * Creates a new builder for ZonePartitions,
+         * taking an initial zone partitions as a starting point
+         * @param initial the initial zone partitions to start from
          */
         public Builder (ZonePartitions initial) {
             forests = new ZonePartition.Builder<>(initial.forests);
@@ -50,8 +54,8 @@ public record ZonePartitions (
         }
 
         /**
-         * Adds a tile to the zone partitions
-         * by creating new areas for each zone of the tile
+         * Adds a tile to the building zone partitions,
+         * updating the partitions accordingly
          * @param tile the tile to add
          */
         public void addTile(Tile tile) {
@@ -112,9 +116,10 @@ public record ZonePartitions (
         }
 
         /**
-         * Connects two sides together, updating the partitions accordingly
-         * @param s1 the first side
-         * @param s2 the second side
+         * Connects the sides of two tiles together, updating the partitions accordingly
+         * The side zones have to be of the same type, the method throws an exception otherwise
+         * @param s1 the first side to connect
+         * @param s2 the second side to connect
          */
         public void connectSides(TileSide s1, TileSide s2) {
             switch(s1) {
@@ -133,13 +138,15 @@ public record ZonePartitions (
         }
 
         /**
-         * Adds an initial occupant to the zone partitions
-         * occupant given lets us know which partition to modify
-         * huts can only occupy river systems, not rivers
-         * they can be placed on rivers, but then occupy the river system containing the river
-         * @param occupant the color of the initial occupant
-         * @param occupantKind the kind of the initial occupant (HUT or PAWN)
-         * @param occupiedZone the zone where the initial occupant is
+         * Adds an initial occupant, of the given kind and player color, to the zone partitions
+         * The kind of the initial occupant has to be consistent with the zone,
+         * the method throws an exception otherwise
+         * The partitions are updated accordingly, with the huts being added to the river systems partition
+         * and the pawns to the other zone partitions
+         * @param occupant the color of the player adding the initial occupant
+         * @param occupantKind the kind of the initial occupant
+         *                     (HUT for rivers and lakes or PAWN for rivers, forests and meadows)
+         * @param occupiedZone the zone where the initial occupant has to be added
          */
         public void addInitialOccupant(PlayerColor occupant, Occupant.Kind occupantKind, Zone occupiedZone) {
             switch (occupiedZone) {
@@ -157,7 +164,7 @@ public record ZonePartitions (
         }
 
         /**
-         * removes a pawn of the given player color from the given zone
+         * Removes a pawn of the given player color from the given zone
          * throws an exception if the zone is not of the right type, namely if it's a lake,
          * or if the given zone does not contain a pawn of the given player color
          * @param occupant the player color of the pawn to remove
