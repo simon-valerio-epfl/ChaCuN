@@ -1,8 +1,5 @@
 package ch.epfl.chacun;
 
-import java.util.List;
-import java.util.Set;
-
 public record ZonePartitions (
         // we don't copy the zone partitions we take as arguments
         // because they're already immutable
@@ -130,13 +127,11 @@ public record ZonePartitions (
             }
         }
 
-        // todo: do we need more checks here?
         public void removePawn(PlayerColor occupant, Zone occupiedZone) {
             switch (occupiedZone) {
                 case Zone.Meadow meadow -> meadows.removeOccupant(meadow, occupant);
                 case Zone.Forest forest -> forests.removeOccupant(forest, occupant);
                 case Zone.River river -> rivers.removeOccupant(river, occupant);
-                case Zone.Lake lake -> riverSystems.removeOccupant(lake, occupant);
                 default -> throw new IllegalArgumentException();
             }
         }

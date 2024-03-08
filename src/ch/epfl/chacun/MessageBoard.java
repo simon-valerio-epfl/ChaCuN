@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 public record MessageBoard(TextMaker textMaker, List<Message> messages) {
 
     public MessageBoard {
-        Objects.requireNonNull(textMaker); // todo: not specified, should we check for null?
         messages = List.copyOf(messages);
     }
 
@@ -25,6 +24,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
     }
 
     private MessageBoard withNewMessage(String text, int count, Set<PlayerColor> scorers, Set<Integer> tileIds) {
+        // we instante this as an array list because we will only add messages at the end
         List<Message> newMessages = new ArrayList<>(messages);
         newMessages.add(new Message(text, count, scorers, tileIds));
         return new MessageBoard(textMaker, newMessages);
@@ -86,7 +86,6 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         // adjacentMeadow is an area created specifically for the hunting trap
         // therefore it contains the right zones
         // the ones from the main meadow, and the ones from the 8 neighboring tiles
-        if (!adjacentMeadow.isOccupied()) return this;
         Set<Animal> animals = Area.animals(adjacentMeadow, Set.of());
         int points = forMeadowTotalPoints(animals);
         if (points == 0) return this;
