@@ -60,7 +60,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         return withNewMessage(
                 textMaker.playerClosedForestWithMenhir(player),
                 0,
-                Set.of(player),
+                Set.of(),
                 forest.tileIds()
         );
     }
