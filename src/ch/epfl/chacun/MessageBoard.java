@@ -20,7 +20,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
 
     private int forMeadowTotalAnimals (Set<Animal> animals) {
         Map<Animal.Kind, Integer> points = forMeadowAnimalPoints(animals);
-        return Points.forMeadow(points.get(Animal.Kind.MAMMOTH), points.get(Animal.Kind.AUROCHS), points.get(Animal.Kind.DEER));
+            return Points.forMeadow(points.getOrDefault(Animal.Kind.MAMMOTH, 0), points.getOrDefault(Animal.Kind.AUROCHS, 0), points.getOrDefault(Animal.Kind.DEER, 0));
     }
 
     private MessageBoard withNewMessage(String text, int count, Set<PlayerColor> scorers, Set<Integer> tileIds) {

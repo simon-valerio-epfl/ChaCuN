@@ -34,7 +34,7 @@ public class TextMakerTestImplementation implements TextMaker {
 
     @Override
     public String playerScoredHuntingTrap(PlayerColor scorer, int points, Map<Animal.Kind, Integer> animals) {
-        return playerName(scorer) + " has placed a hunting trap in a meadow containing certain animals and won " + points(points) + ".";
+        return playerName(scorer) + " has placed a hunting trap in a meadow containing certain animals and won " + points(points) + ". Animals" + animals.keySet();
     }
 
     @Override
