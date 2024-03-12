@@ -16,17 +16,20 @@ public final class Board {
     // there are REACH numbers at the left and REACH numbers at the right
     // of the origin, and the matrix is a square
     private final static int SIZE = REACH * 2 + 1;
-    public final static Board EMPTY = new Board();
+    public final static Board EMPTY = new Board(
+            new PlacedTile[SIZE*SIZE],
+            new int[0],
+            ZonePartitions.EMPTY,
+            Set.of()
+    );
 
-    private Board() {
-        // todo demander à fabrice l'intérêt de faire ça
-        // au lieu de déclarer les attributs directement en haut
-        placedTiles = new PlacedTile[SIZE*SIZE];
-        orderedTileIndexes = new int[SIZE*SIZE];
-        zonePartitions = ZonePartitions.EMPTY;
-        cancelledAnimals = new HashSet<>();
-
+    private Board(PlacedTile[] placedTiles, int[] orderedTileIndexes, ZonePartitions zonePartitions, Set<Animal> cancelledAnimals) {
+        this.placedTiles = placedTiles;
+        this.orderedTileIndexes = orderedTileIndexes;
+        this.zonePartitions = zonePartitions;
+        this.cancelledAnimals = Collections.unmodifiableSet(cancelledAnimals);
     }
+
     private int getTileIndexFromPos(Pos pos) {
         // we get the index using the row-major index
         return (pos.y() + REACH) * SIZE + (pos.x() + REACH);
@@ -41,6 +44,8 @@ public final class Board {
     PlacedTile tileAt(Pos pos) {
         int idx = getTileIndexFromPos(pos);
         // todo make sure it always return null if placedTiles[idx] is not defined
+        // boolean tileAlreadyPosed = isIndexInRange(idx) &&
+        //       Arrays.stream(orderedTileIndexes).anyMatch(integer -> integer==idx);
         return isIndexInRange(idx) ? placedTiles[idx] : null;
     }
 
@@ -54,7 +59,7 @@ public final class Board {
     }
 
     Set<Animal> cancelledAnimals() {
-        return Set.copyOf(cancelledAnimals);
+        return cancelledAnimals;
     }
 
     Set<Occupant> occupants() {
@@ -177,24 +182,94 @@ public final class Board {
         return insertionPositions;
     }
 
-    PlacedTile lastPlacedTile() {
-        return orderedTileIndexes.length > 0 ? placedTiles[orderedTileIndexes[0]] : null;
+    public PlacedTile lastPlacedTile() {
+        return !isEmpty()
+                ? placedTiles[orderedTileIndexes[orderedTileIndexes.length - 1]]
+                : null;
     }
 
-    Set<Area<Zone.Forest>> forestsClosedByLastTile() {
-        // todo
-        return null;
+    public Set<Area<Zone.Forest>> forestsClosedByLastTile() {
+        if (lastPlacedTile() == null) return Set.of();
+        Set<Area<Zone.Forest>> areas = new HashSet<>();
+        for (Zone.Forest forestZone: lastPlacedTile().forestZones()) {
+            Area<Zone.Forest> area = zonePartitions.forests().areaContaining(forestZone);
+            if (area.isClosed()) areas.add(area);
+        }
+        return areas;
     }
 
-    Set<Area<Zone.River>> riversClosedByLastTile() {
-        // todo
-        return null;
+    public Set<Area<Zone.River>> riversClosedByLastTile() {
+        if (lastPlacedTile() == null) return Set.of();
+        Set<Area<Zone.River>> areas = new HashSet<>();
+        for (Zone.River riverZone: lastPlacedTile().riverZones()) {
+            // this is correct because there is always a river before each lake
+            // closing a rivers area, the lake merely being an internal zone
+            Area<Zone.River> area = zonePartitions.rivers().areaContaining(riverZone);
+            if (area.isClosed()) areas.add(area);
+        }
+        return areas;
     }
 
-    boolean canAddTile(PlacedTile tile) {
+    public boolean canAddTile(PlacedTile tile) {
         if (!insertionPositions().contains(tile.pos())) return false;
-        // todo
+        for (Direction direction: Direction.ALL) {
+            Pos neighbouringPosition = tile.pos().neighbor(direction);
+            PlacedTile neighbouringTile = tileAt(neighbouringPosition);
+            if (neighbouringTile != null) {
+                // we check that every border shared by the placing tile
+                // with any already placed neighbouring tile
+                // have corresponding kinds
+                TileSide sideOfNeighbour = neighbouringTile.side(direction.opposite());
+                TileSide sideOfTile = tile.side(direction);
+                if (!sideOfTile.isSameKindAs(sideOfNeighbour)) return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean couldPlaceTile(Tile tile) {
+        for (Pos pos : insertionPositions()) {
+            for (Rotation rotation : Rotation.ALL) {
+                PlacedTile placedTile = new PlacedTile(tile, null, rotation, pos);
+                if (canAddTile(placedTile)) return true;
+            }
+        }
         return false;
+    }
+    // todo maybe change this
+    private boolean isEmpty(){
+        return orderedTileIndexes.length == 0;
+    }
+
+    public Board withNewTile(PlacedTile tile){
+        if (!isEmpty() && !canAddTile(tile)) throw new IllegalArgumentException();
+        int indexOfNewTile = getTileIndexFromPos(tile.pos());
+
+        PlacedTile[] newPlacedTiles = placedTiles.clone();
+        newPlacedTiles[indexOfNewTile] = tile;
+
+        int[] newOrderedTileIndexes = Arrays.copyOf(orderedTileIndexes, orderedTileIndexes.length + 1);
+        newOrderedTileIndexes[newOrderedTileIndexes.length - 1] = indexOfNewTile;
+
+        ZonePartitions.Builder zonePartitionsBuilder = new ZonePartitions.Builder(zonePartitions);
+        zonePartitionsBuilder.addTile(tile.tile());
+
+        for (Direction direction: Direction.ALL) {
+            Pos neighbouringPosition = tile.pos().neighbor(direction);
+            PlacedTile neighbouringTile = tileAt(neighbouringPosition);
+            if (neighbouringTile != null) {
+                TileSide sideOfNeighbour = neighbouringTile.side(direction.opposite());
+                TileSide sideOfTile = tile.side(direction);
+                zonePartitionsBuilder.connectSides(sideOfNeighbour, sideOfTile);
+            }
+        }
+
+        return new Board(newPlacedTiles, newOrderedTileIndexes, zonePartitionsBuilder.build(), cancelledAnimals);
+    }
+
+    public Board withOccupant(Occupant occupant) {
+        occupant.zoneId();
+
     }
 
 }

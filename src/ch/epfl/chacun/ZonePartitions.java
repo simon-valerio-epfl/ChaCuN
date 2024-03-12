@@ -55,7 +55,8 @@ public record ZonePartitions (
 
         /**
          * Adds a tile to the building zone partitions,
-         * updating the partitions accordingly
+         * updating the partitions accordingly (without connecting the sides,
+         * only taking the new zones into the builder)
          * @param tile the tile to add
          */
         public void addTile(Tile tile) {
