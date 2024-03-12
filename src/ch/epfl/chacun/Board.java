@@ -245,6 +245,9 @@ public final class Board {
         if (!isEmpty() && !canAddTile(tile)) throw new IllegalArgumentException();
         int indexOfNewTile = getTileIndexFromPos(tile.pos());
 
+        // todo: this method has to work with the starting tile!
+        // make sure to try it with this
+
         PlacedTile[] newPlacedTiles = placedTiles.clone();
         newPlacedTiles[indexOfNewTile] = tile;
 
@@ -267,8 +270,46 @@ public final class Board {
         return new Board(newPlacedTiles, newOrderedTileIndexes, zonePartitionsBuilder.build(), cancelledAnimals);
     }
 
+    // todo: is this method called before or after
+    // the areas are connected?
+    // because otherwise calling addInitialOccupant will throw an exception
     public Board withOccupant(Occupant occupant) {
-        occupant.zoneId();
+        int zoneId = occupant.zoneId();
+        int tileId = Zone.tileId(zoneId);
+        // see https://edstem.org/eu/courses/1101/discussion/95048?answer=178339
+        PlacedTile tile = tileWithId(tileId);
+        // throws an IllegalArgumentException if the tile is already occupied
+        PlacedTile occupiedTile = tile.withOccupant(occupant);
+        PlacedTile[] newPlacedTiles = placedTiles.clone();
+        newPlacedTiles[tileId] = occupiedTile;
+
+        Zone zone = tile.zoneWithId(zoneId);
+        ZonePartitions.Builder zonePartitionsBuilder = new ZonePartitions.Builder(zonePartitions);
+        // is the occupant we're adding to the zonePartitions an initial occupant?
+        // if we had already connected the tile, this would erase previous occupants
+        zonePartitionsBuilder.addInitialOccupant(tile.placer(), occupant.kind(), zone);
+
+        return new Board(newPlacedTiles, orderedTileIndexes.clone(), zonePartitionsBuilder.build(), cancelledAnimals);
+    }
+
+    public Board withoutOccupant(Occupant occupant) {
+        int zoneId = occupant.zoneId();
+        int tileId = Zone.tileId(zoneId);
+        // see https://edstem.org/eu/courses/1101/discussion/95048?answer=178339
+        PlacedTile tile = tileWithId(tileId);
+        // throws an IllegalArgumentException if the tile is already occupied
+        PlacedTile clearedTile = tile.withNoOccupant();
+        PlacedTile[] newPlacedTiles = placedTiles.clone();
+        newPlacedTiles[tileId] = clearedTile;
+
+        Zone zone = tile.zoneWithId(zoneId);
+        ZonePartitions.Builder zonePartitionsBuilder = new ZonePartitions.Builder(zonePartitions);
+        zonePartitionsBuilder.removePawn(tile.placer(), zone); // todo: only pawns??
+
+        return new Board(newPlacedTiles, orderedTileIndexes.clone(), zonePartitionsBuilder.build(), cancelledAnimals);
+    }
+
+    public Board withoutGatherersOrFishersIn(Set<Area<Zone.Forest>> forests, Set<Area<Zone.River>> rivers) {
 
     }
 
