@@ -310,7 +310,7 @@ public final class Board {
     }
 
     public Board withoutGatherersOrFishersIn(Set<Area<Zone.Forest>> forests, Set<Area<Zone.River>> rivers) {
-        ZonePartitions.Builder zonePartitionsBuilder = new ZonePartition.Builder<>(zonePartitions);
+        ZonePartitions.Builder zonePartitionsBuilder = new ZonePartitions.Builder(zonePartitions);
         for (Area<Zone.Forest> forest: forests) {
             zonePartitionsBuilder.clearGatherers(forest);
         }
@@ -318,7 +318,7 @@ public final class Board {
             zonePartitionsBuilder.clearFishers(river);
         }
 
-        return new Board(placedTiles, orderedTileIndexes, zonePartitionsBuilder.build(), cancelledAnimals)
+        return new Board(placedTiles, orderedTileIndexes, zonePartitionsBuilder.build(), cancelledAnimals);
     }
 
     public Board withMoreCancelledAnimals(Set<Animal> newlyCancelledAnimals) {
