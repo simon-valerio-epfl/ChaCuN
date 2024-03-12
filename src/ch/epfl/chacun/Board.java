@@ -306,11 +306,25 @@ public final class Board {
         ZonePartitions.Builder zonePartitionsBuilder = new ZonePartitions.Builder(zonePartitions);
         zonePartitionsBuilder.removePawn(tile.placer(), zone); // todo: only pawns??
 
-        return new Board(newPlacedTiles, orderedTileIndexes.clone(), zonePartitionsBuilder.build(), cancelledAnimals);
+        return new Board(newPlacedTiles, orderedTileIndexes, zonePartitionsBuilder.build(), cancelledAnimals);
     }
 
     public Board withoutGatherersOrFishersIn(Set<Area<Zone.Forest>> forests, Set<Area<Zone.River>> rivers) {
+        ZonePartitions.Builder zonePartitionsBuilder = new ZonePartition.Builder<>(zonePartitions);
+        for (Area<Zone.Forest> forest: forests) {
+            zonePartitionsBuilder.clearGatherers(forest);
+        }
+        for (Area<Zone.River> river: rivers) {
+            zonePartitionsBuilder.clearFishers(river);
+        }
 
+        return new Board(placedTiles, orderedTileIndexes, zonePartitionsBuilder.build(), cancelledAnimals)
+    }
+
+    public Board withMoreCancelledAnimals(Set<Animal> newlyCancelledAnimals) {
+        Set<Animal> newCancelledAnimals = new HashSet<>(Set.copyOf(cancelledAnimals));
+        newCancelledAnimals.addAll(newlyCancelledAnimals);
+        return new Board(placedTiles, orderedTileIndexes, zonePartitions, newCancelledAnimals);
     }
 
 }
