@@ -31,15 +31,13 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
     }
 
     public Map<PlayerColor, Integer> points() {
-        return messages.stream()
-                .flatMap(m -> m.scorers().stream().map(s -> Map.entry(s, m.points())))
-                .collect(
-                        Collectors.toMap(
-                                Map.Entry::getKey,
-                                Map.Entry::getValue,
-                                Integer::sum
-                        )
-                );
+        Map<PlayerColor, Integer> playerPoints = new HashMap<>();
+        for (Message message: messages) {
+            for (PlayerColor player: message.scorers()) {
+                playerPoints.put(player, playerPoints.getOrDefault(player, 0) + message.points());
+            }
+        }
+        return playerPoints;
     }
 
     public MessageBoard withScoredForest(Area<Zone.Forest> forest) {
