@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 import java.util.stream.Collectors;
 import java.util.List;
 
+//TODO METS LE AUTHORS
 public final class Board {
 
     private final PlacedTile[] placedTiles;

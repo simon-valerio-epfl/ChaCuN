@@ -7,10 +7,21 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-
+//TODO METS LE AUTHORS
+/**
+ * Represents the message board of the game.
+ * @param textMaker the text maker used to generate the content of the messages
+ * @param messages the ordered messages on the message board, from the oldest to the newest
+ */
 public record MessageBoard(TextMaker textMaker, List<Message> messages) {
 
+    /**
+     * Constructor for MessageBoard, validating the parameters
+     * @param textMaker the text maker used to generate the content of the messages
+     * @param messages the ordered messages on the message board, from the oldest to the newest
+     */
     public MessageBoard {
+        // the list is copied to ensure immutability
         messages = List.copyOf(messages);
     }
 
@@ -25,7 +36,11 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
 
     private int forMeadowTotalAnimals (Set<Animal> animals) {
         Map<Animal.Kind, Integer> points = forMeadowAnimalPoints(animals);
-            return Points.forMeadow(points.getOrDefault(Animal.Kind.MAMMOTH, 0), points.getOrDefault(Animal.Kind.AUROCHS, 0), points.getOrDefault(Animal.Kind.DEER, 0));
+            return Points.forMeadow(
+                points.getOrDefault(Animal.Kind.MAMMOTH, 0),
+                points.getOrDefault(Animal.Kind.AUROCHS, 0),
+                points.getOrDefault(Animal.Kind.DEER, 0)
+            );
     }
 
     private MessageBoard withNewMessage(String text, int count, Set<PlayerColor> scorers, Set<Integer> tileIds) {
@@ -35,6 +50,11 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         return new MessageBoard(textMaker, newMessages);
     }
 
+    /**
+     * Returns a map matching the scorers to the points
+     * they got from the messages on the message board
+     * @return a map matching the scorers to the points they got from the messages on the message board
+     */
     public Map<PlayerColor, Integer> points() {
         Map<PlayerColor, Integer> playerPoints = new HashMap<>();
         for (Message message: messages) {
@@ -176,11 +196,26 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         );
     }
 
+    /**
+     * Represents a message on the message board.
+     * @param text the text of the message, non-null
+     * @param points the points the scorers get from the event triggering this message, a non-negative integer
+     * @param scorers the players who will get the points
+     * @param tileIds the ids of the tiles involved in the event triggering this message
+     */
     public record Message(String text, int points, Set<PlayerColor> scorers, Set<Integer> tileIds) {
-
+        /**
+         * Constructor for Message, validating the parameters
+         * the text has to be non-null
+         * the points have to be non-negative
+         * the scorers and the tileIds may be empty
+         * (if the event triggering the message doesn't get any point)
+         */
         public Message {
             Objects.requireNonNull(text);
             Preconditions.checkArgument(points >= 0);
+            // the sets are copied to ensure immutability,
+            // PlayerColors and Integers are immutable
             scorers = Set.copyOf(scorers);
             tileIds = Set.copyOf(tileIds);
         }
