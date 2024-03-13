@@ -329,16 +329,21 @@ public final class Board {
     @Override
     public boolean equals(Object that) {
         if (that == null || that.getClass() != getClass()) {
+            // we check that the other object is of the right type
+            // before casting it to a board
+
             // getClass is slightly better than instanceof
-            // it guarantees that if one day our class is not final anymore
-            // and equals is called on a subclass then it will return false
+            // it guarantees that if in the future this class won't be final anymore
+            // the method call on a subclass will return false
             return false;
         } else {
             // todo: really make sure to test that
             Board thatBoard = (Board) that;
             return Arrays.equals(thatBoard.orderedTileIndexes, orderedTileIndexes)
                     && Arrays.equals(thatBoard.placedTiles, placedTiles)
+                    //todo: to test
                     && cancelledAnimals.equals(thatBoard.cancelledAnimals)
+                    //todo: to test
                     && zonePartitions.equals(thatBoard.zonePartitions);
         }
     }
