@@ -41,7 +41,7 @@ public final class Board {
         return idx >= 0 && idx < SIZE*SIZE;
     }
 
-    PlacedTile tileAt(Pos pos) {
+    public PlacedTile tileAt(Pos pos) {
         int idx = getTileIndexFromPos(pos);
         // todo make sure it always return null if placedTiles[idx] is not defined
         // boolean tileAlreadyPosed = isIndexInRange(idx) &&
@@ -49,7 +49,7 @@ public final class Board {
         return isIndexInRange(idx) ? placedTiles[idx] : null;
     }
 
-    PlacedTile tileWithId(int tileId) {
+    public PlacedTile tileWithId(int tileId) {
         for (PlacedTile placedTile : placedTiles) {
             if (placedTile != null && placedTile.id() == tileId) {
                 return placedTile;
@@ -58,11 +58,11 @@ public final class Board {
         throw new IllegalArgumentException();
     }
 
-    Set<Animal> cancelledAnimals() {
+    public Set<Animal> cancelledAnimals() {
         return cancelledAnimals;
     }
 
-    Set<Occupant> occupants() {
+    public Set<Occupant> occupants() {
         Set<Occupant> occupants = new HashSet<>();
         for (PlacedTile placedTile : placedTiles) {
             if (placedTile != null && placedTile.occupant() != null) {
@@ -72,31 +72,31 @@ public final class Board {
         return occupants;
     }
 
-    Area<Zone.Forest> forestArea(Zone.Forest forest) {
+    public Area<Zone.Forest> forestArea(Zone.Forest forest) {
         return zonePartitions.forests().areaContaining(forest);
     }
 
-    Area<Zone.Meadow> meadowArea(Zone.Meadow meadow) {
+    public Area<Zone.Meadow> meadowArea(Zone.Meadow meadow) {
         return zonePartitions.meadows().areaContaining(meadow);
     }
 
-    Area<Zone.River> riverArea(Zone.River river) {
+    public Area<Zone.River> riverArea(Zone.River river) {
         return zonePartitions.rivers().areaContaining(river);
     }
 
-    Area<Zone.Water> riverSystemArea(Zone.Lake lake) {
-        return zonePartitions.riverSystems().areaContaining(lake);
+    public Area<Zone.Water> riverSystemArea(Zone.Water water) {
+        return zonePartitions.riverSystems().areaContaining(water);
     }
 
-    Set<Area<Zone.Meadow>> meadowAreas() {
+    public Set<Area<Zone.Meadow>> meadowAreas() {
         return zonePartitions.meadows().areas();
     }
 
-    Set<Area<Zone.Water>> riverSystemAreas() {
+    public Set<Area<Zone.Water>> riverSystemAreas() {
         return zonePartitions.riverSystems().areas();
     }
 
-    Area<Zone.Meadow> adjacentMeadow(Pos pos, Zone.Meadow meadowZone) {
+    public Area<Zone.Meadow> adjacentMeadow(Pos pos, Zone.Meadow meadowZone) {
         Area<Zone.Meadow> area = zonePartitions.meadows().areaContaining(meadowZone);
         List<PlayerColor> occupants = area.occupants();
 
@@ -131,7 +131,7 @@ public final class Board {
 
     }
 
-    int occupantCount(PlayerColor player, Occupant.Kind occupantKind) {
+    public int occupantCount(PlayerColor player, Occupant.Kind occupantKind) {
         return switch (occupantKind) {
             // if it's a pawn we do a stream containing the areas (so a stream containing sets)
             // of the zone partitions whose occupants are pawns
@@ -327,4 +327,27 @@ public final class Board {
         return new Board(placedTiles, orderedTileIndexes, zonePartitions, newCancelledAnimals);
     }
 
+    @Override
+    public boolean equals(Object that) {
+        if (that == null || that.getClass() != getClass()) {
+            // getClass is slightly better than instanceof
+            // it guarantees that if one day our class is not final anymore
+            // and equals is called on a subclass then it will return false
+            return false;
+        } else {
+            // todo: really make sure to test that
+            Board thatBoard = (Board) that;
+            return Arrays.equals(thatBoard.orderedTileIndexes, orderedTileIndexes)
+                    && Arrays.equals(thatBoard.placedTiles, placedTiles)
+                    && cancelledAnimals.equals(thatBoard.cancelledAnimals)
+                    && zonePartitions.equals(thatBoard.zonePartitions);
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        int placedTilesHash = Arrays.hashCode(placedTiles);
+        int orderedTileIndexesHash = Arrays.hashCode(orderedTileIndexes);
+        return Objects.hash(placedTilesHash, orderedTileIndexesHash, zonePartitions, cancelledAnimals);
+    }
 }

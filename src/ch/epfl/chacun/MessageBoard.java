@@ -86,6 +86,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         // the ones from the main meadow, and the ones from the 8 neighboring tiles
         Set<Animal> animals = Area.animals(adjacentMeadow, Set.of());
         int points = forMeadowTotalAnimals(animals);
+        // if there is no animal the hunting trap won't give the placer any point
         if (points == 0) return this;
         return withNewMessage(
                 textMaker.playerScoredHuntingTrap(scorer, points, forMeadowAnimalPoints(animals)),
@@ -180,6 +181,5 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
             scorers = Set.copyOf(scorers);
             tileIds = Set.copyOf(tileIds);
         }
-
     }
 }
