@@ -8,7 +8,6 @@ public final class Board {
 
     private final PlacedTile[] placedTiles;
     private final int[] orderedTileIndexes;
-    //dear Valerio, maybe it's not final
     private final ZonePartitions zonePartitions;
     private final Set<Animal> cancelledAnimals;
     public final static int REACH = 12;
