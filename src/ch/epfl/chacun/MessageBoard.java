@@ -65,6 +65,16 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         return playerPoints;
     }
 
+    /**
+     * If the river area is occupied,
+     * the closure of the river getting some player some points,
+     * the method returns a new message board with the message of the event added
+     * and the points added to the scorers
+     * If the forest isn't occupied (no scorers), returns the same message board
+     * @param forest the forest that has been closed
+     * @return a new message board with the message of the event,
+     *                  the same message board if the forest isn't occupied
+     */
     public MessageBoard withScoredForest(Area<Zone.Forest> forest) {
         if (!forest.isOccupied()) return this;
         int tileCount = forest.tileIds().size();
@@ -79,6 +89,15 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         );
     }
 
+    /**
+     * Returns a new message board with the message of the event added
+     * signaling that the player can place another tile because the forest
+     * he has closed contains one or more menhirs.
+     * @param player the player who placed the tile
+     * @param forest the forest area that has been closed
+     * @return a new message board with the message of the event added
+     *
+     */
     public MessageBoard withClosedForestWithMenhir(PlayerColor player, Area<Zone.Forest> forest) {
         return withNewMessage(
                 textMaker.playerClosedForestWithMenhir(player),
@@ -88,6 +107,16 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         );
     }
 
+    /**
+     * If the river area is occupied,
+     * the closure of the river getting some player some points,
+     * the method returns a new message board with the message of the event added
+     * and the points added to the scorers
+     * If the river isn't occupied (no scorers), returns the same message board
+     * @param river the river that has been closed
+     * @return a new message board with the message of the event,
+     *                  the same message board if the river isn't occupied
+     */
     public MessageBoard withScoredRiver(Area<Zone.River> river) {
         if (!river.isOccupied()) return this;
         int tileCount = river.tileIds().size();
@@ -102,6 +131,15 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         );
     }
 
+    /**
+     * If placing the hunting trap got the player some points,
+     * the method returns a new message board with the message of the event added
+     * @param scorer the player who placed the hunting trap
+     * @param adjacentMeadow the meadow area adjacent to the hunting trap,
+     *                      containing the meadows surrounding the placed hunting trap
+     * @return a new message board with the message of the event added,
+     *                 the same message board if the hunting trap didn't get any point
+     */
     public MessageBoard withScoredHuntingTrap(PlayerColor scorer, Area<Zone.Meadow> adjacentMeadow) {
         // important to understand
         // adjacentMeadow is an area created specifically for the hunting trap
@@ -119,6 +157,14 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         );
     }
 
+    /**
+     * Returns a new message board with the message of the event added,
+     * signaling that the player got some points from placing the logboat
+     * on the given river system
+     * @param scorer the player who placed the logboat
+     * @param riverSystem the river system the logboat has been placed on
+     * @return a new message board with the message of the event added
+     */
     public MessageBoard withScoredLogboat(PlayerColor scorer, Area<Zone.Water> riverSystem) {
         if (!riverSystem.isOccupied()) return this;
         int lakeCount = Area.lakeCount(riverSystem);
@@ -131,6 +177,13 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         );
     }
 
+    /**
+     * If the meadow area is occupied and the scored points (before cancelling animals) are positive,
+     * the method returns a new message board with the message of the event added
+     * @param meadow
+     * @param cancelledAnimals
+     * @return
+     */
     public MessageBoard withScoredMeadow(Area<Zone.Meadow> meadow, Set<Animal> cancelledAnimals) {
         if (!meadow.isOccupied()) return this;
         Set<Animal> animals = Area.animals(meadow, cancelledAnimals);
