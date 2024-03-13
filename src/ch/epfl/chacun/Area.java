@@ -86,6 +86,14 @@ public record Area <Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, 
      * @return the set of animals in the given area, excluding the ones who have been cancelled
      */
     public static Set<Animal> animals(Area<Zone.Meadow> meadow, Set<Animal> cancelledAnimals) {
+        Set<Animal> animals = new HashSet<>();
+        for (Zone.Meadow zone: meadow.zones()) {
+            for (Animal animal: zone.animals()) {
+                if (!cancelledAnimals.contains(animal)) animals.add(animal);
+            }
+        }
+        return animals;
+        /*
         return meadow.zones()
                 .stream()
                 // we generate a stream containing several streams (one for each zone),
@@ -102,6 +110,7 @@ public record Area <Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, 
                 // convert the stream to the set we will return, that will
                 // therefore contain all the animals living in the area
                 .collect(Collectors.toSet());
+         */
     }
     /**
      * Counts the number of fishes in a certain river area and in the lakes connected to it.
