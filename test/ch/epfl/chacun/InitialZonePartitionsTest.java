@@ -120,9 +120,52 @@ public class InitialZonePartitionsTest {
         assertEquals(2, builder.build().rivers().areas().size());
         builder.connectSides(riverSideOther, riverSide);
         assertEquals(1, builder.build().rivers().areas().size());
-
     }
 
+    @Test
+    void testConnectSidesRiversWithManyLakes() {
+
+        Zone.Lake lake1 = new Zone.Lake(574, 1, null);
+
+        Zone.Meadow meadow1 = new Zone.Meadow(562, List.of(), null);
+        Zone.River river1 = new Zone.River(564, 0, lake1);
+
+        Zone.Meadow meadow2 = new Zone.Meadow(565, List.of(), null);
+        Zone.River river2 = new Zone.River(567, 0, lake1);
+
+        Zone.Meadow meadow3 = new Zone.Meadow(566, List.of(), null);
+        Zone.River river3 = new Zone.River(570, 0, lake1);
+
+        Zone.Meadow meadow4 = new Zone.Meadow(571, List.of(), null);
+        Zone.River river4 = new Zone.River(573, 0, lake1);
+
+        TileSide.River riverSide1 = new TileSide.River(meadow1, river1, meadow2);
+        TileSide.River riverSide2 = new TileSide.River(meadow2, river2, meadow3);
+        TileSide.River riverSide3 = new TileSide.River(meadow3, river3, meadow4);
+        TileSide.River riverSide4 = new TileSide.River(meadow4, river4, meadow1);
+
+        Tile tile = new Tile(0, Tile.Kind.NORMAL, riverSide1, riverSide2, riverSide3, riverSide4);
+
+        ZonePartitions zonePartitions = ZonePartitions.EMPTY;
+        ZonePartitions.Builder builder = new ZonePartitions.Builder(zonePartitions);
+        builder.addTile(tile);
+
+        Zone.Meadow meadow21 = new Zone.Meadow(900, List.of(), null);
+        Zone.Lake lake21 = new Zone.Lake(901, 1, null);
+        Zone.River river21 = new Zone.River(902, 0, lake21);
+
+        TileSide.Meadow meadowSideOther1 = new TileSide.Meadow(meadow21);
+        TileSide.Meadow meadowSideOther2 = new TileSide.Meadow(meadow21);
+        TileSide.Meadow meadowSideOther3 = new TileSide.Meadow(meadow21);
+        TileSide.River riverSideOther = new TileSide.River(meadow21, river21, meadow21);
+
+        Tile otherTile = new Tile(1, Tile.Kind.NORMAL, meadowSideOther1, meadowSideOther2, meadowSideOther3, riverSideOther);
+        builder.addTile(otherTile);
+
+        assertEquals(2, builder.build().riverSystems().areas().size());
+        builder.connectSides(riverSideOther, riverSide1);
+        assertEquals(1, builder.build().riverSystems().areas().size());
+    }
 
     @Test
     void testAddInitialOccupant() {
