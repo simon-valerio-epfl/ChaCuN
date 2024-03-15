@@ -122,6 +122,7 @@ public record ZonePartitions (
          * The side zones have to be of the same type, the method throws an exception otherwise
          * @param s1 the first side to connect
          * @param s2 the second side to connect
+         * @throws IllegalArgumentException if the sides are not of the same type
          */
         public void connectSides(TileSide s1, TileSide s2) {
             switch(s1) {
@@ -150,6 +151,7 @@ public record ZonePartitions (
          * @param occupantKind the kind of the initial occupant
          *                     (HUT for rivers and lakes or PAWN for rivers, forests and meadows)
          * @param occupiedZone the zone where the initial occupant has to be added
+         * @throws IllegalArgumentException if the kind of the initial occupant is not consistent with the zone
          */
         public void addInitialOccupant(PlayerColor occupant, Occupant.Kind occupantKind, Zone occupiedZone) {
             switch (occupiedZone) {
@@ -172,6 +174,7 @@ public record ZonePartitions (
          * or if the given zone does not contain a pawn of the given player color
          * @param occupant the player color of the pawn to remove
          * @param occupiedZone the zone to remove the pawn from
+         * @throws IllegalArgumentException if there can not be any pawn in the zone (lake)
          */
         public void removePawn(PlayerColor occupant, Zone occupiedZone) {
             switch (occupiedZone) {
@@ -187,6 +190,7 @@ public record ZonePartitions (
         /**
          * removes all the gatherers from the given forest
          * @param forest the forest to remove the gatherers from
+         * @throws IllegalArgumentException if the forest is not in the partition
          */
         public void clearGatherers(Area<Zone.Forest> forest) {
             forests.removeAllOccupantsOf(forest);
@@ -195,6 +199,7 @@ public record ZonePartitions (
         /**
          * removes all the fishers from the given river
          * @param river the river to remove the fishers from
+         * @throws IllegalArgumentException if the river is not in the partition
          */
         public void clearFishers(Area<Zone.River> river) {
             rivers.removeAllOccupantsOf(river);
