@@ -9,7 +9,10 @@ import java.util.stream.Stream;
 import java.util.stream.Collectors;
 import java.util.List;
 
-//TODO METS LE AUTHORS
+/**
+ * @author Valerio De Santis (373247)
+ * @author Simon Lefort (371918)
+ */
 public final class Board {
 
     private final PlacedTile[] placedTiles;
@@ -249,9 +252,6 @@ public final class Board {
     public Board withNewTile(PlacedTile tile){
         if (!isEmpty() && !canAddTile(tile)) throw new IllegalArgumentException();
         int indexOfNewTile = getTileIndexFromPos(tile.pos());
-
-        // todo: this method has to work with the starting tile!
-        // make sure to try it with this
 
         PlacedTile[] newPlacedTiles = placedTiles.clone();
         newPlacedTiles[indexOfNewTile] = tile;

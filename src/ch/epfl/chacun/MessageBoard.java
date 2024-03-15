@@ -1,7 +1,11 @@
 package ch.epfl.chacun;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Represents the message board of the game.
@@ -24,9 +28,9 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
     }
 
     /**
-     * Returns a map of the animals and their quantity in the meadow
+     * Returns a map linking the kinds of animals to their number
      * @param animals the animals in the meadow
-     * @return a map of the animals and their quantity in the meadow
+     * @return a map linking the kinds of animals to their number
      */
     private Map<Animal.Kind, Integer> forMeadowAnimalCount (Set<Animal> animals) {
         Map<Animal.Kind, Integer> count = new HashMap<>();
@@ -154,7 +158,6 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
      *                 the same message board if the hunting trap didn't get any point
      */
     public MessageBoard withScoredHuntingTrap(PlayerColor scorer, Area<Zone.Meadow> adjacentMeadow) {
-        // important to understand
         // adjacentMeadow is an area created specifically for the hunting trap
         // therefore it contains the right zones
         // the ones from the main meadow, and the ones from the 8 neighboring tiles
