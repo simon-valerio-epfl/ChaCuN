@@ -7,11 +7,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-//TODO METS LE AUTHORS
+
 /**
  * Represents the message board of the game.
  * @param textMaker the text maker used to generate the content of the messages
  * @param messages the ordered messages on the message board, from the oldest to the newest
+ *
+ * @author Valerio De Santis (373247)
+ * @author Simon Lefort (371918)
  */
 public record MessageBoard(TextMaker textMaker, List<Message> messages) {
 
@@ -25,8 +28,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         messages = List.copyOf(messages);
     }
 
-    private Map<Animal.Kind, Integer> forMeadowAnimalPoints (Set<Animal> animals) {
-        // see https://edstem.org/eu/courses/1101/discussion/93404?comment=175157
+    private Map<Animal.Kind, Integer> forMeadowAnimalCount (Set<Animal> animals) {
         Map<Animal.Kind, Integer> count = new HashMap<>();
         for (Animal animal: animals) {
             count.put(animal.kind(), count.getOrDefault(animal.kind(), 0) + 1);
@@ -35,7 +37,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
     }
 
     private int forMeadowTotalAnimals (Set<Animal> animals) {
-        Map<Animal.Kind, Integer> points = forMeadowAnimalPoints(animals);
+        Map<Animal.Kind, Integer> points = forMeadowAnimalCount(animals);
             return Points.forMeadow(
                 points.getOrDefault(Animal.Kind.MAMMOTH, 0),
                 points.getOrDefault(Animal.Kind.AUROCHS, 0),
@@ -73,7 +75,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
      * If the forest isn't occupied (no scorers), returns the same message board
      * @param forest the forest that has been closed
      * @return a new message board with the message of the event,
-     *                  the same message board if the forest isn't occupied
+     * the same message board if the forest isn't occupied
      */
     public MessageBoard withScoredForest(Area<Zone.Forest> forest) {
         if (!forest.isOccupied()) return this;
@@ -150,7 +152,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         // if there is no animal the hunting trap won't give the placer any point
         if (points == 0) return this;
         return withNewMessage(
-                textMaker.playerScoredHuntingTrap(scorer, points, forMeadowAnimalPoints(animals)),
+                textMaker.playerScoredHuntingTrap(scorer, points, forMeadowAnimalCount(animals)),
                 points,
                 Set.of(scorer),
                 adjacentMeadow.tileIds()
@@ -190,7 +192,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         if (points == 0) return this;
         Set<PlayerColor> majorityOccupants = meadow.majorityOccupants();
         return withNewMessage(
-                textMaker.playersScoredMeadow(majorityOccupants, points, forMeadowAnimalPoints(animals)),
+                textMaker.playersScoredMeadow(majorityOccupants, points, forMeadowAnimalCount(animals)),
                 points,
                 majorityOccupants,
                 meadow.tileIds()
@@ -218,7 +220,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         if (points == 0) return this;
         Set<PlayerColor> majorityOccupants = adjacentMeadow.majorityOccupants();
         return withNewMessage(
-                textMaker.playersScoredPitTrap(majorityOccupants, points, forMeadowAnimalPoints(animals)),
+                textMaker.playersScoredPitTrap(majorityOccupants, points, forMeadowAnimalCount(animals)),
                 points,
                 majorityOccupants,
                 adjacentMeadow.tileIds()
@@ -241,7 +243,6 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
     public MessageBoard withWinners(Set<PlayerColor> winners, int points) {
         return withNewMessage(
                 textMaker.playersWon(winners, points),
-                // see https://edstem.org/eu/courses/1101/discussion/93737?answer=175785
                 0,
                 Set.of(),
                 Set.of()
