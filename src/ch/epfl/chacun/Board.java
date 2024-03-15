@@ -113,20 +113,18 @@ public final class Board {
     }
 
     public int occupantCount(PlayerColor player, Occupant.Kind occupantKind) {
-        return (int) Arrays.stream(orderedTileIndexes)
-                .mapToObj(idx -> placedTiles[idx])
-                .filter(placedTile -> placedTile.occupant() != null
-                        && placedTile.occupant().kind() == occupantKind
-                        && placedTile.placer() == player
-                )
-                .count();
-        // todo should we do a for?
-    }
-
-    private boolean isPositionAvailableToPlaceATile(Pos pos) {
-        // todo ressemble bcp à une autre
-        int idx = getTileIndexFromPos(pos);
-        return isIndexInRange(idx) && tileAt(pos) == null;
+        int count = 0;
+        for (int index: orderedTileIndexes) {
+            PlacedTile placedTile = placedTiles[index];
+            if (
+                placedTile.occupant() != null
+                && placedTile.occupant().kind() == occupantKind
+                && placedTile.placer() == player
+            ) {
+                count++;
+            }
+        }
+        return count;
     }
 
     public Set<Pos> insertionPositions() {
@@ -138,7 +136,7 @@ public final class Board {
             for (Direction direction: Direction.ALL) {
                 // get the new position in the direction we want to test
                 Pos neighbouringPosition = tilePos.neighbor(direction);
-                if (isPositionAvailableToPlaceATile(neighbouringPosition)) insertionPositions.add(neighbouringPosition);
+                if (tileAt(neighbouringPosition) == null) insertionPositions.add(neighbouringPosition);
             }
         }
         return insertionPositions;
@@ -198,7 +196,7 @@ public final class Board {
         }
         return false;
     }
-    // todo maybe change this
+
     private boolean hasAtLeastOneTile(){
         return orderedTileIndexes.length > 0;
     }
@@ -229,9 +227,6 @@ public final class Board {
         return new Board(newPlacedTiles, newOrderedTileIndexes, zonePartitionsBuilder.build(), cancelledAnimals);
     }
 
-    // todo: is this method called before or after
-    // the areas are connected?
-    // because otherwise calling addInitialOccupant will throw an exception
     public Board withOccupant(Occupant occupant) {
         int zoneId = occupant.zoneId();
         int tileId = Zone.tileId(zoneId);
