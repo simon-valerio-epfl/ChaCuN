@@ -22,6 +22,7 @@ public record ZonePartitions (
     /**
      * Represents the empty zone partitions
      */
+    // todo: demander au prof
     public final static ZonePartitions EMPTY = new ZonePartitions(
             new ZonePartition<>(),
             new ZonePartition<>(),

@@ -192,4 +192,25 @@ public class InitialZonePartitionsTest {
         assertEquals(1, builder.build().riverSystems().areaContaining(river).occupants().size());
     }
 
+    @Test
+    void testAddHut() {
+        Zone.River river = new Zone.River(563, 0, null);
+        Zone.Meadow meadow = new Zone.Meadow(560, List.of(), null);
+        Zone.Meadow meadow1 = new Zone.Meadow(562, List.of(), null);
+
+        TileSide.River riverSide = new TileSide.River(meadow1, river, meadow);
+        TileSide.Meadow meadowSide = new TileSide.Meadow(meadow);
+        TileSide.Meadow meadowSide1 = new TileSide.Meadow(meadow1);
+
+        Tile tile = new Tile(0, Tile.Kind.NORMAL, riverSide, meadowSide, meadowSide1, meadowSide1);
+
+        ZonePartitions.Builder builder = new ZonePartitions.Builder(ZonePartitions.EMPTY);
+        builder.addTile(tile);
+
+        builder.addInitialOccupant(PlayerColor.RED, Occupant.Kind.HUT, river);
+
+        assertEquals(1, builder.build().riverSystems().areaContaining(river).occupants().size());
+        assertEquals(0, builder.build().rivers().areaContaining(river).occupants().size());
+    }
+
 }
