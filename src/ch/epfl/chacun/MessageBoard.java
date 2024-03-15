@@ -193,11 +193,11 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
     }
 
     /**
-     * If the meadow area is occupied and the scored points (before cancelling animals) are positive,
+     * If the meadow area is occupied and the scored points are positive (depending on the animals in the meadow),
      * the method returns a new message board with the message of the event added
-     * @param meadow
-     * @param cancelledAnimals
-     * @return
+     * @param meadow the meadow area
+     * @param cancelledAnimals the animals whose presence has to be ignored
+     * @return a new message board with the message of the event added if some player got some points
      */
     public MessageBoard withScoredMeadow(Area<Zone.Meadow> meadow, Set<Animal> cancelledAnimals) {
         if (!meadow.isOccupied()) return this;
@@ -212,7 +212,12 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
                 meadow.tileIds()
         );
     }
-
+    /**
+     * If the river system area is occupied and the scored points are positive (depending on the fishes in the system),
+     * the method returns a new message board with the message of the event added
+     * @param riverSystem the river system area
+     * @return a new message board with the message of the event added if some player got some points
+     */
     public MessageBoard withScoredRiverSystem(Area<Zone.Water> riverSystem) {
         if (!riverSystem.isOccupied()) return this;
         int fishCount = Area.riverSystemFishCount(riverSystem);
@@ -227,6 +232,13 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         );
     }
 
+    /**
+     * If the meadow area is occupied and the scored points are positive (depending on the animals in the meadow),
+     * the method returns a new message board with the message of the event added
+     * @param adjacentMeadow the meadow area containing the pit trap and the meadows surrounding it
+     * @param cancelledAnimals the animals whose presence has to be ignored
+     * @return a new message board with the message of the event added if some player got some points
+     */
     public MessageBoard withScoredPitTrap(Area<Zone.Meadow> adjacentMeadow, Set<Animal> cancelledAnimals) {
         if (!adjacentMeadow.isOccupied()) return this;
         Set<Animal> animals = Area.animals(adjacentMeadow, cancelledAnimals);
@@ -241,6 +253,12 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         );
     }
 
+    /**
+     * If the river system is occupied,
+     * returns a new message board with the message of the event added,
+     * @param riverSystem the river system area containing the raft
+     * @return a new message board with the message of the event added if the river system had some occupant
+     */
     public MessageBoard withScoredRaft(Area<Zone.Water> riverSystem) {
         if (!riverSystem.isOccupied()) return this;
         int lakeCount = Area.lakeCount(riverSystem);
@@ -254,6 +272,15 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         );
     }
 
+    /**
+     * Creates a new board with a new message added,
+     * stating that the given players have won the game,
+     * with the given number of points
+     * @param winners the players having won the game
+     * @param points the number of points they had at the end of the game
+     * @return a new board with a new message added, stating that the given players have won the game,
+     * with the given number of points
+     */
     public MessageBoard withWinners(Set<PlayerColor> winners, int points) {
         return withNewMessage(
                 textMaker.playersWon(winners, points),
