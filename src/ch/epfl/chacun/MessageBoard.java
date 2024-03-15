@@ -28,12 +28,22 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         messages = List.copyOf(messages);
     }
 
+    /**
+     * Returns a map of the animals and their quantity in the meadow
+     * @param animals the animals in the meadow
+     * @return a map of the animals and their quantity in the meadow
+     */
     private Map<Animal.Kind, Integer> forMeadowAnimalCount (Set<Animal> animals) {
         Map<Animal.Kind, Integer> count = new HashMap<>();
         for (Animal animal: animals) count.put(animal.kind(), count.getOrDefault(animal.kind(), 0) + 1);
         return count;
     }
 
+    /**
+     * Returns the points the animals in the meadow give to the player
+     * @param animals the animals in the meadow
+     * @return the points the animals in the meadow give to the player
+     */
     private int forMeadowTotalAnimals (Set<Animal> animals) {
         Map<Animal.Kind, Integer> points = forMeadowAnimalCount(animals);
             return Points.forMeadow(
@@ -43,6 +53,14 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
             );
     }
 
+    /**
+     * Returns a new message board with the given message added
+     * @param text the text of the message
+     * @param count the points the scorers get from the event triggering this message
+     * @param scorers the players who will get the points
+     * @param tileIds the ids of the tiles involved in the event triggering this message
+     * @return a new message board with the given message added
+     */
     private MessageBoard withNewMessage(String text, int count, Set<PlayerColor> scorers, Set<Integer> tileIds) {
         // we instantiate this as an array list because we will only add messages at the end
         List<Message> newMessages = new ArrayList<>(messages);
