@@ -29,9 +29,9 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
     }
 
     /**
-     * Returns a map of the animals and their quantity in the meadow
+     * Returns a map linking the kinds of animals to their number
      * @param animals the animals in the meadow
-     * @return a map of the animals and their quantity in the meadow
+     * @return a map linking the kinds of animals to their number
      */
     private Map<Animal.Kind, Integer> forMeadowAnimalCount (Set<Animal> animals) {
         Map<Animal.Kind, Integer> count = new HashMap<>();
