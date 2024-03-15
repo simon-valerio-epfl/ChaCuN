@@ -6,7 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
+
+import static ch.epfl.chacun.Points.forRiverSystem;
 
 /**
  * Represents the message board of the game.
@@ -161,7 +162,6 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
      *                 the same message board if the hunting trap didn't get any point
      */
     public MessageBoard withScoredHuntingTrap(PlayerColor scorer, Area<Zone.Meadow> adjacentMeadow) {
-        // important to understand
         // adjacentMeadow is an area created specifically for the hunting trap
         // therefore it contains the right zones
         // the ones from the main meadow, and the ones from the 8 neighboring tiles
@@ -207,7 +207,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         if (!meadow.isOccupied()) return this;
         Set<Animal> animals = Area.animals(meadow, cancelledAnimals);
         int points = forMeadowTotalAnimals(animals);
-        if (points == 0) return this;
+        if (points <= 0) return this;
         Set<PlayerColor> majorityOccupants = meadow.majorityOccupants();
         return withNewMessage(
                 textMaker.playersScoredMeadow(majorityOccupants, points, forMeadowAnimalCount(animals)),
@@ -220,7 +220,8 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
     public MessageBoard withScoredRiverSystem(Area<Zone.Water> riverSystem) {
         if (!riverSystem.isOccupied()) return this;
         int fishCount = Area.riverSystemFishCount(riverSystem);
-        int points = Points.forRiverSystem(fishCount);
+        int points = forRiverSystem(fishCount);
+        // todo: do we have to protect us from future modifications
         if (points == 0) return this;
         Set<PlayerColor> majorityOccupants = riverSystem.majorityOccupants();
         return withNewMessage(
