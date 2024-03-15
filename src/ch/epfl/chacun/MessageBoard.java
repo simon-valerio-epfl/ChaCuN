@@ -1,11 +1,6 @@
 package ch.epfl.chacun;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -98,7 +93,6 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         int tileCount = forest.tileIds().size();
         int mushroomCount = Area.mushroomGroupCount(forest);
         int points = Points.forClosedForest(tileCount, mushroomCount);
-        // todo: demander au prof ?
         Set<PlayerColor> majorityOccupants = forest.majorityOccupants();
         return withNewMessage(
                 textMaker.playersScoredForest(majorityOccupants, points, mushroomCount, tileCount),
@@ -134,7 +128,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
      * If the river isn't occupied (no scorers), returns the same message board
      * @param river the river that has been closed
      * @return a new message board with the message of the event,
-     *                  the same message board if the river isn't occupied
+     * the same message board if the river isn't occupied
      */
     public MessageBoard withScoredRiver(Area<Zone.River> river) {
         if (!river.isOccupied()) return this;
@@ -146,7 +140,6 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
                 textMaker.playersScoredRiver(majorityOccupants, points, fishCount, tileCount),
                 points,
                 majorityOccupants,
-                // todo: est-ce qu'on doit copier les tile ids ?
                 river.tileIds()
         );
     }
@@ -168,7 +161,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         Set<Animal> animals = Area.animals(adjacentMeadow, Set.of());
         int points = forMeadowTotalAnimals(animals);
         // if there is no animal the hunting trap won't give the placer any point
-        if (points == 0) return this;
+        if (points <= 0) return this;
         return withNewMessage(
                 textMaker.playerScoredHuntingTrap(scorer, points, forMeadowAnimalCount(animals)),
                 points,
@@ -207,7 +200,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         if (!meadow.isOccupied()) return this;
         Set<Animal> animals = Area.animals(meadow, cancelledAnimals);
         int points = forMeadowTotalAnimals(animals);
-        if (points == 0) return this;
+        if (points <= 0) return this;
         Set<PlayerColor> majorityOccupants = meadow.majorityOccupants();
         return withNewMessage(
                 textMaker.playersScoredMeadow(majorityOccupants, points, forMeadowAnimalCount(animals)),
@@ -221,7 +214,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         if (!riverSystem.isOccupied()) return this;
         int fishCount = Area.riverSystemFishCount(riverSystem);
         int points = Points.forRiverSystem(fishCount);
-        if (points == 0) return this;
+        if (points <= 0) return this;
         Set<PlayerColor> majorityOccupants = riverSystem.majorityOccupants();
         return withNewMessage(
                 textMaker.playersScoredRiverSystem(majorityOccupants, points, fishCount),
@@ -235,7 +228,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         if (!adjacentMeadow.isOccupied()) return this;
         Set<Animal> animals = Area.animals(adjacentMeadow, cancelledAnimals);
         int points = forMeadowTotalAnimals(animals);
-        if (points == 0) return this;
+        if (points <= 0) return this;
         Set<PlayerColor> majorityOccupants = adjacentMeadow.majorityOccupants();
         return withNewMessage(
                 textMaker.playersScoredPitTrap(majorityOccupants, points, forMeadowAnimalCount(animals)),
