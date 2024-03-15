@@ -5,9 +5,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Stream;
-import java.util.stream.Collectors;
-import java.util.List;
 
 /**
  * @author Valerio De Santis (373247)
@@ -51,17 +48,13 @@ public final class Board {
 
     public PlacedTile tileAt(Pos pos) {
         int idx = getTileIndexFromPos(pos);
-        // todo make sure it always return null if placedTiles[idx] is not defined
-        // boolean tileAlreadyPosed = isIndexInRange(idx) &&
-        //       Arrays.stream(orderedTileIndexes).anyMatch(integer -> integer==idx);
         return isIndexInRange(idx) ? placedTiles[idx] : null;
     }
 
     public PlacedTile tileWithId(int tileId) {
-        for (PlacedTile placedTile : placedTiles) {
-            if (placedTile != null && placedTile.id() == tileId) {
-                return placedTile;
-            }
+        for (int idx : orderedTileIndexes) {
+            PlacedTile tile = placedTiles[idx];
+            if (tile.id() == tileId) return tile;
         }
         throw new IllegalArgumentException();
     }
@@ -72,10 +65,9 @@ public final class Board {
 
     public Set<Occupant> occupants() {
         Set<Occupant> occupants = new HashSet<>();
-        for (PlacedTile placedTile : placedTiles) {
-            if (placedTile != null && placedTile.occupant() != null) {
-                occupants.add(placedTile.occupant());
-            }
+        for (int index : orderedTileIndexes) {
+            PlacedTile placedTile = placedTiles[index];
+            occupants.add(placedTile.occupant());
         }
         return occupants;
     }
@@ -104,86 +96,48 @@ public final class Board {
         return zonePartitions.riverSystems().areas();
     }
 
+    private boolean isTileAdjacentTo(Pos centerPos, PlacedTile toTest) {
+        int w = Math.abs(centerPos.y() - toTest.pos().y());
+        int h = Math.abs(centerPos.x() - toTest.pos().x());
+        return w <= 1 && h <= 1;
+    }
+
     public Area<Zone.Meadow> adjacentMeadow(Pos pos, Zone.Meadow meadowZone) {
-        Area<Zone.Meadow> area = zonePartitions.meadows().areaContaining(meadowZone);
-        List<PlayerColor> occupants = area.occupants();
-
-        // todo ask fabrice
-        // todo
-        List<Pos> adjacentPositions = List.of(
-                pos.neighbor(Direction.N).neighbor(Direction.E),
-                pos.neighbor(Direction.N).neighbor(Direction.W),
-                pos.neighbor(Direction.S).neighbor(Direction.E),
-                pos.neighbor(Direction.S).neighbor(Direction.W),
-                pos.neighbor(Direction.N),
-                pos.neighbor(Direction.S),
-                pos.neighbor(Direction.E),
-                pos.neighbor(Direction.W)
-        );
-
-        Set<Zone.Meadow> adjacentMeadowZones = adjacentPositions.stream()
-                // we get the stream of adjacent tiles
-                .map(this::tileAt)
-                // we discard the null ones
-                .filter(Objects::nonNull)
-                // we get the meadow zones of the remaining tiles,
-                // flattening them in a stream,
-                .flatMap(placedTile -> placedTile.meadowZones().stream())
-                // check that their areas are connected to
-                // the one containing our zone
-                .filter(zone -> area.zones().contains(zone))
-                // and finally collect the stream into a set
-                .collect(Collectors.toSet());
-
-        return new Area<>(adjacentMeadowZones, occupants, 0);
-
+        Area<Zone.Meadow> area = meadowArea(meadowZone);
+        Set<Zone.Meadow> adjacentZones = new HashSet<>();
+        for (Zone.Meadow meadow: area.zones()) {
+            PlacedTile tile = tileWithId(meadow.tileId());
+            if (isTileAdjacentTo(pos, tile)) adjacentZones.add(meadow);
+        }
+        return new Area<>(adjacentZones, area.occupants(), 0);
     }
 
     public int occupantCount(PlayerColor player, Occupant.Kind occupantKind) {
-        return switch (occupantKind) {
-            // if it's a pawn we do a stream containing the areas (so a stream containing sets)
-            // of the zone partitions whose occupants are pawns
-            case PAWN -> Stream.of(
-                            zonePartitions.meadows().areas(),
-                            zonePartitions.forests().areas(),
-                            zonePartitions.rivers().areas()
-                    )   // we convert the stream of sets into a unique stream
-                    .flatMap(Set::stream)
-                    // we count the occupants the given player has in each area,
-                    // then sum them up, casting the result into an int,
-                    // count returning a long
-                    .mapToInt(area ->
-                            (int) area.occupants()
-                                    .stream()
-                                    .filter(occupant -> occupant.equals(player))
-                                    .count()
-                    )
-                    .sum();
-            case HUT -> zonePartitions.riverSystems().areas().stream()
-                    .mapToInt(area ->
-                            (int) area.occupants()
-                                    .stream()
-                                    .filter(occupant -> occupant.equals(player))
-                                    .count()
-                    )
-                    .sum();
-        };
+        return (int) Arrays.stream(orderedTileIndexes)
+                .mapToObj(idx -> placedTiles[idx])
+                .filter(placedTile -> placedTile.occupant() != null
+                        && placedTile.occupant().kind() == occupantKind
+                        && placedTile.placer() == player
+                )
+                .count();
+        // todo should we do a for?
     }
 
     private boolean isPositionAvailableToPlaceATile(Pos pos) {
+        // todo ressemble bcp à une autre
         int idx = getTileIndexFromPos(pos);
-        return tileAt(pos) == null && isIndexInRange(idx);
+        return isIndexInRange(idx) && tileAt(pos) == null;
     }
 
     public Set<Pos> insertionPositions() {
         Set<Pos> insertionPositions = new HashSet<>();
         // we loop over the tiles that we have already placed
         for (int idx: orderedTileIndexes) {
-            PlacedTile tile = placedTiles[idx];
+            Pos tilePos = placedTiles[idx].pos();
             // loop over N, E, S, W
             for (Direction direction: Direction.ALL) {
                 // get the new position in the direction we want to test
-                Pos neighbouringPosition = tile.pos().neighbor(direction);
+                Pos neighbouringPosition = tilePos.neighbor(direction);
                 if (isPositionAvailableToPlaceATile(neighbouringPosition)) insertionPositions.add(neighbouringPosition);
             }
         }
@@ -191,16 +145,16 @@ public final class Board {
     }
 
     public PlacedTile lastPlacedTile() {
-        return !isEmpty()
-                ? placedTiles[orderedTileIndexes[orderedTileIndexes.length - 1]]
-                : null;
+        return hasAtLeastOneTile()
+            ? placedTiles[orderedTileIndexes[orderedTileIndexes.length - 1]]
+            : null;
     }
 
     public Set<Area<Zone.Forest>> forestsClosedByLastTile() {
         if (lastPlacedTile() == null) return Set.of();
         Set<Area<Zone.Forest>> areas = new HashSet<>();
         for (Zone.Forest forestZone: lastPlacedTile().forestZones()) {
-            Area<Zone.Forest> area = zonePartitions.forests().areaContaining(forestZone);
+            Area<Zone.Forest> area = forestArea(forestZone);
             if (area.isClosed()) areas.add(area);
         }
         return areas;
@@ -212,7 +166,7 @@ public final class Board {
         for (Zone.River riverZone: lastPlacedTile().riverZones()) {
             // this is correct because there is always a river before each lake
             // closing a rivers area, the lake merely being an internal zone
-            Area<Zone.River> area = zonePartitions.rivers().areaContaining(riverZone);
+            Area<Zone.River> area = riverArea(riverZone);
             if (area.isClosed()) areas.add(area);
         }
         return areas;
@@ -245,12 +199,12 @@ public final class Board {
         return false;
     }
     // todo maybe change this
-    private boolean isEmpty(){
-        return orderedTileIndexes.length == 0;
+    private boolean hasAtLeastOneTile(){
+        return orderedTileIndexes.length > 0;
     }
 
     public Board withNewTile(PlacedTile tile){
-        if (!isEmpty() && !canAddTile(tile)) throw new IllegalArgumentException();
+        if (hasAtLeastOneTile() && !canAddTile(tile)) throw new IllegalArgumentException();
         int indexOfNewTile = getTileIndexFromPos(tile.pos());
 
         PlacedTile[] newPlacedTiles = placedTiles.clone();
@@ -281,7 +235,7 @@ public final class Board {
     public Board withOccupant(Occupant occupant) {
         int zoneId = occupant.zoneId();
         int tileId = Zone.tileId(zoneId);
-        // see https://edstem.org/eu/courses/1101/discussion/95048?answer=178339
+
         PlacedTile tile = tileWithId(tileId);
         // throws an IllegalArgumentException if the tile is already occupied
         PlacedTile occupiedTile = tile.withOccupant(occupant);
@@ -309,25 +263,39 @@ public final class Board {
 
         Zone zone = tile.zoneWithId(zoneId);
         ZonePartitions.Builder zonePartitionsBuilder = new ZonePartitions.Builder(zonePartitions);
-        zonePartitionsBuilder.removePawn(tile.placer(), zone); // todo: only pawns??
+        zonePartitionsBuilder.removePawn(tile.placer(), zone);
 
         return new Board(newPlacedTiles, orderedTileIndexes, zonePartitionsBuilder.build(), cancelledAnimals);
     }
 
     public Board withoutGatherersOrFishersIn(Set<Area<Zone.Forest>> forests, Set<Area<Zone.River>> rivers) {
         ZonePartitions.Builder zonePartitionsBuilder = new ZonePartitions.Builder(zonePartitions);
-        for (Area<Zone.Forest> forest: forests) {
-            zonePartitionsBuilder.clearGatherers(forest);
-        }
-        for (Area<Zone.River> river: rivers) {
-            zonePartitionsBuilder.clearFishers(river);
+        PlacedTile[] newPlacedTiles = placedTiles.clone();
+
+        for (int index: orderedTileIndexes) {
+            PlacedTile placedTile = placedTiles[index];
+            if (placedTile.occupant() == null || placedTile.occupant().kind() != Occupant.Kind.PAWN) continue;
+            Occupant occupant = placedTile.occupant();
+            Zone occupiedZone = placedTile.zoneWithId(occupant.zoneId());
+            if (occupiedZone instanceof Zone.Forest forest) {
+                if (forests.contains(forestArea(forest))) {
+                    placedTiles[index] = placedTile.withNoOccupant();
+                }
+            } else if (occupiedZone instanceof Zone.River river) {
+                if (rivers.contains(riverArea(river))) {
+                    placedTiles[index] = placedTile.withNoOccupant();
+                }
+            }
         }
 
-        return new Board(placedTiles, orderedTileIndexes, zonePartitionsBuilder.build(), cancelledAnimals);
+        for (Area<Zone.River> river: rivers) zonePartitionsBuilder.clearFishers(river);
+        for (Area<Zone.Forest> forest: forests) zonePartitionsBuilder.clearGatherers(forest);
+
+        return new Board(newPlacedTiles, orderedTileIndexes, zonePartitionsBuilder.build(), cancelledAnimals);
     }
 
     public Board withMoreCancelledAnimals(Set<Animal> newlyCancelledAnimals) {
-        Set<Animal> newCancelledAnimals = new HashSet<>(Set.copyOf(cancelledAnimals));
+        Set<Animal> newCancelledAnimals = new HashSet<>(cancelledAnimals);
         newCancelledAnimals.addAll(newlyCancelledAnimals);
         return new Board(placedTiles, orderedTileIndexes, zonePartitions, newCancelledAnimals);
     }
