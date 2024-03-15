@@ -30,9 +30,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
 
     private Map<Animal.Kind, Integer> forMeadowAnimalCount (Set<Animal> animals) {
         Map<Animal.Kind, Integer> count = new HashMap<>();
-        for (Animal animal: animals) {
-            count.put(animal.kind(), count.getOrDefault(animal.kind(), 0) + 1);
-        }
+        for (Animal animal: animals) count.put(animal.kind(), count.getOrDefault(animal.kind(), 0) + 1);
         return count;
     }
 
@@ -82,6 +80,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         int tileCount = forest.tileIds().size();
         int mushroomCount = Area.mushroomGroupCount(forest);
         int points = Points.forClosedForest(tileCount, mushroomCount);
+        // todo: demander au prof ?
         Set<PlayerColor> majorityOccupants = forest.majorityOccupants();
         return withNewMessage(
                 textMaker.playersScoredForest(majorityOccupants, points, mushroomCount, tileCount),
@@ -129,6 +128,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
                 textMaker.playersScoredRiver(majorityOccupants, points, fishCount, tileCount),
                 points,
                 majorityOccupants,
+                // todo: est-ce qu'on doit copier les tile ids ?
                 river.tileIds()
         );
     }
