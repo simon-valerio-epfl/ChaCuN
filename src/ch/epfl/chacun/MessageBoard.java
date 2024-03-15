@@ -120,7 +120,6 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
     }
 
     public MessageBoard withScoredLogboat(PlayerColor scorer, Area<Zone.Water> riverSystem) {
-        if (!riverSystem.isOccupied()) return this;
         int lakeCount = Area.lakeCount(riverSystem);
         int points = Points.forLogboat(lakeCount);
         return withNewMessage(
@@ -191,7 +190,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
                 textMaker.playersWon(winners, points),
                 // see https://edstem.org/eu/courses/1101/discussion/93737?answer=175785
                 0,
-                winners,
+                Set.of(),
                 Set.of()
         );
     }
