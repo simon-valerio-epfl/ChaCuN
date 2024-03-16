@@ -3,7 +3,9 @@ package ch.epfl.chacun;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Modifier;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -30,6 +32,81 @@ public class InitialBoardTest {
         Board board = Board.EMPTY;
 
         assertEquals(56, board.withNewTile(placedTile).tileAt(new Pos(0, 0)).id());
+    }
+
+    @Test
+    void testInsertionPositions() {
+        Tile tile56 = TileReader.readTileFromCSV(56);
+
+        PlacedTile placedTile56 = new PlacedTile(tile56, null, Rotation.NONE, new Pos(0, 0));
+        Board board = Board.EMPTY.withNewTile(placedTile56);
+
+        assertEquals(4, board.insertionPositions().size());
+        assertEquals(Set.of(
+                new Pos(0, 1),
+                new Pos(1, 0),
+                new Pos(0, -1),
+                new Pos(-1, 0)
+        ), board.insertionPositions());
+
+        // try out of bounds insertion positions
+        Tile tile10 = TileReader.readTileFromCSV(10);
+        PlacedTile placedTile10 = new PlacedTile(tile10, null, Rotation.NONE, new Pos(-25, -25));
+        board = board.withNewTile(placedTile10);
+
+        assertEquals(4 + 2, board.insertionPositions().size());
+    }
+
+    @Test
+    void testCouldPlaceTile(){
+        Tile tile29 = TileReader.readTileFromCSV(29);
+        Tile tile62 = TileReader.readTileFromCSV(62);
+        Tile tile17 = TileReader.readTileFromCSV(17);
+
+        PlacedTile placedTile29 = new PlacedTile(tile29, null, Rotation.NONE, new Pos(0, 0));
+        Board board = Board.EMPTY.withNewTile(placedTile29);
+
+        assertFalse(board.couldPlaceTile(tile62));
+        assertTrue(board.couldPlaceTile(tile17));
+    }
+
+    @Test
+    void testAdjacentMeadow() {
+        Tile tile62 = TileReader.readTileFromCSV(62);
+        Tile tile61 = TileReader.readTileFromCSV(61);
+        Tile tile60 = TileReader.readTileFromCSV(60);
+        Tile tile94 = TileReader.readTileFromCSV(94);
+        Tile tile49 = TileReader.readTileFromCSV(49);
+        Tile tile27 = TileReader.readTileFromCSV(27);
+        Tile tile42 = TileReader.readTileFromCSV(42);
+        Tile tile56 = TileReader.readTileFromCSV(56);
+
+        PlacedTile placedTile62 = new PlacedTile(tile62, PlayerColor.RED, Rotation.NONE, new Pos(0, 0));
+        PlacedTile placedTile27 = new PlacedTile(tile27, PlayerColor.RED, Rotation.NONE, new Pos(0, 1));
+        PlacedTile placedTile61 = new PlacedTile(tile61, PlayerColor.RED, Rotation.NONE, new Pos(1, 0));
+        PlacedTile placedTile49 = new PlacedTile(tile49, PlayerColor.RED, Rotation.NONE, new Pos(1, 1));
+        PlacedTile placedTile94 = new PlacedTile(tile94, PlayerColor.RED, Rotation.NONE, new Pos(2, 0));
+        PlacedTile placedTile56 = new PlacedTile(tile56, PlayerColor.RED, Rotation.NONE, new Pos(2, 1));
+        PlacedTile placedTile60 = new PlacedTile(tile60, PlayerColor.RED, Rotation.RIGHT, new Pos(3, 0));
+        PlacedTile placedTile42 = new PlacedTile(tile42, PlayerColor.RED, Rotation.LEFT, new Pos(3, 1));
+
+        Board board = Board.EMPTY;
+
+        board = board
+                .withNewTile(placedTile62)
+                .withOccupant(new Occupant(Occupant.Kind.PAWN, tile62.zones().stream().filter(zone -> zone.localId() == 0).findFirst().get().id()))
+                .withNewTile(placedTile27)
+                .withOccupant(new Occupant(Occupant.Kind.PAWN, tile27.zones().stream().filter(zone -> zone.localId() == 2).findFirst().get().id()))
+                .withNewTile(placedTile61)
+                .withNewTile(placedTile49)
+                .withNewTile(placedTile94)
+                .withNewTile(placedTile56)
+                .withNewTile(placedTile60)
+                .withNewTile(placedTile42);
+
+        assertEquals(5, board.adjacentMeadow(new Pos(2, 0), (Zone.Meadow) tile94.zones().stream().filter(zone -> zone.localId() == 1).findFirst().get()).tileIds().size());
+
+        assertEquals(2, board.occupantCount(PlayerColor.RED, Occupant.Kind.PAWN));
     }
 
 }

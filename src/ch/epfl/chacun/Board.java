@@ -235,7 +235,7 @@ public final class Board {
         // throws an IllegalArgumentException if the tile is already occupied
         PlacedTile occupiedTile = tile.withOccupant(occupant);
         PlacedTile[] newPlacedTiles = placedTiles.clone();
-        newPlacedTiles[tileId] = occupiedTile;
+        newPlacedTiles[getTileIndexFromPos(tile.pos())] = occupiedTile;
 
         Zone zone = tile.zoneWithId(zoneId);
         ZonePartitions.Builder zonePartitionsBuilder = new ZonePartitions.Builder(zonePartitions);
