@@ -276,11 +276,11 @@ public final class Board {
             Zone occupiedZone = placedTile.zoneWithId(occupant.zoneId());
             if (occupiedZone instanceof Zone.Forest forest) {
                 if (forests.contains(forestArea(forest))) {
-                    placedTiles[index] = placedTile.withNoOccupant();
+                    newPlacedTiles[index] = placedTile.withNoOccupant();
                 }
             } else if (occupiedZone instanceof Zone.River river) {
                 if (rivers.contains(riverArea(river))) {
-                    placedTiles[index] = placedTile.withNoOccupant();
+                    newPlacedTiles[index] = placedTile.withNoOccupant();
                 }
             }
         }
