@@ -67,7 +67,9 @@ public final class Board {
         Set<Occupant> occupants = new HashSet<>();
         for (int index : orderedTileIndexes) {
             PlacedTile placedTile = placedTiles[index];
-            occupants.add(placedTile.occupant());
+            if (placedTile.occupant() != null) {
+                occupants.add(placedTile.occupant());
+            }
         }
         return occupants;
     }
@@ -136,7 +138,7 @@ public final class Board {
             for (Direction direction: Direction.ALL) {
                 // get the new position in the direction we want to test
                 Pos neighbouringPosition = tilePos.neighbor(direction);
-                if (tileAt(neighbouringPosition) == null) insertionPositions.add(neighbouringPosition);
+                if (isIndexInRange(getTileIndexFromPos(neighbouringPosition)) && tileAt(neighbouringPosition) == null) insertionPositions.add(neighbouringPosition);
             }
         }
         return insertionPositions;
@@ -254,7 +256,7 @@ public final class Board {
         // throws an IllegalArgumentException if the tile is already occupied
         PlacedTile clearedTile = tile.withNoOccupant();
         PlacedTile[] newPlacedTiles = placedTiles.clone();
-        newPlacedTiles[tileId] = clearedTile;
+        newPlacedTiles[getTileIndexFromPos(tile.pos())] = clearedTile;
 
         Zone zone = tile.zoneWithId(zoneId);
         ZonePartitions.Builder zonePartitionsBuilder = new ZonePartitions.Builder(zonePartitions);

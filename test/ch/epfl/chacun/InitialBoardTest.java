@@ -51,10 +51,10 @@ public class InitialBoardTest {
 
         // try out of bounds insertion positions
         Tile tile10 = TileReader.readTileFromCSV(10);
-        PlacedTile placedTile10 = new PlacedTile(tile10, null, Rotation.NONE, new Pos(-25, -25));
-        board = board.withNewTile(placedTile10);
+        PlacedTile placedTile10 = new PlacedTile(tile10, null, Rotation.NONE, new Pos(-12, -12));
+        Board newBoard = Board.EMPTY.withNewTile(placedTile10);
 
-        assertEquals(4 + 2, board.insertionPositions().size());
+        assertEquals(2, newBoard.insertionPositions().size());
     }
 
     @Test
@@ -107,6 +107,58 @@ public class InitialBoardTest {
         assertEquals(5, board.adjacentMeadow(new Pos(2, 0), (Zone.Meadow) tile94.zones().stream().filter(zone -> zone.localId() == 1).findFirst().get()).tileIds().size());
 
         assertEquals(2, board.occupantCount(PlayerColor.RED, Occupant.Kind.PAWN));
+
+        assertEquals(Set.of(
+                new Occupant(Occupant.Kind.PAWN, tile27.zones().stream().filter(zone -> zone.localId() == 2).findFirst().get().id()),
+                new Occupant(Occupant.Kind.PAWN, tile62.zones().stream().filter(zone -> zone.localId() == 0).findFirst().get().id())
+        ), board.occupants());
+
+        board = board.withoutOccupant(new Occupant(Occupant.Kind.PAWN, tile62.zones().stream().filter(zone -> zone.localId() == 0).findFirst().get().id()));
+        assertEquals(1, board.occupantCount(PlayerColor.RED, Occupant.Kind.PAWN));
+
+        assertEquals(12, board.insertionPositions().size());
+
+        assertEquals(placedTile42, board.lastPlacedTile());
+
+        assertEquals(Set.of(
+                new Occupant(Occupant.Kind.PAWN, tile27.zones().stream().filter(zone -> zone.localId() == 2).findFirst().get().id())
+        ), board.occupants());
+
+    }
+
+    @Test
+    void testLastPlacedTileOnEmptyBoard() {
+        assertNull(Board.EMPTY.lastPlacedTile());
+    }
+
+    @Test
+    void testUnknownTileAt() {
+        assertNull(Board.EMPTY.tileAt(new Pos(0, 0)));
+        Board board = Board.EMPTY.withNewTile(new PlacedTile(TileReader.readTileFromCSV(56), PlayerColor.RED, Rotation.NONE, new Pos(0, 0)));
+        assertNull(board.tileAt(new Pos(1, 0)));
+        assertNull(board.tileAt(new Pos(-10000, 1000)));
+    }
+
+    @Test
+    void testTileWithId() {
+        assertThrows(IllegalArgumentException.class, () -> Board.EMPTY.tileWithId(56));
+        Board board = Board.EMPTY.withNewTile(new PlacedTile(TileReader.readTileFromCSV(56), PlayerColor.RED, Rotation.NONE, new Pos(0, 0)));
+        assertEquals(56, board.tileWithId(56).id());
+        assertThrows(IllegalArgumentException.class, () -> board.tileWithId(100000));
+    }
+
+    @Test
+    void cancelledAnimals() {
+        Board board = Board.EMPTY;
+        board = board.withMoreCancelledAnimals(Set.of(new Animal(10, Animal.Kind.DEER)));
+        assertEquals(1, board.cancelledAnimals().size());
+        // test immutability
+        try {
+            board.cancelledAnimals().add(new Animal(10, Animal.Kind.MAMMOTH));
+        } catch (UnsupportedOperationException e) {
+            // expected
+        }
+        assertEquals(1, board.cancelledAnimals().size());
     }
 
 }
