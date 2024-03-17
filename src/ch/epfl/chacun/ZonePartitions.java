@@ -134,8 +134,8 @@ public record ZonePartitions (
                     when s2 instanceof TileSide.River(Zone.Meadow m3, Zone.River r2, Zone.Meadow m4) -> {
                     rivers.union(r1, r2);
                     riverSystems.union(r1, r2);
-                    meadows.union(m1, m3);
-                    meadows.union(m2, m4);
+                    meadows.union(m1, m4);
+                    meadows.union(m2, m3);
                 }
                 default -> throw new IllegalArgumentException();
             }

@@ -109,7 +109,9 @@ public final class Board {
         Set<Zone.Meadow> adjacentZones = new HashSet<>();
         for (Zone.Meadow meadow: area.zones()) {
             PlacedTile tile = tileWithId(meadow.tileId());
-            if (isTileAdjacentTo(pos, tile)) adjacentZones.add(meadow);
+            if (isTileAdjacentTo(pos, tile)) {
+                adjacentZones.add(meadow);
+            }
         }
         return new Area<>(adjacentZones, area.occupants(), 0);
     }

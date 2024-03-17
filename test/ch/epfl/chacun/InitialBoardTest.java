@@ -140,7 +140,7 @@ public class InitialBoardTest {
 
         assertEquals(5, board.adjacentMeadow(new Pos(2, 0), new Zone.Meadow(941, List.of(), Zone.SpecialPower.HUNTING_TRAP)).tileIds().size());
         assertEquals(0, board.adjacentMeadow(new Pos(2, 0), new Zone.Meadow(941, List.of(), Zone.SpecialPower.HUNTING_TRAP)).openConnections());
-        assertEquals(2, board.adjacentMeadow(new Pos(2, 0), new Zone.Meadow(941, List.of(), Zone.SpecialPower.HUNTING_TRAP)).occupants().size());
+        assertEquals(1, board.adjacentMeadow(new Pos(2, 0), new Zone.Meadow(941, List.of(), Zone.SpecialPower.HUNTING_TRAP)).occupants().size());
 
         assertEquals(2, board.occupantCount(PlayerColor.RED, Occupant.Kind.PAWN));
 
