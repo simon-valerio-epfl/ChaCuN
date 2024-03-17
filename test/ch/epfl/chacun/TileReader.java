@@ -8,14 +8,20 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public class TileReader {
 
     private static final String CSV_FILE_PATH = "test/ch/epfl/chacun/tuiles.csv"; // Chemin vers le fichier CSV contenant les tuiles
 
     public static Tile readTileFromCSV(int tileId) {
+        String path = System.getenv("CSV_FILE_PATH") != null ? System.getenv("CSV_FILE_PATH") : CSV_FILE_PATH;
+        return readTileFromCSV(tileId, path);
+    }
+
+    public static Tile readTileFromCSV(int tileId, String path) {
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(CSV_FILE_PATH));
+            BufferedReader reader = new BufferedReader(new FileReader(path));
             reader.readLine();
             String line;
             while ((line = reader.readLine()) != null) {

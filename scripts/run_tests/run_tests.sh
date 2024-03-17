@@ -16,7 +16,7 @@ rm -rf ./out
 javac -d out/production/classes @src_files.txt
 # build test class
 javac -d out/test/classes -classpath out/production/classes:junit-platform-console-standalone-1.10.2.jar @test_files.txt
-java -jar junit-platform-console-standalone-1.10.2.jar execute -cp out/production/classes:out/test/classes: --select-package ch.epfl.chacun --reports-dir reports
+CSV_FILE_PATH="${ROOT_DIR}/test/ch/epfl/chacun/tuiles.csv" java -jar junit-platform-console-standalone-1.10.2.jar execute -cp out/production/classes:out/test/classes: --select-package ch.epfl.chacun --reports-dir reports
 
 grep -q "failures=\"0\"" reports/TEST-junit-jupiter.xml && grep -q "errors=\"0\"" reports/TEST-junit-jupiter.xml || exit 1
 
