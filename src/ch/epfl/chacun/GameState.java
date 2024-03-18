@@ -1,9 +1,8 @@
 package ch.epfl.chacun;
 
 import javax.swing.*;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
+import java.util.AbstractMap.SimpleEntry;
 
 public record GameState (
         List<PlayerColor> players,
@@ -13,9 +12,6 @@ public record GameState (
         Action nextAction,
         MessageBoard messageBoard
 ) {
-
-    final static int MAX_PAWN_PER_PLAYER = 5;
-    final static int MAX_HUT_PER_PLAYER = 3;
 
     public GameState {
 
@@ -50,10 +46,7 @@ public record GameState (
     }
 
     public int freeOccupantsCount(PlayerColor player, Occupant.Kind kind) {
-        return switch (kind) {
-            case PAWN -> MAX_PAWN_PER_PLAYER - board.occupantCount(player, kind);
-            case HUT -> MAX_HUT_PER_PLAYER - board.occupantCount(player, kind);
-        };
+        return Occupant.occupantsCount(kind) - board.occupantCount(player, kind);
     }
 
     public Set<Occupant> lastTilePotentialOccupants() {
@@ -76,9 +69,85 @@ public record GameState (
         return new GameState(players, newDecks, tileToPlace, newBoard, Action.PLACE_TILE, messageBoard);
     }
 
+    private SimpleEntry<Integer, Set<PlayerColor>> getWinnersPoints(Map<PlayerColor, Integer> scorersToPoints) {
+        Set<PlayerColor> winners = new HashSet<>();
+        int max = -1;
+        for (Map.Entry<PlayerColor, Integer> scorerToPoints: scorersToPoints.entrySet()) {
+            int scorerPoints = scorerToPoints.getValue();
+            if (scorerPoints > max) {
+                max = scorerPoints;
+                winners.clear();
+            }
+            if (scorerPoints == max) winners.add(scorerToPoints.getKey());
+        }
+        return new SimpleEntry<>(max, winners);
+    }
+
     public GameState withPlacedTile(PlacedTile tile) {
         if (nextAction != Action.PLACE_TILE) throw new IllegalArgumentException();
 
+        Board newBoard = board.withNewTile(tile);
+        Action newNextAction;
+        List<PlayerColor> newPlayers = players;
+        TileDecks newTileDecks = tileDecks;
+        Tile newTileToPlace = null;
+        MessageBoard newMessageBoard = messageBoard;
+
+        Zone specialPowerZone = tile.specialPowerZone();
+        if (
+                specialPowerZone != null && specialPowerZone.specialPower() != null
+                && specialPowerZone.specialPower().equals(Zone.SpecialPower.SHAMAN)
+                && board.occupantCount(tile.placer(), Occupant.Kind.PAWN) > 0
+        ) {
+            newNextAction = Action.RETAKE_PAWN;
+        }
+
+        else if (
+                // todo: should we use lastTilePotentialOccupants()
+                tile.potentialOccupants()
+                        .stream()
+                        .anyMatch(potentialOccupant ->
+                                freeOccupantsCount(tile.placer(), potentialOccupant.kind()) >= 0
+                        )
+        ) {
+            newNextAction = Action.OCCUPY_TILE;
+        }
+
+        else if (
+                newBoard.forestsClosedByLastTile()
+                        .stream()
+                        .anyMatch(Area::hasMenhir)
+                && tileDecks
+                        .withTopTileDrawnUntil( Tile.Kind.MENHIR, newBoard::couldPlaceTile)
+                        .deckSize(Tile.Kind.MENHIR) > 0
+        ) {
+            for (Area<Zone.Forest> forest: newBoard.forestsClosedByLastTile()) {
+                newMessageBoard = newMessageBoard.withClosedForestWithMenhir(tile.placer(), forest);
+            }
+            newNextAction = Action.PLACE_TILE;
+            newTileDecks = tileDecks.withTopTileDrawnUntil(Tile.Kind.MENHIR, newBoard::couldPlaceTile);
+            newTileToPlace = tileDecks.topTile(Tile.Kind.MENHIR);
+            newTileDecks = newTileDecks.withTopTileDrawn(Tile.Kind.MENHIR);
+        }
+
+        else if (
+                tileDecks
+                    .withTopTileDrawnUntil(Tile.Kind.NORMAL, newBoard::couldPlaceTile)
+                    .deckSize(Tile.Kind.NORMAL) > 0
+        ) {
+            newNextAction = Action.PLACE_TILE;
+            newPlayers = new LinkedList<>(players);
+            PlayerColor placer = newPlayers.removeFirst();
+            newPlayers.addLast(placer);
+        }
+
+        else {
+            SimpleEntry<Integer, Set<PlayerColor>> winners = getWinnersPoints(newMessageBoard.points());
+            newMessageBoard = newMessageBoard.withWinners(winners.getValue(), winners.getKey());
+            newNextAction = Action.END_GAME;
+        }
+
+        return new GameState(newPlayers, newTileDecks, newTileToPlace, newBoard, newNextAction, newMessageBoard);
     }
 
     public enum Action {

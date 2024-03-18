@@ -63,9 +63,10 @@ public record TileDecks (List<Tile> startTiles, List<Tile> normalTiles, List<Til
     }
 
     /**
-     * Gets the top tile of the deck of the given kind, returning the first card of the deck
+     * Gets the top tile of the deck of the given kind, returning the first card of the deck,
+     * null if there isn't any
      * @param kind the kind of deck to get the top tile from
-     * @return the first card of the deck of the given kind
+     * @return the first card of the deck of the given kind, null if there isn't any
      */
     public Tile topTile (Tile.Kind kind) {
         return switch (kind) {

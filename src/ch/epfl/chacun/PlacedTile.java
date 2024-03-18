@@ -137,6 +137,7 @@ public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos 
      */
     public Set<Occupant> potentialOccupants() {
         Set<Occupant> potentialOccupants = new HashSet<>();
+        // the starting tile has no potential occupant
         if (placer == null) {
             return potentialOccupants;
         }
