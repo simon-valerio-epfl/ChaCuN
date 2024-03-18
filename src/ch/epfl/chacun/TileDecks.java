@@ -76,9 +76,9 @@ public record TileDecks (List<Tile> startTiles, List<Tile> normalTiles, List<Til
     }
 
     /**
-     * Draws the top tile of the deck of the given kind returning the deck without the first card
+     * Draws the top tile of the deck of the given kind returning the decks with the given deck without the first card
      * @param kind the kind of deck to draw the top tile from (not empty, otherwise throws an illegal argument exception)
-     * @return the deck without the top tile
+     * @return the decks with the top tile drawn from the given deck
      */
     public TileDecks withTopTileDrawn (Tile.Kind kind) {
         return switch (kind) {
