@@ -83,6 +83,10 @@ public record GameState (
         return new SimpleEntry<>(max, winners);
     }
 
+    private int animalCountOfKind (Area<Zone.Meadow> area, Animal.Kind kind) {
+        return (int) Area.animals(area, Set.of()).stream().filter(a -> a.kind() == kind).count();
+    }
+
     public GameState withPlacedTile(PlacedTile tile) {
         if (nextAction != Action.PLACE_TILE) throw new IllegalArgumentException();
 
@@ -94,6 +98,16 @@ public record GameState (
         MessageBoard newMessageBoard = messageBoard;
 
         Zone specialPowerZone = tile.specialPowerZone();
+
+        if (
+                specialPowerZone != null && specialPowerZone.specialPower() != null
+                && specialPowerZone.specialPower().equals(Zone.SpecialPower.HUNTING_TRAP)
+        ) {
+            // todo should we really do this cast?
+            Area<Zone.Meadow> adjacentMeadow = board.adjacentMeadow(tile.pos(), (Zone.Meadow) specialPowerZone);
+            newMessageBoard.withScoredHuntingTrap(tile.placer(), adjacentMeadow);
+        }
+
         if (
                 specialPowerZone != null && specialPowerZone.specialPower() != null
                 && specialPowerZone.specialPower().equals(Zone.SpecialPower.SHAMAN)
@@ -149,6 +163,17 @@ public record GameState (
 
         return new GameState(newPlayers, newTileDecks, newTileToPlace, newBoard, newNextAction, newMessageBoard);
     }
+
+    public GameState withOccupantRemoved(Occupant occupant){
+        if(nextAction!= Action.RETAKE_PAWN  || (occupant !=null && occupant.kind()!= Occupant.Kind.PAWN))
+            throw new IllegalArgumentException();
+        if(occupant == null){
+            //return new GameState(players, tileDecks, tileDecks.topTile(Tile.Kind.MENHIR), board, )
+        }
+        return null;
+    }
+
+
 
     public enum Action {
         START_GAME,
