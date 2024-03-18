@@ -9,6 +9,8 @@ import java.util.Set;
 /**
  * @author Valerio De Santis (373247)
  * @author Simon Lefort (371918)
+ * represents the board of the game,
+ * containing the tiles that have already been placed
  */
 public final class Board {
 
@@ -16,41 +18,74 @@ public final class Board {
     private final int[] orderedTileIndexes;
     private final ZonePartitions zonePartitions;
     private final Set<Animal> cancelledAnimals;
+    // REACH represents the maximum distance from the origin
     public final static int REACH = 12;
     // size represents the size of the board's columns and lines:
     // there are REACH numbers at the left and REACH numbers at the right
     // of the origin, and the matrix is a square
     private final static int SIZE = REACH * 2 + 1;
+    // the empty board contains no placed tiles, no ordered tile indexes,
+    // no zone partitions and no cancelled animals
     public final static Board EMPTY = new Board(
             new PlacedTile[SIZE*SIZE],
             new int[0],
             ZonePartitions.EMPTY,
             Set.of()
     );
+    /**
+     * Creates a new board with the given placed tiles, ordered tile indexes,
+     * zone partitions and cancelled animals.
+     * Copies the set of cancelled animals to prevent external modification
+      */
 
     private Board(PlacedTile[] placedTiles, int[] orderedTileIndexes, ZonePartitions zonePartitions, Set<Animal> cancelledAnimals) {
         this.placedTiles = placedTiles;
         this.orderedTileIndexes = orderedTileIndexes;
         this.zonePartitions = zonePartitions;
-        this.cancelledAnimals = Collections.unmodifiableSet(cancelledAnimals);
+        this.cancelledAnimals = cancelledAnimals;
     }
 
+    /**
+     * Returns the index of the tile at the given position
+     * @param pos the position of the tile
+     * @return the index of the tile at the given position
+     */
     private int getTileIndexFromPos(Pos pos) {
         // we get the index using the row-major index
         return (pos.y() + REACH) * SIZE + (pos.x() + REACH);
     }
 
+    /**
+     * Returns whether the given index is in the range of the board
+     * @param idx the index to test
+     * @return whether the given index is in the range of the board
+     */
     private boolean isIndexInRange(int idx) {
         // asserts that the given index is
         // on the board
         return idx >= 0 && idx < SIZE*SIZE;
     }
 
+    /**
+     * Returns the tile placed at the given position,
+     * null if there is no tile at the given position or
+     * if the position is out of the board
+     * @param pos the position of the tile to get
+     * @return the tile placed at the given position,
+     * null if there is no tile at the given position or if the position is out of the board
+     */
     public PlacedTile tileAt(Pos pos) {
         int idx = getTileIndexFromPos(pos);
         return isIndexInRange(idx) ? placedTiles[idx] : null;
     }
 
+    /**
+     * Returns the placed tile with the given id,
+     * with a linear search over the tiles that
+     * have already been placed
+     * @param tileId the id of the tile to get
+     * @return the placed tile with the given id
+     */
     public PlacedTile tileWithId(int tileId) {
         for (int idx : orderedTileIndexes) {
             PlacedTile tile = placedTiles[idx];
@@ -59,10 +94,18 @@ public final class Board {
         throw new IllegalArgumentException();
     }
 
+    /**
+     * Returns the unmodifiable set of animals that have been cancelled
+     * @return the unmodifiable set of animals that have been cancelled
+     */
     public Set<Animal> cancelledAnimals() {
         return cancelledAnimals;
     }
 
+    /**
+     * Returns the set of all occupants on the board
+     * @return the set of all occupants on the board
+     */
     public Set<Occupant> occupants() {
         Set<Occupant> occupants = new HashSet<>();
         for (int index : orderedTileIndexes) {
@@ -73,37 +116,83 @@ public final class Board {
         }
         return occupants;
     }
-
+    /**
+     * Returns the area of the forest containing the given forest zone
+     * throws an exception if the zone is not in any area
+     * @param forest the forest zone to get the area of
+     * @return the area of the forest containing the given forest zone
+     */
     public Area<Zone.Forest> forestArea(Zone.Forest forest) {
         return zonePartitions.forests().areaContaining(forest);
     }
-
+    /**
+     * Returns the area of the meadow containing the given meadow zone
+     * throws an exception if the zone is not in any area
+     * @param meadow the meadow zone to get the area of
+     * @return the area of the meadow containing the given meadow zone
+     */
     public Area<Zone.Meadow> meadowArea(Zone.Meadow meadow) {
         return zonePartitions.meadows().areaContaining(meadow);
     }
 
+    /**
+     * Returns the area of the river containing the given river zone,
+     * throws an exception if the zone is not in any area
+     * @param river the river zone to get the area of
+     * @return the area of the river containing the given river zone
+     */
     public Area<Zone.River> riverArea(Zone.River river) {
         return zonePartitions.rivers().areaContaining(river);
     }
 
+    /**
+     * Returns the area of the river system containing the given water zone,
+     * throws an exception if the zone is not in any area
+     * @param water the water zone to get the area of
+     * @return the area of the river system containing the given water zone
+     */
     public Area<Zone.Water> riverSystemArea(Zone.Water water) {
         return zonePartitions.riverSystems().areaContaining(water);
     }
 
+    /**
+     * Returns the set of meadow areas on the board
+     * @return the set of meadow areas on the board
+     */
     public Set<Area<Zone.Meadow>> meadowAreas() {
         return zonePartitions.meadows().areas();
     }
-
+    /**
+     * Returns the set of river system areas on the board
+     * @return the set of river system areas on the board
+     */
     public Set<Area<Zone.Water>> riverSystemAreas() {
         return zonePartitions.riverSystems().areas();
     }
 
+    /**
+     * Returns whether the given tile is adjacent to the tile at the given position
+     * @param centerPos the position of the tile to test adjacency to
+     * @param toTest the tile to test adjacency of
+     * @return whether the given tile is adjacent to the tile at the given position
+     */
     private boolean isTileAdjacentTo(Pos centerPos, PlacedTile toTest) {
         int w = Math.abs(centerPos.y() - toTest.pos().y());
         int h = Math.abs(centerPos.x() - toTest.pos().x());
         return w <= 1 && h <= 1;
     }
 
+    /**
+     * Returns the area of the meadow containing the given meadow zone
+     * and the meadow zones surrounding the tile where the given zone
+     * the returned area contains all the animals of the entire meadow,
+     * and has 0 open connections
+     * @param pos the position of the tile containing the meadow zone
+     * @param meadowZone the meadow zone to get the surrounding area from
+     * @return the area of the meadow containing the given meadow zone and the
+     * surrounding meadow zones, with all the animals of the original meadow area
+     * and 0 open connections
+     */
     public Area<Zone.Meadow> adjacentMeadow(Pos pos, Zone.Meadow meadowZone) {
         Area<Zone.Meadow> area = meadowArea(meadowZone);
         Set<Zone.Meadow> adjacentZones = new HashSet<>();
@@ -116,6 +205,13 @@ public final class Board {
         return new Area<>(adjacentZones, area.occupants(), 0);
     }
 
+    /**
+     * Returns the number of occupants of the given kind and the given player
+     * present on the board
+     * @param player the player to count the occupants of
+     * @param occupantKind the kind of occupant to count
+     * @return the number of occupants of the given kind and the given player present on the board
+     */
     public int occupantCount(PlayerColor player, Occupant.Kind occupantKind) {
         int count = 0;
         for (int index: orderedTileIndexes) {
@@ -131,6 +227,10 @@ public final class Board {
         return count;
     }
 
+    /**
+     * Returns the set of positions where the next tile may be placed
+     * @return the set of positions where the next tile may be placed
+     */
     public Set<Pos> insertionPositions() {
         Set<Pos> insertionPositions = new HashSet<>();
         // we loop over the tiles that we have already placed
@@ -140,18 +240,40 @@ public final class Board {
             for (Direction direction: Direction.ALL) {
                 // get the new position in the direction we want to test
                 Pos neighbouringPosition = tilePos.neighbor(direction);
-                if (isIndexInRange(getTileIndexFromPos(neighbouringPosition)) && tileAt(neighbouringPosition) == null) insertionPositions.add(neighbouringPosition);
+                if (isPosInRange(neighbouringPosition) && (tileAt(neighbouringPosition)) == null) {
+                    insertionPositions.add(neighbouringPosition);
+                }
             }
         }
         return insertionPositions;
     }
 
+    /**
+     * Checks if the given position is in the range of the board
+     * @param pos the position to check
+     * @return whether the given position is in the range of the board
+     */
+    private boolean isPosInRange(Pos pos) {
+        return isIndexInRange(getTileIndexFromPos(pos));
+    }
+
+    /**
+     * Returns the last placed tile on the board, null if no tile has
+     * been placed yet
+     * @return the last placed tile on the board, null if no tile has been placed yet
+     */
     public PlacedTile lastPlacedTile() {
         return hasAtLeastOneTile()
             ? placedTiles[orderedTileIndexes[orderedTileIndexes.length - 1]]
             : null;
     }
 
+    /**
+     * Returns the set of all forest areas that have been closed
+     * by the last placed tile, or an empty set if no tile has been placed yet
+     * @return the set of all forest areas that have been closed by the last placed tile,
+     * or an empty set if no tile has been placed yet
+     */
     public Set<Area<Zone.Forest>> forestsClosedByLastTile() {
         if (lastPlacedTile() == null) return Set.of();
         Set<Area<Zone.Forest>> areas = new HashSet<>();
@@ -162,6 +284,12 @@ public final class Board {
         return areas;
     }
 
+    /**
+     * Returns the set of all river areas that have been closed
+     * by the last placed tile, or an empty set if no tile has been placed yet
+     * @return the set of all river areas that have been closed by the last placed tile,
+     * or an empty set if no tile has been placed yet
+     */
     public Set<Area<Zone.River>> riversClosedByLastTile() {
         if (lastPlacedTile() == null) return Set.of();
         Set<Area<Zone.River>> areas = new HashSet<>();
@@ -174,6 +302,11 @@ public final class Board {
         return areas;
     }
 
+    /**
+     * Returns whether the given placed tile can be put on the board at its position
+     * @param tile the tile to test
+     * @return whether the given placed tile can be put on the board at its position
+     */
     public boolean canAddTile(PlacedTile tile) {
         if (!insertionPositions().contains(tile.pos())) return false;
         for (Direction direction: Direction.ALL) {
@@ -191,6 +324,11 @@ public final class Board {
         return true;
     }
 
+    /**
+     * Returns whether the given tile can be placed on the board at any position
+     * @param tile the tile to test
+     * @return whether the given tile can be placed on the board at any position
+     */
     public boolean couldPlaceTile(Tile tile) {
         for (Pos pos : insertionPositions()) {
             for (Rotation rotation : Rotation.ALL) {
@@ -201,10 +339,20 @@ public final class Board {
         return false;
     }
 
+    /**
+     * Checks if the board has at least one tile, to prevent
+     * unwanted operations on an empty board
+     * @return whether the board has at least one tile
+     */
     private boolean hasAtLeastOneTile(){
         return orderedTileIndexes.length > 0;
     }
 
+    /**
+     * Returns a new board with the given tile placed on it
+     * @param tile the tile to place
+     * @return a new board with the given tile placed on it
+     */
     public Board withNewTile(PlacedTile tile){
         if (hasAtLeastOneTile() && !canAddTile(tile)) throw new IllegalArgumentException();
         int indexOfNewTile = getTileIndexFromPos(tile.pos());
@@ -221,6 +369,7 @@ public final class Board {
         for (Direction direction: Direction.ALL) {
             Pos neighbouringPosition = tile.pos().neighbor(direction);
             PlacedTile neighbouringTile = tileAt(neighbouringPosition);
+            // if the position is out of range, the neighbouring tile is null
             if (neighbouringTile != null) {
                 TileSide sideOfNeighbour = neighbouringTile.side(direction.opposite());
                 TileSide sideOfTile = tile.side(direction);
@@ -231,6 +380,11 @@ public final class Board {
         return new Board(newPlacedTiles, newOrderedTileIndexes, zonePartitionsBuilder.build(), cancelledAnimals);
     }
 
+    /**
+     * Returns a new board with the given occupant placed
+     * @param occupant the occupant to place
+     * @return a new board with the given occupant placed
+     */
     public Board withOccupant(Occupant occupant) {
         int zoneId = occupant.zoneId();
         int tileId = Zone.tileId(zoneId);
@@ -250,6 +404,11 @@ public final class Board {
         return new Board(newPlacedTiles, orderedTileIndexes.clone(), zonePartitionsBuilder.build(), cancelledAnimals);
     }
 
+    /**
+     * Returns a new board with the given occupant removed
+     * @param occupant the occupant to remove
+     * @return a new board with the given occupant removed
+     */
     public Board withoutOccupant(Occupant occupant) {
         int zoneId = occupant.zoneId();
         int tileId = Zone.tileId(zoneId);
@@ -267,6 +426,13 @@ public final class Board {
         return new Board(newPlacedTiles, orderedTileIndexes, zonePartitionsBuilder.build(), cancelledAnimals);
     }
 
+    /**
+     * Returns a new board, identical to the former one,
+     * but with the given forests and rivers cleared of gatherers and fishers
+     * @param forests the forests to clear of gatherers
+     * @param rivers the rivers to clear of fishers
+     * @return a new board with the given forests and rivers cleared of gatherers and fishers
+     */
     public Board withoutGatherersOrFishersIn(Set<Area<Zone.Forest>> forests, Set<Area<Zone.River>> rivers) {
         ZonePartitions.Builder zonePartitionsBuilder = new ZonePartitions.Builder(zonePartitions);
         PlacedTile[] newPlacedTiles = placedTiles.clone();
@@ -293,12 +459,27 @@ public final class Board {
         return new Board(newPlacedTiles, orderedTileIndexes, zonePartitionsBuilder.build(), cancelledAnimals);
     }
 
+    /**
+     * Returns a new board, identical to the former one,
+     * but with the given animals cancelled
+     * @param newlyCancelledAnimals the animals to cancel
+     * @return a new board with the given animals cancelled
+     */
     public Board withMoreCancelledAnimals(Set<Animal> newlyCancelledAnimals) {
         Set<Animal> newCancelledAnimals = new HashSet<>(cancelledAnimals);
         newCancelledAnimals.addAll(newlyCancelledAnimals);
-        return new Board(placedTiles, orderedTileIndexes, zonePartitions, newCancelledAnimals);
+        return new Board(placedTiles.clone(),
+                orderedTileIndexes.clone(),
+                zonePartitions,
+                Collections.unmodifiableSet(newCancelledAnimals));
     }
 
+    /**
+     * Returns whether some other object is equal to this,
+     * returning false if the object isn't of the right type
+     * @param that the object to compare to
+     * @return whether some other object is equal to this board, false if the object isn't of the right type
+     */
     @Override
     public boolean equals(Object that) {
         if (that == null || that.getClass() != getClass()) {
@@ -321,6 +502,10 @@ public final class Board {
         }
     }
 
+    /**
+     * Returns the hash code of the board
+     * @return the hash code of the board
+     */
     @Override
     public int hashCode() {
         int placedTilesHash = Arrays.hashCode(placedTiles);
