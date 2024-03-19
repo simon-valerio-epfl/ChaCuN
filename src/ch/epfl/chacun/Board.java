@@ -92,6 +92,13 @@ public final class Board {
             if (tile.id() == tileId) return tile;
         }
         throw new IllegalArgumentException();
+
+//        return Arrays.stream(orderedTileIndexes)
+//                .mapToObj(idx -> placedTiles[idx])
+//                .filter((tile) -> tile.id() == tileId)
+//                .findFirst()
+//                .orElseThrow(IllegalArgumentException::new);
+
     }
 
     /**
@@ -263,7 +270,7 @@ public final class Board {
      * @return the last placed tile on the board, null if no tile has been placed yet
      */
     public PlacedTile lastPlacedTile() {
-        return hasAtLeastOneTile()
+        return !isEmpty()
             ? placedTiles[orderedTileIndexes[orderedTileIndexes.length - 1]]
             : null;
     }
@@ -344,8 +351,8 @@ public final class Board {
      * unwanted operations on an empty board
      * @return whether the board has at least one tile
      */
-    private boolean hasAtLeastOneTile(){
-        return orderedTileIndexes.length > 0;
+    private boolean isEmpty(){
+        return orderedTileIndexes.length == 0;
     }
 
     /**
@@ -354,7 +361,7 @@ public final class Board {
      * @return a new board with the given tile placed on it
      */
     public Board withNewTile(PlacedTile tile){
-        if (hasAtLeastOneTile() && !canAddTile(tile)) throw new IllegalArgumentException();
+        Preconditions.checkArgument(isEmpty() || canAddTile(tile));
         int indexOfNewTile = getTileIndexFromPos(tile.pos());
 
         PlacedTile[] newPlacedTiles = placedTiles.clone();

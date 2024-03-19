@@ -3,6 +3,7 @@ package ch.epfl.chacun;
 import javax.swing.*;
 import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.stream.Collectors;
 
 public record GameState (
         List<PlayerColor> players,
@@ -88,30 +89,45 @@ public record GameState (
     }
 
     public GameState withPlacedTile(PlacedTile tile) {
-        if (nextAction != Action.PLACE_TILE) throw new IllegalArgumentException();
+        Preconditions.checkArgument(nextAction == Action.PLACE_TILE);
 
         Board newBoard = board.withNewTile(tile);
         Action newNextAction;
         MessageBoard newMessageBoard = messageBoard;
 
         Zone specialPowerZone = tile.specialPowerZone();
-
-        if (
-                specialPowerZone != null && specialPowerZone.specialPower() != null
-                && specialPowerZone.specialPower().equals(Zone.SpecialPower.HUNTING_TRAP)
-        ) {
-            // todo should we really do this cast?
-            Area<Zone.Meadow> adjacentMeadow = newBoard.adjacentMeadow(tile.pos(), (Zone.Meadow) specialPowerZone);
-            newMessageBoard.withScoredHuntingTrap(currentPlayer(), adjacentMeadow);
-        }
-
-        if (
-                specialPowerZone != null && specialPowerZone.specialPower() != null
-                && specialPowerZone.specialPower().equals(Zone.SpecialPower.SHAMAN)
-                && board.occupantCount(currentPlayer(), Occupant.Kind.PAWN) > 0
-        ) {
-            newNextAction = Action.RETAKE_PAWN;
-            return new GameState(players, tileDecks, null, newBoard, newNextAction, newMessageBoard);
+        if (specialPowerZone != null) {
+            switch (specialPowerZone.specialPower()) {
+                case HUNTING_TRAP -> {
+                    Area<Zone.Meadow> adjacentMeadow = newBoard.adjacentMeadow(tile.pos(), (Zone.Meadow) specialPowerZone);
+                    newMessageBoard = newMessageBoard.withScoredHuntingTrap(currentPlayer(), adjacentMeadow);
+                }
+                case SHAMAN -> {
+                    if (board.occupantCount(currentPlayer(), Occupant.Kind.PAWN) > 0) {
+                        newNextAction = Action.RETAKE_PAWN;
+                        return new GameState(players, tileDecks, null, newBoard, newNextAction, newMessageBoard);
+                    }
+                }
+                case LOGBOAT -> {
+                    Area<Zone.Water> riverSystem = newBoard.riverSystemArea((Zone.Water) specialPowerZone);
+                    newMessageBoard = newMessageBoard.withScoredLogboat(currentPlayer(), riverSystem);
+                }
+                case PIT_TRAP -> {
+                    Area<Zone.Meadow> adjacentMeadow = newBoard.adjacentMeadow(tile.pos(), (Zone.Meadow) specialPowerZone);
+                    newMessageBoard = newMessageBoard.withScoredPitTrap(adjacentMeadow, board.cancelledAnimals());
+                }
+                case WILD_FIRE -> {
+                    // todo pré complet ?
+                    Area<Zone.Meadow> completeMeadow = newBoard.meadowArea((Zone.Meadow) specialPowerZone);
+                    Set<Animal> animals = Area.animals(completeMeadow, board.cancelledAnimals());
+                    Set<Animal> cancelledTigers = animals.stream().filter(animal -> animal.kind() == Animal.Kind.TIGER).collect(Collectors.toSet());
+                    newBoard = newBoard.withMoreCancelledAnimals(cancelledTigers);
+                }
+                case RAFT -> {
+                    Area<Zone.Water> riverSystem = newBoard.riverSystemArea((Zone.Water) specialPowerZone);
+                    newMessageBoard = newMessageBoard.withScoredRaft(riverSystem);
+                }
+            }
         }
 
         return withNewBoard(newBoard)
@@ -182,12 +198,16 @@ public record GameState (
     public GameState withOccupantRemoved(Occupant occupant){
         Preconditions.checkArgument(nextAction == Action.RETAKE_PAWN);
         Preconditions.checkArgument(occupant == null || occupant.kind() == Occupant.Kind.PAWN);
-        if (occupant != null) return withNewBoard(board.withoutOccupant(occupant)).withOccupyOrPlaced();
-        return withOccupyOrPlaced();
+        if (occupant != null) return withNewBoard(board.withoutOccupant(occupant)).withNewAction(Action.OCCUPY_TILE);
+        return withNewAction(Action.OCCUPY_TILE);
     }
 
     private GameState withNewBoard(Board newBoard) {
         return new GameState(players, tileDecks, tileToPlace, newBoard, nextAction, messageBoard);
+    }
+
+    private GameState withNewAction(Action newAction) {
+        return new GameState(players, tileDecks, tileToPlace, board, newAction, messageBoard);
     }
 
     private GameState withNewMessageBoard(MessageBoard newMessageBoard) {

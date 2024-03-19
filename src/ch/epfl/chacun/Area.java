@@ -1,10 +1,6 @@
 package ch.epfl.chacun;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -179,30 +175,9 @@ public record Area <Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, 
      * @return the set of players having the majority of occupants in this area
      */
     public Set<PlayerColor> majorityOccupants() {
-        // creates a 0-valued array that will store the number
-        // of occupants owned by each player
-        int[] count = new int[PlayerColor.values().length];
-        int maxOccupantCount = 0;
-
-        Set<PlayerColor> majority = new HashSet<>();
-
-        for (PlayerColor occupant : occupants) {
-            int playerColorIdx = occupant.ordinal();
-            count[playerColorIdx]++;
-            // we found a player with more occupants
-            if (count[playerColorIdx] > maxOccupantCount) {
-                majority.clear();
-                maxOccupantCount = count[playerColorIdx];
-                // we don't do majority.add(occupant) here
-                // as we'll do it in the next if block anyway
-            }
-            // the current player is one of those having the highest occupant count
-            // (for now)
-            if (count[playerColorIdx] == maxOccupantCount) {
-                majority.add(occupant);
-            }
-        }
-        return majority;
+        Map<PlayerColor, Long> m = occupants.stream().collect(Collectors.groupingBy(c -> c, Collectors.counting()));
+        long maxCount = m.values().stream().mapToLong(l -> l).max().orElse(0);
+        return m.keySet().stream().filter(c -> m.get(c) == maxCount).collect(Collectors.toSet());
     }
 
 
