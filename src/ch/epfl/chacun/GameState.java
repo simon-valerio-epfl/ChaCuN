@@ -92,9 +92,6 @@ public record GameState (
 
         Board newBoard = board.withNewTile(tile);
         Action newNextAction;
-        List<PlayerColor> newPlayers = players;
-        TileDecks newTileDecks = tileDecks;
-        Tile newTileToPlace = null;
         MessageBoard newMessageBoard = messageBoard;
 
         Zone specialPowerZone = tile.specialPowerZone();
@@ -104,49 +101,62 @@ public record GameState (
                 && specialPowerZone.specialPower().equals(Zone.SpecialPower.HUNTING_TRAP)
         ) {
             // todo should we really do this cast?
-            Area<Zone.Meadow> adjacentMeadow = board.adjacentMeadow(tile.pos(), (Zone.Meadow) specialPowerZone);
-            newMessageBoard.withScoredHuntingTrap(tile.placer(), adjacentMeadow);
+            Area<Zone.Meadow> adjacentMeadow = newBoard.adjacentMeadow(tile.pos(), (Zone.Meadow) specialPowerZone);
+            newMessageBoard.withScoredHuntingTrap(currentPlayer(), adjacentMeadow);
         }
 
         if (
                 specialPowerZone != null && specialPowerZone.specialPower() != null
                 && specialPowerZone.specialPower().equals(Zone.SpecialPower.SHAMAN)
-                && board.occupantCount(tile.placer(), Occupant.Kind.PAWN) > 0
+                && board.occupantCount(currentPlayer(), Occupant.Kind.PAWN) > 0
         ) {
             newNextAction = Action.RETAKE_PAWN;
+            return new GameState(players, tileDecks, null, newBoard, newNextAction, newMessageBoard);
         }
 
-        else if (
-                // todo: should we use lastTilePotentialOccupants()
-                tile.potentialOccupants()
-                        .stream()
-                        .anyMatch(potentialOccupant ->
-                                freeOccupantsCount(tile.placer(), potentialOccupant.kind()) >= 0
-                        )
-        ) {
+        return withNewBoard(newBoard)
+                .withNewMessageBoard(newMessageBoard)
+                .withOccupyOrPlaced();
+    }
+
+    private boolean canOccupyTile(Set<Occupant> potentialOccupants, PlayerColor player) {
+        return potentialOccupants
+            .stream()
+            .anyMatch(potentialOccupant -> freeOccupantsCount(player, potentialOccupant.kind()) > 0);
+    }
+
+    private GameState withOccupyOrPlaced() {
+
+        Action newNextAction;
+        List<PlayerColor> newPlayers = players;
+        TileDecks newTileDecks = tileDecks;
+        Tile newTileToPlace = null;
+        MessageBoard newMessageBoard = messageBoard;
+
+        if (canOccupyTile(lastTilePotentialOccupants(), currentPlayer())) {
             newNextAction = Action.OCCUPY_TILE;
         }
 
         else if (
-                newBoard.forestsClosedByLastTile()
+                board.forestsClosedByLastTile()
                         .stream()
                         .anyMatch(Area::hasMenhir)
                 && tileDecks
-                        .withTopTileDrawnUntil( Tile.Kind.MENHIR, newBoard::couldPlaceTile)
-                        .deckSize(Tile.Kind.MENHIR) > 0
+                    .withTopTileDrawnUntil(Tile.Kind.MENHIR, board::couldPlaceTile)
+                    .deckSize(Tile.Kind.MENHIR) > 0
         ) {
-            for (Area<Zone.Forest> forest: newBoard.forestsClosedByLastTile()) {
-                newMessageBoard = newMessageBoard.withClosedForestWithMenhir(tile.placer(), forest);
+            for (Area<Zone.Forest> forest: board.forestsClosedByLastTile()) {
+                newMessageBoard = newMessageBoard.withClosedForestWithMenhir(currentPlayer(), forest);
             }
             newNextAction = Action.PLACE_TILE;
-            newTileDecks = tileDecks.withTopTileDrawnUntil(Tile.Kind.MENHIR, newBoard::couldPlaceTile);
+            newTileDecks = tileDecks.withTopTileDrawnUntil(Tile.Kind.MENHIR, board::couldPlaceTile);
             newTileToPlace = tileDecks.topTile(Tile.Kind.MENHIR);
             newTileDecks = newTileDecks.withTopTileDrawn(Tile.Kind.MENHIR);
         }
 
         else if (
                 tileDecks
-                    .withTopTileDrawnUntil(Tile.Kind.NORMAL, newBoard::couldPlaceTile)
+                    .withTopTileDrawnUntil(Tile.Kind.NORMAL, board::couldPlaceTile)
                     .deckSize(Tile.Kind.NORMAL) > 0
         ) {
             newNextAction = Action.PLACE_TILE;
@@ -161,19 +171,28 @@ public record GameState (
             newNextAction = Action.END_GAME;
         }
 
-        return new GameState(newPlayers, newTileDecks, newTileToPlace, newBoard, newNextAction, newMessageBoard);
+        return new GameState(newPlayers, newTileDecks, newTileToPlace, board, newNextAction, newMessageBoard);
+
     }
 
+    // cette méthode est appelée quand la personne pose une tuile menhir
+    // et que cette tuile menhir contient le chaman
+    // alors AVANT qu'il ne puisse décider s'il veut occuper la tuile
+    // on lui propose de retirer un pion
     public GameState withOccupantRemoved(Occupant occupant){
-        if(nextAction!= Action.RETAKE_PAWN  || (occupant !=null && occupant.kind()!= Occupant.Kind.PAWN))
-            throw new IllegalArgumentException();
-        if(occupant == null){
-            //return new GameState(players, tileDecks, tileDecks.topTile(Tile.Kind.MENHIR), board, )
-        }
-        return null;
+        Preconditions.checkArgument(nextAction == Action.RETAKE_PAWN);
+        Preconditions.checkArgument(occupant == null || occupant.kind() == Occupant.Kind.PAWN);
+        if (occupant != null) return withNewBoard(board.withoutOccupant(occupant)).withOccupyOrPlaced();
+        return withOccupyOrPlaced();
     }
 
+    private GameState withNewBoard(Board newBoard) {
+        return new GameState(players, tileDecks, tileToPlace, newBoard, nextAction, messageBoard);
+    }
 
+    private GameState withNewMessageBoard(MessageBoard newMessageBoard) {
+        return new GameState(players, tileDecks, tileToPlace, board, nextAction, newMessageBoard);
+    }
 
     public enum Action {
         START_GAME,
