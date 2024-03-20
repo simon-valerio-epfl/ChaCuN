@@ -53,7 +53,7 @@ public record GameState (
     public Set<Occupant> lastTilePotentialOccupants() {
         PlacedTile tile = board.lastPlacedTile();
         // if the board is empty, lastPlacedTile will return null
-        if (tile == null) throw new IllegalArgumentException();
+        Preconditions.checkArgument(tile != null);
         return tile.potentialOccupants();
     }
 
@@ -91,49 +91,105 @@ public record GameState (
     public GameState withPlacedTile(PlacedTile tile) {
         Preconditions.checkArgument(nextAction == Action.PLACE_TILE);
 
-        Board newBoard = board.withNewTile(tile);
-        Action newNextAction;
         MessageBoard newMessageBoard = messageBoard;
+        Board newBoard = board.withNewTile(tile);
 
         Zone specialPowerZone = tile.specialPowerZone();
         if (specialPowerZone != null) {
             switch (specialPowerZone.specialPower()) {
-                case HUNTING_TRAP -> {
-                    Area<Zone.Meadow> adjacentMeadow = newBoard.adjacentMeadow(tile.pos(), (Zone.Meadow) specialPowerZone);
-                    newMessageBoard = newMessageBoard.withScoredHuntingTrap(currentPlayer(), adjacentMeadow);
-                }
                 case SHAMAN -> {
+                    // todo can we use when
                     if (board.occupantCount(currentPlayer(), Occupant.Kind.PAWN) > 0) {
-                        newNextAction = Action.RETAKE_PAWN;
-                        return new GameState(players, tileDecks, null, newBoard, newNextAction, newMessageBoard);
+                        return withNewAction(Action.RETAKE_PAWN).withNewTileToPlace(null);
                     }
                 }
                 case LOGBOAT -> {
                     Area<Zone.Water> riverSystem = newBoard.riverSystemArea((Zone.Water) specialPowerZone);
                     newMessageBoard = newMessageBoard.withScoredLogboat(currentPlayer(), riverSystem);
                 }
-                case PIT_TRAP -> {
+                case HUNTING_TRAP -> {
                     Area<Zone.Meadow> adjacentMeadow = newBoard.adjacentMeadow(tile.pos(), (Zone.Meadow) specialPowerZone);
-                    newMessageBoard = newMessageBoard.withScoredPitTrap(adjacentMeadow, board.cancelledAnimals());
-                }
-                case WILD_FIRE -> {
-                    // todo pré complet ?
-                    Area<Zone.Meadow> completeMeadow = newBoard.meadowArea((Zone.Meadow) specialPowerZone);
-                    Set<Animal> animals = Area.animals(completeMeadow, board.cancelledAnimals());
-                    Set<Animal> cancelledTigers = animals.stream().filter(animal -> animal.kind() == Animal.Kind.TIGER).collect(Collectors.toSet());
-                    newBoard = newBoard.withMoreCancelledAnimals(cancelledTigers);
-                }
-                case RAFT -> {
-                    Area<Zone.Water> riverSystem = newBoard.riverSystemArea((Zone.Water) specialPowerZone);
-                    newMessageBoard = newMessageBoard.withScoredRaft(riverSystem);
+                    newMessageBoard = newMessageBoard.withScoredHuntingTrap(currentPlayer(), adjacentMeadow);
                 }
             }
         }
 
         return withNewBoard(newBoard)
                 .withNewMessageBoard(newMessageBoard)
-                .withOccupyOrPlaced();
+                .withNewAction(Action.OCCUPY_TILE)
+                .withTurnFinishedIfOccupationImpossible();
     }
+
+    private GameState withTurnFinishedIfOccupationImpossible() {
+        return canOccupyTile(lastTilePotentialOccupants(), currentPlayer())
+                ? this : withTurnFinished();
+    }
+
+    /*
+
+    déterminer les forêts et rivières fermées par la pose de la dernière tuile, et attribuer les points correspondants à leurs occupants majoritaires,
+    déterminer si le joueur courant devrait pouvoir jouer un second tour, car il a fermé au moins une forêt contenant un menhir au moyen d'une tuile normale,
+    éliminer du sommet du tas contenant la prochaine tuile à jouer la totalité de celles qu'il n'est pas possible de placer sur le plateau, s'il y en a,
+    passer la main au prochain joueur si le joueur courant n'a pas le droit ou la possibilité de jouer une tuile menhir,
+    terminer la partie si le joueur courant a terminé son ou ses tour(s) et qu'il ne reste plus de tuile normale jouable.
+
+     */
+    private GameState withTurnFinished () {
+
+        Preconditions.checkArgument(board.lastPlacedTile() != null);
+
+        MessageBoard newMessageBoard = messageBoard;
+        Board newBoard = board;
+        TileDecks newTileDecks = tileDecks;
+        List<PlayerColor> newPlayers = players;
+
+        // gestion de la fermeture des rivières et forêts
+        Set<Area<Zone.Forest>> closedForests = newBoard.forestsClosedByLastTile();
+        for (Area<Zone.Forest> forest: closedForests) newMessageBoard = newMessageBoard.withScoredForest(forest);
+        Set<Area<Zone.River>> closedRivers = newBoard.riversClosedByLastTile();
+        for (Area<Zone.River> river: closedRivers) newMessageBoard = newMessageBoard.withScoredRiver(river);
+        newBoard = newBoard.withoutGatherersOrFishersIn(closedForests, closedRivers);
+
+        // on regarde s'il existe une forêt menhir fermée
+        Area<Zone.Forest> forestClosedMenhir = closedForests.stream()
+                .filter(Area::hasMenhir)
+                .findFirst()
+                .orElse(null);
+        // todo demander à fabrice si le warning est important
+        boolean isLastTileNormal = newBoard.lastPlacedTile().kind() == Tile.Kind.NORMAL;
+
+        boolean menhirDoubleTour = false;
+
+        if (forestClosedMenhir != null && isLastTileNormal) {
+            newTileDecks = newTileDecks.withTopTileDrawnUntil(Tile.Kind.MENHIR, newBoard::couldPlaceTile);
+            boolean couldPlaceMenhirTile = newTileDecks.deckSize(Tile.Kind.MENHIR) > 0;
+            if (couldPlaceMenhirTile) {
+                menhirDoubleTour = true;
+                newMessageBoard = newMessageBoard.withClosedForestWithMenhir(currentPlayer(), forestClosedMenhir);
+            }
+        }
+
+        newPlayers = menhirDoubleTour ? players : withNextPlayer();
+        Tile.Kind nextKind = menhirDoubleTour ? Tile.Kind.MENHIR : Tile.Kind.NORMAL;
+
+        newTileDecks = newTileDecks.withTopTileDrawnUntil(nextKind, newBoard::couldPlaceTile);
+        boolean couldPlaceTile = newTileDecks.deckSize(nextKind) > 0;
+
+        if (couldPlaceTile) {
+            return new GameState(newPlayers, newTileDecks.withTopTileDrawn(nextKind), newTileDecks.topTile(nextKind), newBoard, Action.PLACE_TILE, newMessageBoard);
+        } else {
+
+            // end game
+            // todo compter raft, etc.
+
+            SimpleEntry<Integer, Set<PlayerColor>> winners = getWinnersPoints(newMessageBoard.points());
+            newMessageBoard = newMessageBoard.withWinners(winners.getValue(), winners.getKey());
+            return new GameState(players, tileDecks, null, newBoard, Action.END_GAME, newMessageBoard);
+
+        }
+
+    }
+
 
     private boolean canOccupyTile(Set<Occupant> potentialOccupants, PlayerColor player) {
         return potentialOccupants
@@ -141,54 +197,11 @@ public record GameState (
             .anyMatch(potentialOccupant -> freeOccupantsCount(player, potentialOccupant.kind()) > 0);
     }
 
-    private GameState withOccupyOrPlaced() {
-
-        Action newNextAction;
-        List<PlayerColor> newPlayers = players;
-        TileDecks newTileDecks = tileDecks;
-        Tile newTileToPlace = null;
-        MessageBoard newMessageBoard = messageBoard;
-
-        if (canOccupyTile(lastTilePotentialOccupants(), currentPlayer())) {
-            newNextAction = Action.OCCUPY_TILE;
-        }
-
-        else if (
-                board.forestsClosedByLastTile()
-                        .stream()
-                        .anyMatch(Area::hasMenhir)
-                && tileDecks
-                    .withTopTileDrawnUntil(Tile.Kind.MENHIR, board::couldPlaceTile)
-                    .deckSize(Tile.Kind.MENHIR) > 0
-        ) {
-            for (Area<Zone.Forest> forest: board.forestsClosedByLastTile()) {
-                newMessageBoard = newMessageBoard.withClosedForestWithMenhir(currentPlayer(), forest);
-            }
-            newNextAction = Action.PLACE_TILE;
-            newTileDecks = tileDecks.withTopTileDrawnUntil(Tile.Kind.MENHIR, board::couldPlaceTile);
-            newTileToPlace = tileDecks.topTile(Tile.Kind.MENHIR);
-            newTileDecks = newTileDecks.withTopTileDrawn(Tile.Kind.MENHIR);
-        }
-
-        else if (
-                tileDecks
-                    .withTopTileDrawnUntil(Tile.Kind.NORMAL, board::couldPlaceTile)
-                    .deckSize(Tile.Kind.NORMAL) > 0
-        ) {
-            newNextAction = Action.PLACE_TILE;
-            newPlayers = new LinkedList<>(players);
-            PlayerColor placer = newPlayers.removeFirst();
-            newPlayers.addLast(placer);
-        }
-
-        else {
-            SimpleEntry<Integer, Set<PlayerColor>> winners = getWinnersPoints(newMessageBoard.points());
-            newMessageBoard = newMessageBoard.withWinners(winners.getValue(), winners.getKey());
-            newNextAction = Action.END_GAME;
-        }
-
-        return new GameState(newPlayers, newTileDecks, newTileToPlace, board, newNextAction, newMessageBoard);
-
+    private List<PlayerColor> withNextPlayer () {
+        List<PlayerColor> newPlayers = new LinkedList<>(players);
+        PlayerColor placer = newPlayers.removeFirst();
+        newPlayers.addLast(placer);
+        return newPlayers;
     }
 
     // cette méthode est appelée quand la personne pose une tuile menhir
@@ -200,6 +213,13 @@ public record GameState (
         Preconditions.checkArgument(occupant == null || occupant.kind() == Occupant.Kind.PAWN);
         if (occupant != null) return withNewBoard(board.withoutOccupant(occupant)).withNewAction(Action.OCCUPY_TILE);
         return withNewAction(Action.OCCUPY_TILE);
+        //return occupyOrFinish();
+        // occupyOrFinish --> si occupy ? withTurnFinished : withTurnFinishedIfOccupationImpossible
+        //return withTurnFinishedIfOccupationImpossible();
+    }
+
+    public GameState withNewOccupant(Occupant occupant) {
+        return withTurnFinished();
     }
 
     private GameState withNewBoard(Board newBoard) {
@@ -212,6 +232,14 @@ public record GameState (
 
     private GameState withNewMessageBoard(MessageBoard newMessageBoard) {
         return new GameState(players, tileDecks, tileToPlace, board, nextAction, newMessageBoard);
+    }
+
+    private GameState withNewTileToPlace(Tile tile) {
+        return new GameState(players, tileDecks, tile, board, nextAction, messageBoard);
+    }
+
+    private GameState withNewTileDecks(TileDecks tileDecks) {
+        return new GameState(players, tileDecks, tileToPlace, board, nextAction, messageBoard);
     }
 
     public enum Action {
