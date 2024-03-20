@@ -100,7 +100,7 @@ public record GameState (
                 case SHAMAN -> {
                     // todo can we use when
                     if (board.occupantCount(currentPlayer(), Occupant.Kind.PAWN) > 0) {
-                        return withNewAction(Action.RETAKE_PAWN).withNewTileToPlace(null);
+                        return new GameState(players, tileDecks, null, newBoard, Action.RETAKE_PAWN, messageBoard);
                     }
                 }
                 case LOGBOAT -> {
@@ -114,9 +114,7 @@ public record GameState (
             }
         }
 
-        return withNewBoard(newBoard)
-                .withNewMessageBoard(newMessageBoard)
-                .withNewAction(Action.OCCUPY_TILE)
+        return new GameState(players, tileDecks, null, newBoard, Action.OCCUPY_TILE, messageBoard)
                 .withTurnFinishedIfOccupationImpossible();
     }
 
@@ -211,35 +209,12 @@ public record GameState (
     public GameState withOccupantRemoved(Occupant occupant){
         Preconditions.checkArgument(nextAction == Action.RETAKE_PAWN);
         Preconditions.checkArgument(occupant == null || occupant.kind() == Occupant.Kind.PAWN);
-        if (occupant != null) return withNewBoard(board.withoutOccupant(occupant)).withNewAction(Action.OCCUPY_TILE);
-        return withNewAction(Action.OCCUPY_TILE);
-        //return occupyOrFinish();
-        // occupyOrFinish --> si occupy ? withTurnFinished : withTurnFinishedIfOccupationImpossible
-        //return withTurnFinishedIfOccupationImpossible();
+        return new GameState(players, tileDecks, null, occupant != null ? board.withoutOccupant(occupant) : board, Action.OCCUPY_TILE, messageBoard)
+                .withTurnFinishedIfOccupationImpossible();
     }
 
     public GameState withNewOccupant(Occupant occupant) {
         return withTurnFinished();
-    }
-
-    private GameState withNewBoard(Board newBoard) {
-        return new GameState(players, tileDecks, tileToPlace, newBoard, nextAction, messageBoard);
-    }
-
-    private GameState withNewAction(Action newAction) {
-        return new GameState(players, tileDecks, tileToPlace, board, newAction, messageBoard);
-    }
-
-    private GameState withNewMessageBoard(MessageBoard newMessageBoard) {
-        return new GameState(players, tileDecks, tileToPlace, board, nextAction, newMessageBoard);
-    }
-
-    private GameState withNewTileToPlace(Tile tile) {
-        return new GameState(players, tileDecks, tile, board, nextAction, messageBoard);
-    }
-
-    private GameState withNewTileDecks(TileDecks tileDecks) {
-        return new GameState(players, tileDecks, tileToPlace, board, nextAction, messageBoard);
     }
 
     public enum Action {
