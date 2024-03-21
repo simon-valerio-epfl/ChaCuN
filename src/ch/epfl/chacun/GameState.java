@@ -1,10 +1,8 @@
 package ch.epfl.chacun;
 
-import javax.swing.*;
 import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public record GameState (
         List<PlayerColor> players,
@@ -55,7 +53,41 @@ public record GameState (
         PlacedTile tile = board.lastPlacedTile();
         // if the board is empty, lastPlacedTile will return null
         Preconditions.checkArgument(tile != null);
-        return tile.potentialOccupants();
+        Set<Integer> occupiedPawnZonesIds = new HashSet<>();
+        Set<Integer> occupiedHutZonesIds = new HashSet<>();
+        for (Zone zone: tile.tile().zones()) {
+            switch (zone) {
+                case Zone.Forest forestZone -> {
+                    if (!board.forestArea(forestZone).occupants().isEmpty()) {
+                        occupiedPawnZonesIds.add(forestZone.id());
+                    }
+                }
+                case Zone.Meadow meadowZone -> {
+                    if (!board.meadowArea(meadowZone).occupants().isEmpty()) {
+                        occupiedPawnZonesIds.add(meadowZone.id());
+                    }
+                }
+                case Zone.River riverZone -> {
+                    if (!board.riverArea(riverZone).occupants().isEmpty()) {
+                        occupiedPawnZonesIds.add(riverZone.id());
+                    }
+                }
+                case Zone.Water waterZone -> {
+                    if (!board.riverSystemArea(waterZone).occupants().isEmpty()) {
+                        occupiedHutZonesIds.add(waterZone.id());
+                    }
+                }
+            }
+        }
+        // todo demander aux assistants s'ils nous mettraient 0 au rendu intermédiaire pour ce switch dans un filter
+        return tile.potentialOccupants()
+            .stream()
+            .filter(occupant ->
+                switch (occupant.kind()) {
+                    case PAWN -> !occupiedPawnZonesIds.contains(occupant.zoneId());
+                    case HUT ->  !occupiedHutZonesIds.contains(occupant.zoneId());
+                }
+            ).collect(Collectors.toSet());
     }
 
     public GameState withStartingTilePlaced() {
@@ -126,6 +158,7 @@ public record GameState (
     }
 
     private GameState withTurnFinishedIfOccupationImpossible() {
+        Preconditions.checkArgument(nextAction == Action.OCCUPY_TILE);
         return canOccupyTile(lastTilePotentialOccupants(), currentPlayer())
                 ? this : withTurnFinished();
     }
@@ -137,7 +170,6 @@ public record GameState (
         MessageBoard newMessageBoard = messageBoard;
         Board newBoard = board;
         TileDecks newTileDecks = tileDecks;
-        List<PlayerColor> newPlayers = players;
 
         // gestion de la fermeture des rivières et forêts
         Set<Area<Zone.Forest>> closedForests = newBoard.forestsClosedByLastTile();
@@ -165,7 +197,7 @@ public record GameState (
             }
         }
 
-        newPlayers = menhirDoubleTour ? players : withNextPlayer();
+        List<PlayerColor> newPlayers = menhirDoubleTour ? players : withNextPlayer();
         Tile.Kind nextKind = menhirDoubleTour ? Tile.Kind.MENHIR : Tile.Kind.NORMAL;
 
         newTileDecks = newTileDecks.withTopTileDrawnUntil(nextKind, newBoard::couldPlaceTile);
@@ -174,10 +206,8 @@ public record GameState (
         if (couldPlaceTile) {
             return new GameState(newPlayers, newTileDecks.withTopTileDrawn(nextKind), newTileDecks.topTile(nextKind), newBoard, Action.PLACE_TILE, newMessageBoard);
         } else {
-
             return new GameState(players, tileDecks, null, newBoard, Action.END_GAME, newMessageBoard)
-                    .withFinalPointsCounted();
-
+                .withFinalPointsCounted();
         }
 
     }
@@ -280,7 +310,11 @@ public record GameState (
     }
 
     public GameState withNewOccupant(Occupant occupant) {
-        return withTurnFinished();
+        Preconditions.checkArgument(nextAction == Action.OCCUPY_TILE);
+        Preconditions.checkArgument(board.lastPlacedTile() != null);
+        // todo est-ce que l'action a la sortie de withNewOccupant
+        return new GameState(players, tileDecks, tileToPlace, occupant != null ? board.withOccupant(occupant) : board, Action.OCCUPY_TILE, messageBoard)
+                .withTurnFinished();
     }
 
     public enum Action {

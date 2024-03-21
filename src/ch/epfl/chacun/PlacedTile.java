@@ -142,7 +142,7 @@ public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos 
             return potentialOccupants;
         }
         // each side zone can have a pawn, and if it's a river, a hut (if there is no lake)
-        for (Zone zone: this.tile.sideZones()) {
+        for (Zone zone: tile.sideZones()) {
             Occupant potentialOccupant = new Occupant(Occupant.Kind.PAWN, zone.id());
             potentialOccupants.add(potentialOccupant);
             if (zone instanceof Zone.River river) {
@@ -152,7 +152,7 @@ public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos 
                 }
             }
         }
-        for (Zone zone: this.tile.zones()) {
+        for (Zone zone: tile.zones()) {
             if (zone instanceof Zone.Lake) {
                 Occupant potentialLakeOccupant = new Occupant(Occupant.Kind.HUT, zone.id());
                 potentialOccupants.add(potentialLakeOccupant);
