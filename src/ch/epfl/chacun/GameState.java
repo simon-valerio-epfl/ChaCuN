@@ -246,6 +246,14 @@ public record GameState (
 
         }
 
+        for (Area<Zone.Water> waterArea: newBoard.riverSystemAreas()) {
+
+            newMessageBoard = newMessageBoard.withScoredRiverSystem(waterArea);
+            boolean hasRaft = waterArea.zoneWithSpecialPower(Zone.SpecialPower.RAFT) != null;
+            if (hasRaft) newMessageBoard = newMessageBoard.withScoredRaft(waterArea);
+
+        }
+
         return new GameState(players, tileDecks, null, newBoard, nextAction, newMessageBoard);
     }
 
