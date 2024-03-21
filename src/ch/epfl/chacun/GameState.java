@@ -235,6 +235,13 @@ public record GameState (
 
             }
 
+            // todo remove this code duplication plz
+            if (pitTrapZone != null) {
+                PlacedTile pitTrapTile = newBoard.tileWithId(pitTrapZone.tileId());
+                Area<Zone.Meadow> adjacentMeadow = newBoard.adjacentMeadow(pitTrapTile.pos(), pitTrapZone);
+                newMessageBoard = newMessageBoard.withScoredPitTrap(adjacentMeadow, newBoard.cancelledAnimals());
+            }
+
             newMessageBoard = newMessageBoard.withScoredMeadow(meadowArea, newBoard.cancelledAnimals());
 
         }
