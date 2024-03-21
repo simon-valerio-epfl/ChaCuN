@@ -8,7 +8,7 @@ Id,N,E,S,W,Z0,Z1,Z2,Z3,Z4,Z5,Z6,Z7,Z8,Z9,Type
 6,R012,R234,M4,R450,M,R1,M,R1,Md,R1,,,Lf,,Normale
 7,R012,R234,R450,M0,Mt,R1,M,R1,M,R1,,,Lf,,Normale
 8,R012,R234,M4,R450,Mm,R1,Md,R1,M,R1,,,Lf,,Normale
-9,R012,M2,R234,R450,M,R1,M,R1,M,R1,,,Lff,,Normale
+9,R012,R234,R450,M0,M,R1,M,R1,M,R1,,,Lff,,Normale
 10,R012,R234,M4,R450,M,R1,M,R1,Md,R1,,,Lf,,Normale
 11,R012,R234,F5,R670,M,R1,M,R1,M,F,M,R1,Lf,,Normale
 12,R012,M2,R234,R450,M,R1,M,R1,Md,R1,,,Lf,,Normale
@@ -44,7 +44,7 @@ Id,N,E,S,W,Z0,Z1,Z2,Z3,Z4,Z5,Z6,Z7,Z8,Z9,Type
 42,F0,F0,M1,M2,Fm,M,M,,,,,,,,Normale
 43,F0,F0,F1,M2,Fm,Fm,F,M,,,,,,,Normale
 44,F0,F1,M2,F0,Fm,F,Md,,,,,,,,Normale
-45,R012,F3,R416,F7,M,Rf,M,F,Md,M,F,,,,Normale
+45,R012,F3,R415,F6,M,Rf,M,F,Md,M,F,,,,Normale
 46,M0,R012,F3,R210,M,R,M,F,,,,,,,Normale
 47,M0,R012,F3,R210,M,Rf,Md,F,,,,,,,Normale
 48,M0,R012,M2,R210,M,R,Mt,,,,,,,,Normale
