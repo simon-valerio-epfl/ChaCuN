@@ -175,8 +175,6 @@ public record GameState (
             return new GameState(newPlayers, newTileDecks.withTopTileDrawn(nextKind), newTileDecks.topTile(nextKind), newBoard, Action.PLACE_TILE, newMessageBoard);
         } else {
 
-            // end game
-            // todo compter raft, etc.
             return new GameState(players, tileDecks, null, newBoard, Action.END_GAME, newMessageBoard)
                     .withFinalPointsCounted();
 
@@ -188,9 +186,6 @@ public record GameState (
 
         Board newBoard = board;
         MessageBoard newMessageBoard = messageBoard;
-
-        SimpleEntry<Integer, Set<PlayerColor>> winners = getWinnersPoints(newMessageBoard.points());
-        newMessageBoard = newMessageBoard.withWinners(winners.getValue(), winners.getKey());
 
         // gestion du pit trap
         for (Area<Zone.Meadow> meadowArea: newBoard.meadowAreas()) {
@@ -253,6 +248,9 @@ public record GameState (
             if (hasRaft) newMessageBoard = newMessageBoard.withScoredRaft(waterArea);
 
         }
+
+        SimpleEntry<Integer, Set<PlayerColor>> winners = getWinnersPoints(newMessageBoard.points());
+        newMessageBoard = newMessageBoard.withWinners(winners.getValue(), winners.getKey());
 
         return new GameState(players, tileDecks, null, newBoard, nextAction, newMessageBoard);
     }
