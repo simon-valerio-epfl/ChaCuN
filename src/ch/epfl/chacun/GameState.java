@@ -84,8 +84,8 @@ public record GameState (
         return new SimpleEntry<>(max, winners);
     }
 
-    private int animalCountOfKind (Area<Zone.Meadow> area, Animal.Kind kind) {
-        return (int) Area.animals(area, Set.of()).stream().filter(a -> a.kind() == kind).count();
+    private int animalCountOfKind (Set<Animal> animals, Animal.Kind kind) {
+        return (int) animals.stream().filter(a -> a.kind() == kind).count();
     }
 
     public GameState withPlacedTile(PlacedTile tile) {
@@ -109,12 +109,18 @@ public record GameState (
                 }
                 case HUNTING_TRAP -> {
                     Area<Zone.Meadow> adjacentMeadow = newBoard.adjacentMeadow(tile.pos(), (Zone.Meadow) specialPowerZone);
+                    Set<Animal> animals = Area.animals(adjacentMeadow, newBoard.cancelledAnimals());
+                    int deerCount = animalCountOfKind(animals, Animal.Kind.DEER);
+                    int tigerCount = animalCountOfKind(animals, Animal.Kind.TIGER);
+                    int deerCountToCancel = tigerCount > deerCount ? 0 : deerCount - tigerCount;
+                    // todo calculer les cerfs
+                    newBoard = newBoard.withMoreCancelledAnimals(animals);
                     newMessageBoard = newMessageBoard.withScoredHuntingTrap(currentPlayer(), adjacentMeadow);
                 }
             }
         }
 
-        return new GameState(players, tileDecks, null, newBoard, Action.OCCUPY_TILE, messageBoard)
+        return new GameState(players, tileDecks, null, newBoard, Action.OCCUPY_TILE, newMessageBoard)
                 .withTurnFinishedIfOccupationImpossible();
     }
 
@@ -123,15 +129,6 @@ public record GameState (
                 ? this : withTurnFinished();
     }
 
-    /*
-
-    déterminer les forêts et rivières fermées par la pose de la dernière tuile, et attribuer les points correspondants à leurs occupants majoritaires,
-    déterminer si le joueur courant devrait pouvoir jouer un second tour, car il a fermé au moins une forêt contenant un menhir au moyen d'une tuile normale,
-    éliminer du sommet du tas contenant la prochaine tuile à jouer la totalité de celles qu'il n'est pas possible de placer sur le plateau, s'il y en a,
-    passer la main au prochain joueur si le joueur courant n'a pas le droit ou la possibilité de jouer une tuile menhir,
-    terminer la partie si le joueur courant a terminé son ou ses tour(s) et qu'il ne reste plus de tuile normale jouable.
-
-     */
     private GameState withTurnFinished () {
 
         Preconditions.checkArgument(board.lastPlacedTile() != null);
@@ -179,15 +176,42 @@ public record GameState (
 
             // end game
             // todo compter raft, etc.
-
-            SimpleEntry<Integer, Set<PlayerColor>> winners = getWinnersPoints(newMessageBoard.points());
-            newMessageBoard = newMessageBoard.withWinners(winners.getValue(), winners.getKey());
-            return new GameState(players, tileDecks, null, newBoard, Action.END_GAME, newMessageBoard);
+            return new GameState(players, tileDecks, null, newBoard, Action.END_GAME, newMessageBoard)
+                    .withFinalPointsCounted();
 
         }
 
     }
 
+    private GameState withFinalPointsCounted () {
+
+        Board newBoard = board;
+        MessageBoard newMessageBoard = messageBoard;
+
+        SimpleEntry<Integer, Set<PlayerColor>> winners = getWinnersPoints(newMessageBoard.points());
+        newMessageBoard = newMessageBoard.withWinners(winners.getValue(), winners.getKey());
+
+        for (Area<Zone.Meadow> meadowArea: board.meadowAreas()) {
+
+            boolean hasWildFireZone = meadowArea.zones().stream().anyMatch(z -> z.specialPower() == Zone.SpecialPower.WILD_FIRE);
+            Zone.Meadow hasPitTrapZone = meadowArea.zones().stream().filter(z -> z.specialPower() == Zone.SpecialPower.PIT_TRAP).findAny().orElse(null);
+            if (!hasWildFireZone) {
+                Set<Animal> allAnimals = Area.animals(meadowArea, board.cancelledAnimals());
+                int deerCount = animalCountOfKind(allAnimals, Animal.Kind.DEER);
+                int tigerCount = animalCountOfKind(allAnimals, Animal.Kind.TIGER);
+                List<Animal> deers = allAnimals.stream().filter(animal -> animal.kind() == Animal.Kind.DEER).toList();
+                int finalDeerCount = Math.max(0, deerCount - tigerCount);
+
+                Iterator<Animal> it = deers.iterator();
+                while (it.hasNext() && deers.size() > finalDeerCount) {
+                    it.remove();
+                }
+            }
+
+        }
+
+        return new GameState(players, tileDecks, null, newBoard, nextAction, newMessageBoard);
+    }
 
     private boolean canOccupyTile(Set<Occupant> potentialOccupants, PlayerColor player) {
         return potentialOccupants

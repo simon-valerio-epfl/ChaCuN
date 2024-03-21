@@ -498,13 +498,10 @@ public final class Board {
             // the method call on a subclass will return false
             return false;
         } else {
-            // todo: really make sure to test that
             Board thatBoard = (Board) that;
             return Arrays.equals(thatBoard.orderedTileIndexes, orderedTileIndexes)
                     && Arrays.equals(thatBoard.placedTiles, placedTiles)
-                    //todo: to test
                     && cancelledAnimals.equals(thatBoard.cancelledAnimals)
-                    //todo: to test
                     && zonePartitions.equals(thatBoard.zonePartitions);
         }
     }
