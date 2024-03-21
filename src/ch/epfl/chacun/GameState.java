@@ -191,21 +191,40 @@ public record GameState (
         SimpleEntry<Integer, Set<PlayerColor>> winners = getWinnersPoints(newMessageBoard.points());
         newMessageBoard = newMessageBoard.withWinners(winners.getValue(), winners.getKey());
 
+        // gestion du pit trap
         for (Area<Zone.Meadow> meadowArea: board.meadowAreas()) {
 
             boolean hasWildFireZone = meadowArea.zones().stream().anyMatch(z -> z.specialPower() == Zone.SpecialPower.WILD_FIRE);
-            Zone.Meadow hasPitTrapZone = meadowArea.zones().stream().filter(z -> z.specialPower() == Zone.SpecialPower.PIT_TRAP).findAny().orElse(null);
+            Zone.Meadow pitTrapZone = meadowArea.zones().stream().filter(z -> z.specialPower() == Zone.SpecialPower.PIT_TRAP).findAny().orElse(null);
+
             if (!hasWildFireZone) {
+
                 Set<Animal> allAnimals = Area.animals(meadowArea, board.cancelledAnimals());
                 int deerCount = animalCountOfKind(allAnimals, Animal.Kind.DEER);
                 int tigerCount = animalCountOfKind(allAnimals, Animal.Kind.TIGER);
-                List<Animal> deers = allAnimals.stream().filter(animal -> animal.kind() == Animal.Kind.DEER).toList();
-                int finalDeerCount = Math.max(0, deerCount - tigerCount);
+                final int toCancelCount = Math.min(tigerCount, deerCount);
 
-                Iterator<Animal> it = deers.iterator();
-                while (it.hasNext() && deers.size() > finalDeerCount) {
-                    it.remove();
+                if (pitTrapZone != null) {
+                    PlacedTile pitTrapTile = board.tileWithId(pitTrapZone.tileId());
+                    Area<Zone.Meadow> adjacentMeadow = board.adjacentMeadow(pitTrapTile.pos(), pitTrapZone);
+                    Set<Animal> adjacentAnimals = Area.animals(adjacentMeadow, board.cancelledAnimals());
+                    Set<Animal> farAwayAnimals = allAnimals.stream().filter(a -> !adjacentAnimals.contains(a)).collect(Collectors.toSet());
+
+                    // gestion des cerfs annulés
+                    Set<Animal> deersToCancel = new HashSet<>(toCancelCount);
+                    
+
+                    // d'abord on ajoute les cerfs loins, puis les cerfs près
+                    Iterator<Animal> farAwayIterator = farAwayAnimals.iterator();
+                    while (farAwayIterator.hasNext() && toCancelCount > deersToCancel.size()) deersToCancel.add(farAwayIterator.next());
+                    Iterator<Animal> adjacentIterator = adjacentAnimals.iterator();
+                    while (toCancelCount > deersToCancel.size()) deersToCancel.add(adjacentIterator.next());
+
+                    newBoard = newBoard.withMoreCancelledAnimals(deersToCancel);
                 }
+
+            } else {
+                // ne pas annuler de cerfs
             }
 
         }
