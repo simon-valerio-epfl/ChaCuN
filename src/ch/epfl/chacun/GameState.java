@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public record GameState (
         List<PlayerColor> players,
@@ -200,31 +201,33 @@ public record GameState (
             if (!hasWildFireZone) {
 
                 Set<Animal> allAnimals = Area.animals(meadowArea, board.cancelledAnimals());
+                Set<Animal> deers = allAnimals.stream().filter(animal -> animal.kind() == Animal.Kind.DEER).collect(Collectors.toSet());
                 int deerCount = animalCountOfKind(allAnimals, Animal.Kind.DEER);
                 int tigerCount = animalCountOfKind(allAnimals, Animal.Kind.TIGER);
-                final int toCancelCount = Math.min(tigerCount, deerCount);
+                int toCancelCount = Math.min(tigerCount, deerCount);
+
+                List<Animal> orderedDeers = new ArrayList<>(deerCount);
+                Set<Animal> deersToCancel = new HashSet<>(toCancelCount);
 
                 if (pitTrapZone != null) {
                     PlacedTile pitTrapTile = board.tileWithId(pitTrapZone.tileId());
                     Area<Zone.Meadow> adjacentMeadow = board.adjacentMeadow(pitTrapTile.pos(), pitTrapZone);
                     Set<Animal> adjacentAnimals = Area.animals(adjacentMeadow, board.cancelledAnimals());
-                    Set<Animal> farAwayAnimals = allAnimals.stream().filter(a -> !adjacentAnimals.contains(a)).collect(Collectors.toSet());
-
-                    // gestion des cerfs annulés
-                    Set<Animal> deersToCancel = new HashSet<>(toCancelCount);
-                    
+                    Set<Animal> adjacentDeers = adjacentAnimals.stream().filter(animal -> animal.kind() == Animal.Kind.DEER).collect(Collectors.toSet());
+                    Set<Animal> farAwayDeers = deers.stream().filter(animal -> !adjacentDeers.contains(animal)).collect(Collectors.toSet());
 
                     // d'abord on ajoute les cerfs loins, puis les cerfs près
-                    Iterator<Animal> farAwayIterator = farAwayAnimals.iterator();
-                    while (farAwayIterator.hasNext() && toCancelCount > deersToCancel.size()) deersToCancel.add(farAwayIterator.next());
-                    Iterator<Animal> adjacentIterator = adjacentAnimals.iterator();
-                    while (toCancelCount > deersToCancel.size()) deersToCancel.add(adjacentIterator.next());
+                    orderedDeers.addAll(farAwayDeers);
+                    orderedDeers.addAll(adjacentDeers);
 
-                    newBoard = newBoard.withMoreCancelledAnimals(deersToCancel);
-                }
+                } else orderedDeers.addAll(deers);
 
-            } else {
-                // ne pas annuler de cerfs
+                Iterator<Animal> deerIterator = orderedDeers.iterator();
+                while (deerIterator.hasNext() && toCancelCount > deersToCancel.size())
+                    deersToCancel.add(deerIterator.next());
+
+                newBoard = newBoard.withMoreCancelledAnimals(deersToCancel);
+
             }
 
         }
