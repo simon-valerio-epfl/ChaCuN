@@ -324,7 +324,7 @@ public final class Board {
      * @return whether the given tile can be placed on the board at any position
      */
     public boolean couldPlaceTile(Tile tile) {
-        for (Pos pos : insertionPositions()) {
+        for (Pos pos: insertionPositions()) {
             for (Rotation rotation : Rotation.ALL) {
                 PlacedTile placedTile = new PlacedTile(tile, null, rotation, pos);
                 if (canAddTile(placedTile)) return true;
@@ -346,6 +346,7 @@ public final class Board {
      * Returns a new board with the given tile placed on it
      * @param tile the tile to place
      * @return a new board with the given tile placed on it
+     * @throws IllegalArgumentException if the board is not empty and the tile can not be added
      */
     public Board withNewTile(PlacedTile tile){
         Preconditions.checkArgument(isEmpty() || canAddTile(tile));
@@ -367,10 +368,10 @@ public final class Board {
             if (neighbouringTile != null) {
                 TileSide sideOfNeighbour = neighbouringTile.side(direction.opposite());
                 TileSide sideOfTile = tile.side(direction);
+                // todo voir avec 7abib
                 zonePartitionsBuilder.connectSides(sideOfNeighbour, sideOfTile);
             }
         }
-
         return new Board(newPlacedTiles, newOrderedTileIndexes, zonePartitionsBuilder.build(), cancelledAnimals);
     }
 
@@ -378,6 +379,7 @@ public final class Board {
      * Returns a new board with the given occupant placed
      * @param occupant the occupant to place
      * @return a new board with the given occupant placed
+     * @throws IllegalArgumentException if the tile is already occupied
      */
     public Board withOccupant(Occupant occupant) {
         int zoneId = occupant.zoneId();
@@ -406,9 +408,8 @@ public final class Board {
     public Board withoutOccupant(Occupant occupant) {
         int zoneId = occupant.zoneId();
         int tileId = Zone.tileId(zoneId);
-        // see https://edstem.org/eu/courses/1101/discussion/95048?answer=178339
+
         PlacedTile tile = tileWithId(tileId);
-        // throws an IllegalArgumentException if the tile is already occupied
         PlacedTile clearedTile = tile.withNoOccupant();
         PlacedTile[] newPlacedTiles = placedTiles.clone();
         newPlacedTiles[getTileIndexFromPos(tile.pos())] = clearedTile;
@@ -477,16 +478,16 @@ public final class Board {
             // we check that the other object is of the right type
             // before casting it to a board
 
-            // getClass is slightly better than instanceof
+            // getClass is better than instanceof
             // it guarantees that if in the future this class won't be final anymore
             // the method call on a subclass will return false
             return false;
         } else {
             Board thatBoard = (Board) that;
             return Arrays.equals(thatBoard.orderedTileIndexes, orderedTileIndexes)
-                    && Arrays.equals(thatBoard.placedTiles, placedTiles)
-                    && cancelledAnimals.equals(thatBoard.cancelledAnimals)
-                    && zonePartitions.equals(thatBoard.zonePartitions);
+                && Arrays.equals(thatBoard.placedTiles, placedTiles)
+                && cancelledAnimals.equals(thatBoard.cancelledAnimals)
+                && zonePartitions.equals(thatBoard.zonePartitions);
         }
     }
 

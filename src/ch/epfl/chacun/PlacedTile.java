@@ -165,6 +165,7 @@ public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos 
      * Adds an occupant to the placed tile if there is none yet, throws an exception otherwise
      * @param occupant the occupant to add
      * @return the placed tile with the added occupant
+     * @throws IllegalArgumentException if there is already an occupant
      */
     public PlacedTile withOccupant(Occupant occupant){
         Preconditions.checkArgument(this.occupant == null);
