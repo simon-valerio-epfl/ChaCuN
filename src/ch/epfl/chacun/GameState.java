@@ -25,8 +25,7 @@ public record GameState (
         players = List.copyOf(players);
         Preconditions.checkArgument(players.size() >= 2);
 
-        if (nextAction == Action.PLACE_TILE) Objects.requireNonNull(tileToPlace);
-        else Preconditions.checkArgument(tileToPlace == null);
+        Preconditions.checkArgument(tileToPlace == null ^ nextAction == Action.PLACE_TILE);
     }
 
     public static GameState initial(List<PlayerColor> players, TileDecks tileDecks, TextMaker textMaker) {
@@ -42,8 +41,7 @@ public record GameState (
 
     public PlayerColor currentPlayer() {
         return nextAction == Action.START_GAME || nextAction == Action.END_GAME
-                ? null
-                : players.getFirst();
+            ? null : players.getFirst();
     }
 
     public int freeOccupantsCount(PlayerColor player, Occupant.Kind kind) {
@@ -54,44 +52,41 @@ public record GameState (
         PlacedTile tile = board.lastPlacedTile();
         // if the board is empty, lastPlacedTile will return null
         Preconditions.checkArgument(tile != null);
-        Set<Integer> occupiedPawnZonesIds = new HashSet<>();
-        Set<Integer> occupiedHutZonesIds = new HashSet<>();
+        Set<Integer> occupiedZonesIds = new HashSet<>();
+        // le problème : une hutte sur une rivière sera toujours considérée OK alors que parfois devrait NON
         for (Zone zone: tile.tile().zones()) {
             switch (zone) {
                 case Zone.Forest forestZone -> {
-                    if (!board.forestArea(forestZone).occupants().isEmpty()) {
-                        occupiedPawnZonesIds.add(forestZone.id());
+                    if (board.forestArea(forestZone).isOccupied()) {
+                        occupiedZonesIds.add(forestZone.id());
                     }
                 }
                 case Zone.Meadow meadowZone -> {
-                    if (!board.meadowArea(meadowZone).occupants().isEmpty()) {
-                        occupiedPawnZonesIds.add(meadowZone.id());
+                    if (board.meadowArea(meadowZone).isOccupied()) {
+                        occupiedZonesIds.add(meadowZone.id());
                     }
                 }
+                // todo use better switch
                 case Zone.River riverZone -> {
-                    if (!board.riverArea(riverZone).occupants().isEmpty()) {
-                        occupiedPawnZonesIds.add(riverZone.id());
+                    if (board.riverArea(riverZone).isOccupied() || board.riverSystemArea(riverZone).isOccupied()) {
+                        occupiedZonesIds.add(riverZone.id());
                     }
                 }
-                case Zone.Water waterZone -> {
-                    if (!board.riverSystemArea(waterZone).occupants().isEmpty()) {
-                        occupiedHutZonesIds.add(waterZone.id());
+                case Zone.Lake lakeZone -> {
+                    if (board.riverSystemArea(lakeZone).isOccupied()) {
+                        occupiedZonesIds.add(lakeZone.id());
                     }
                 }
             }
         }
         return tile.potentialOccupants()
             .stream()
-            .filter(occupant ->
-                switch (occupant.kind()) {
-                    case PAWN -> !occupiedPawnZonesIds.contains(occupant.zoneId());
-                    case HUT ->  !occupiedHutZonesIds.contains(occupant.zoneId());
-                }
-            ).collect(Collectors.toSet());
+            .filter(occupant -> !occupiedZonesIds.contains(occupant.zoneId()))
+            .collect(Collectors.toSet());
     }
 
     public GameState withStartingTilePlaced() {
-        if (nextAction != Action.START_GAME) throw new IllegalArgumentException();
+        Preconditions.checkArgument(nextAction == Action.START_GAME);
         // pioche la carte de départ et la place sur le jeu
         Tile startingTile = tileDecks.topTile(Tile.Kind.START);
         PlacedTile startingPlacedTile = new PlacedTile(startingTile, null, Rotation.NONE, new Pos(0, 0));
@@ -105,7 +100,7 @@ public record GameState (
 
     private SimpleEntry<Integer, Set<PlayerColor>> getWinnersPoints(Map<PlayerColor, Integer> scorersToPoints) {
         Set<PlayerColor> winners = new HashSet<>();
-        int max = -1;
+        int max = -1; // todo maybe change that ask fabrice
         for (Map.Entry<PlayerColor, Integer> scorerToPoints: scorersToPoints.entrySet()) {
             int scorerPoints = scorerToPoints.getValue();
             if (scorerPoints > max) {
@@ -270,7 +265,7 @@ public record GameState (
         SimpleEntry<Integer, Set<PlayerColor>> winners = getWinnersPoints(newMessageBoard.points());
         newMessageBoard = newMessageBoard.withWinners(winners.getValue(), winners.getKey());
 
-        return new GameState(players, tileDecks, null, newBoard, nextAction, newMessageBoard);
+        return new GameState(players, tileDecks, null, newBoard, Action.END_GAME, newMessageBoard);
     }
 
     private boolean canOccupyTile(Set<Occupant> potentialOccupants, PlayerColor player) {

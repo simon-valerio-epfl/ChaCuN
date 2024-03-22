@@ -368,7 +368,6 @@ public final class Board {
             if (neighbouringTile != null) {
                 TileSide sideOfNeighbour = neighbouringTile.side(direction.opposite());
                 TileSide sideOfTile = tile.side(direction);
-                // todo voir avec 7abib
                 zonePartitionsBuilder.connectSides(sideOfNeighbour, sideOfTile);
             }
         }
