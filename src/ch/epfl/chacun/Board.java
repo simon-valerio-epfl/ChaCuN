@@ -71,8 +71,8 @@ public final class Board {
      * null if there is no tile at the given position or if the position is out of the board
      */
     public PlacedTile tileAt(Pos pos) {
-        int idx = getTileIndexFromPos(pos);
-        return isIndexInRange(idx) ? placedTiles[idx] : null;
+        int index = getTileIndexFromPos(pos);
+        return isIndexInRange(index) ? placedTiles[index] : null;
     }
 
     /**
@@ -83,8 +83,8 @@ public final class Board {
      * @return the placed tile with the given id
      */
     public PlacedTile tileWithId(int tileId) {
-        for (int idx : orderedTileIndexes) {
-            PlacedTile tile = placedTiles[idx];
+        for (int index: orderedTileIndexes) {
+            PlacedTile tile = placedTiles[index];
             if (tile.id() == tileId) return tile;
         }
         throw new IllegalArgumentException();
@@ -397,7 +397,7 @@ public final class Board {
         // if we had already connected the tile, this would erase previous occupants
         zonePartitionsBuilder.addInitialOccupant(tile.placer(), occupant.kind(), zone);
 
-        return new Board(newPlacedTiles, orderedTileIndexes.clone(), zonePartitionsBuilder.build(), cancelledAnimals);
+        return new Board(newPlacedTiles, orderedTileIndexes, zonePartitionsBuilder.build(), cancelledAnimals);
     }
 
     /**

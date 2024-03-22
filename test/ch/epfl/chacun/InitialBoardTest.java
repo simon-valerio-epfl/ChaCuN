@@ -4,9 +4,11 @@ import ch.epfl.chacun.tile.Tiles;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -163,6 +165,36 @@ public class InitialBoardTest {
 
     }
 
+    private PlacedTile placeTile(Tile tile, Pos pos) {
+        return new PlacedTile(tile, null, Rotation.NONE, pos);
+    }
+
+    @Test
+    void testAdajcentMeadow2 () {
+        PlacedTile tile94 = placeTile(Tiles.TILES.get(94), new Pos(11, 12));
+        PlacedTile tile61 = placeTile(Tiles.TILES.get(61), new Pos(10, 12));
+        PlacedTile tile49 = placeTile(Tiles.TILES.get(49), new Pos(10, 11));
+        PlacedTile tile26 = placeTile(Tiles.TILES.get(26), new Pos(9, 11));
+        PlacedTile tile56 = placeTile(Tiles.TILES.get(56), new Pos(11, 11));
+        PlacedTile tile42 = new PlacedTile(Tiles.TILES.get(42), null, Rotation.LEFT, new Pos(12, 11));
+
+        Board board = Board.EMPTY
+                .withNewTile(tile94)
+                .withNewTile(tile61)
+                .withNewTile(tile49)
+                .withNewTile(tile26)
+                .withNewTile(tile56)
+                .withNewTile(tile42);
+
+        /*
+        List<Integer> expectedArr = List.of(94, 61, 49, 26, 56, 42);
+        for (int i = 0; i < board.orderedTileIndexes.length; i++) {
+            assertEquals(expectedArr.get(i), board.placedTiles[board.orderedTileIndexes[i]].id());
+        }
+        */
+
+        assertEquals(Set.of(94, 61, 49, 56), board.adjacentMeadow(new Pos(11, 12), new Zone.Meadow(941, List.of(), Zone.SpecialPower.HUNTING_TRAP)).tileIds().stream().collect(Collectors.toSet()));
+    }
 
     @Test
     void testLastPlacedTileOnEmptyBoard() {
@@ -183,6 +215,8 @@ public class InitialBoardTest {
         Board board = Board.EMPTY.withNewTile(new PlacedTile(TileReader.readTileFromCSV(56), PlayerColor.RED, Rotation.NONE, new Pos(0, 0)));
         assertEquals(56, board.tileWithId(56).id());
         assertThrows(IllegalArgumentException.class, () -> board.tileWithId(100000));
+        assertThrows(IllegalArgumentException.class, () -> board.tileWithId(625));
+        assertDoesNotThrow(() -> board.tileWithId(56));
     }
 
     @Test
