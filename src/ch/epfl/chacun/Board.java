@@ -92,13 +92,6 @@ public final class Board {
             if (tile.id() == tileId) return tile;
         }
         throw new IllegalArgumentException();
-
-//        return Arrays.stream(orderedTileIndexes)
-//                .mapToObj(idx -> placedTiles[idx])
-//                .filter((tile) -> tile.id() == tileId)
-//                .findFirst()
-//                .orElseThrow(IllegalArgumentException::new);
-
     }
 
     /**
