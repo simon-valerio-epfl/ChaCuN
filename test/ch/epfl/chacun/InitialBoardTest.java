@@ -310,7 +310,7 @@ public class InitialBoardTest {
                 .withNewTile(placedTile56)
                 .withNewTile(placedTile60)
                 .withNewTile(placedTile42)
-                .withOccupant(new Occupant(Occupant.Kind.PAWN, 420))
+                .withOccupant(new Occupant(Occupant.Kind.PAWN, 421))
                 .withOccupant(new Occupant(Occupant.Kind.PAWN, placedTile27.riverZones().stream().findFirst().get().id()));
 
         board = board.withoutGatherersOrFishersIn(
@@ -322,7 +322,7 @@ public class InitialBoardTest {
                 )
         );
 
-        assertEquals(1, board.occupantCount(PlayerColor.RED, Occupant.Kind.PAWN));
+        assertEquals(2, board.occupantCount(PlayerColor.RED, Occupant.Kind.PAWN));
         assertEquals(0, board.forestArea(placedTile42.forestZones().stream().findFirst().get()).occupants().size());
     }
 

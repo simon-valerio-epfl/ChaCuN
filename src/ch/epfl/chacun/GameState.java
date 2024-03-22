@@ -165,6 +165,7 @@ public record GameState (
 
     private GameState withTurnFinished () {
 
+        Preconditions.checkArgument(nextAction == Action.OCCUPY_TILE);
         Preconditions.checkArgument(board.lastPlacedTile() != null);
 
         MessageBoard newMessageBoard = messageBoard;
