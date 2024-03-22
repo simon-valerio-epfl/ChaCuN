@@ -117,14 +117,16 @@ public class InitialBoardTest {
         Tile tile61 = TileReader.readTileFromCSV(61);
         Tile tile62 = TileReader.readTileFromCSV(62);
 
-        PlacedTile placedTile62 = new PlacedTile(tile62, PlayerColor.RED, Rotation.NONE, new Pos(0, 0));
-        PlacedTile placedTile27 = new PlacedTile(tile27, PlayerColor.RED, Rotation.NONE, new Pos(0, 1));
-        PlacedTile placedTile61 = new PlacedTile(tile61, PlayerColor.RED, Rotation.NONE, new Pos(1, 0));
-        PlacedTile placedTile49 = new PlacedTile(tile49, PlayerColor.RED, Rotation.NONE, new Pos(1, 1));
-        PlacedTile placedTile94 = new PlacedTile(tile94, PlayerColor.RED, Rotation.NONE, new Pos(2, 0));
-        PlacedTile placedTile56 = new PlacedTile(tile56, PlayerColor.RED, Rotation.NONE, new Pos(2, 1));
-        PlacedTile placedTile60 = new PlacedTile(tile60, PlayerColor.RED, Rotation.RIGHT, new Pos(3, 0));
-        PlacedTile placedTile42 = new PlacedTile(tile42, PlayerColor.RED, Rotation.LEFT, new Pos(3, 1));
+        int shift = 9;
+
+        PlacedTile placedTile62 = new PlacedTile(tile62, PlayerColor.RED, Rotation.NONE, new Pos(0 + shift, 0));
+        PlacedTile placedTile27 = new PlacedTile(tile27, PlayerColor.RED, Rotation.NONE, new Pos(0 + shift, 1));
+        PlacedTile placedTile61 = new PlacedTile(tile61, PlayerColor.RED, Rotation.NONE, new Pos(1 + shift, 0));
+        PlacedTile placedTile49 = new PlacedTile(tile49, PlayerColor.RED, Rotation.NONE, new Pos(1 + shift, 1));
+        PlacedTile placedTile94 = new PlacedTile(tile94, PlayerColor.RED, Rotation.NONE, new Pos(2 + shift, 0));
+        PlacedTile placedTile56 = new PlacedTile(tile56, PlayerColor.RED, Rotation.NONE, new Pos(2 + shift, 1));
+        PlacedTile placedTile60 = new PlacedTile(tile60, PlayerColor.RED, Rotation.RIGHT, new Pos(3 + shift, 0));
+        PlacedTile placedTile42 = new PlacedTile(tile42, PlayerColor.RED, Rotation.LEFT, new Pos(3 + shift, 1));
 
         Board board = Board.EMPTY
                 .withNewTile(placedTile62)
@@ -138,9 +140,11 @@ public class InitialBoardTest {
                 .withNewTile(placedTile60)
                 .withNewTile(placedTile42);
 
-        assertEquals(5, board.adjacentMeadow(new Pos(2, 0), new Zone.Meadow(941, List.of(), Zone.SpecialPower.HUNTING_TRAP)).tileIds().size());
-        assertEquals(0, board.adjacentMeadow(new Pos(2, 0), new Zone.Meadow(941, List.of(), Zone.SpecialPower.HUNTING_TRAP)).openConnections());
-        assertEquals(1, board.adjacentMeadow(new Pos(2, 0), new Zone.Meadow(941, List.of(), Zone.SpecialPower.HUNTING_TRAP)).occupants().size());
+        System.out.println(board.insertionPositions());
+
+        assertEquals(5, board.adjacentMeadow(new Pos(2 + shift, 0), new Zone.Meadow(941, List.of(), Zone.SpecialPower.HUNTING_TRAP)).tileIds().size());
+        assertEquals(0, board.adjacentMeadow(new Pos(2 + shift, 0), new Zone.Meadow(941, List.of(), Zone.SpecialPower.HUNTING_TRAP)).openConnections());
+        assertEquals(1, board.adjacentMeadow(new Pos(2 + shift, 0), new Zone.Meadow(941, List.of(), Zone.SpecialPower.HUNTING_TRAP)).occupants().size());
 
         assertEquals(2, board.occupantCount(PlayerColor.RED, Occupant.Kind.PAWN));
 
@@ -159,6 +163,7 @@ public class InitialBoardTest {
         ), board.occupants());
 
     }
+
 
     @Test
     void testLastPlacedTileOnEmptyBoard() {

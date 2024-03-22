@@ -1,10 +1,6 @@
 package ch.epfl.chacun;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Valerio De Santis (373247)
@@ -240,7 +236,7 @@ public final class Board {
             for (Direction direction: Direction.ALL) {
                 // get the new position in the direction we want to test
                 Pos neighbouringPosition = tilePos.neighbor(direction);
-                if (isPosInRange(neighbouringPosition) && (tileAt(neighbouringPosition)) == null) {
+                if (isPosInBoard(neighbouringPosition) && (tileAt(neighbouringPosition)) == null) {
                     insertionPositions.add(neighbouringPosition);
                 }
             }
@@ -249,12 +245,12 @@ public final class Board {
     }
 
     /**
-     * Checks if the given position is in the range of the board
+     * Checks if the given position is in the board
      * @param pos the position to check
-     * @return whether the given position is in the range of the board
+     * @return whether the given position is in the board
      */
-    private boolean isPosInRange(Pos pos) {
-        return isIndexInRange(getTileIndexFromPos(pos));
+    private boolean isPosInBoard(Pos pos) {
+        return Math.abs(pos.x()) <= 12 && Math.abs(pos.y()) <= 12;
     }
 
     /**
