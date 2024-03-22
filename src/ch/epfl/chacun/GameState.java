@@ -140,8 +140,8 @@ public record GameState (
                 case HUNTING_TRAP -> {
                     Area<Zone.Meadow> adjacentMeadow = newBoard.adjacentMeadow(tile.pos(), (Zone.Meadow) specialPowerZone);
                     Set<Animal> animals = Area.animals(adjacentMeadow, newBoard.cancelledAnimals());
-                    int deerCount = animalCountOfKind(animals, Animal.Kind.DEER);
-                    int tigerCount = animalCountOfKind(animals, Animal.Kind.TIGER);
+                    int deerCount = animalsOfKind(animals, Animal.Kind.DEER).size();
+                    int tigerCount = animalsOfKind(animals, Animal.Kind.TIGER).size();
                     int deerCountToCancel = tigerCount > deerCount ? 0 : deerCount - tigerCount;
                     // todo calculer les cerfs
                     newBoard = newBoard.withMoreCancelledAnimals(animals);
