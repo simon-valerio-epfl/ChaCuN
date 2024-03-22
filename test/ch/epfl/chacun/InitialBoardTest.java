@@ -140,8 +140,6 @@ public class InitialBoardTest {
                 .withNewTile(placedTile60)
                 .withNewTile(placedTile42);
 
-        System.out.println(board.insertionPositions());
-
         assertEquals(5, board.adjacentMeadow(new Pos(2 + shift, 0), new Zone.Meadow(941, List.of(), Zone.SpecialPower.HUNTING_TRAP)).tileIds().size());
         assertEquals(0, board.adjacentMeadow(new Pos(2 + shift, 0), new Zone.Meadow(941, List.of(), Zone.SpecialPower.HUNTING_TRAP)).openConnections());
         assertEquals(1, board.adjacentMeadow(new Pos(2 + shift, 0), new Zone.Meadow(941, List.of(), Zone.SpecialPower.HUNTING_TRAP)).occupants().size());
@@ -156,7 +154,7 @@ public class InitialBoardTest {
         board = board.withoutOccupant(new Occupant(Occupant.Kind.PAWN, meadowZone62));
         assertEquals(1, board.occupantCount(PlayerColor.RED, Occupant.Kind.PAWN));
 
-        assertEquals(12, board.insertionPositions().size());
+        assertEquals(10, board.insertionPositions().size());
 
         assertEquals(Set.of(
                 new Occupant(Occupant.Kind.PAWN, 272)
@@ -240,6 +238,21 @@ public class InitialBoardTest {
         PlacedTile placedTile42 = new PlacedTile(tile42, PlayerColor.RED, Rotation.LEFT, new Pos(3, 1));
 
         assertEquals(placedTile42, board.lastPlacedTile());
+    }
+
+    @Test
+    void testOutOfBoundsPlaceTile() {
+        Tile tile62 = TileReader.readTileFromCSV(62);
+        PlacedTile placedTile62 = new PlacedTile(tile62, PlayerColor.RED, Rotation.LEFT, new Pos(0, -12));
+        PlacedTile placedTile622 = new PlacedTile(tile62, PlayerColor.RED, Rotation.LEFT, new Pos(-13, 0));
+        PlacedTile placedTile623 = new PlacedTile(tile62, PlayerColor.RED, Rotation.LEFT, new Pos(-13, 1));
+        PlacedTile placedTile624 = new PlacedTile(tile62, PlayerColor.RED, Rotation.LEFT, new Pos(-12, 0));
+        PlacedTile placedTile625 = new PlacedTile(tile62, PlayerColor.RED, Rotation.LEFT, new Pos(13, -13));
+        PlacedTile placedTile626 = new PlacedTile(tile62, PlayerColor.RED, Rotation.LEFT, new Pos(12, -12));
+        assertThrows(IllegalArgumentException.class, () -> Board.EMPTY.withNewTile(placedTile62).withNewTile(placedTile622));
+        assertThrows(IllegalArgumentException.class, () -> Board.EMPTY.withNewTile(placedTile622).withNewTile(placedTile623));
+        assertDoesNotThrow(() -> Board.EMPTY.withNewTile(placedTile622).withNewTile(placedTile624));
+        assertThrows(IllegalArgumentException.class, () -> Board.EMPTY.withNewTile(placedTile625).withNewTile(placedTile626));
     }
 
     @Test
