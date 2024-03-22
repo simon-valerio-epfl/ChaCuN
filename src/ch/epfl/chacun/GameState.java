@@ -3,6 +3,7 @@ package ch.epfl.chacun;
 import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public record GameState (
         List<PlayerColor> players,
@@ -117,10 +118,6 @@ public record GameState (
         return new SimpleEntry<>(max, winners);
     }
 
-    private int animalCountOfKind (Set<Animal> animals, Animal.Kind kind) {
-        return (int) animals.stream().filter(a -> a.kind() == kind).count();
-    }
-
     public GameState withPlacedTile(PlacedTile tile) {
         Preconditions.checkArgument(nextAction == Action.PLACE_TILE);
 
@@ -213,6 +210,10 @@ public record GameState (
 
     }
 
+    private Set<Animal> animalsOfKind(Set<Animal> animals, Animal.Kind kind) {
+        return animals.stream().filter(animal -> animal.kind() == kind).collect(Collectors.toSet());
+    }
+
     private GameState withFinalPointsCounted () {
 
         Board newBoard = board;
@@ -229,43 +230,28 @@ public record GameState (
             if (!hasWildFireZone) {
 
                 Set<Animal> allAnimals = Area.animals(meadowArea, newBoard.cancelledAnimals());
-                Set<Animal> deers = allAnimals.stream()
-                        .filter(animal -> animal.kind() == Animal.Kind.DEER).collect(Collectors.toSet());
-                int deerCount = animalCountOfKind(allAnimals, Animal.Kind.DEER);
-                int tigerCount = animalCountOfKind(allAnimals, Animal.Kind.TIGER);
-                int toCancelCount = Math.min(tigerCount, deerCount);
-
-                List<Animal> orderedDeers = new ArrayList<>(deerCount);
-                Set<Animal> deersToCancel = new HashSet<>(toCancelCount);
+                Set<Animal> deers = animalsOfKind(allAnimals, Animal.Kind.DEER);
+                Set<Animal> tigers = animalsOfKind(allAnimals, Animal.Kind.TIGER);
+                int toCancelCount = Math.min(tigers.size(), deers.size());
 
                 if (pitTrapZone != null) {
                     PlacedTile pitTrapTile = newBoard.tileWithId(pitTrapZone.tileId());
                     Area<Zone.Meadow> adjacentMeadow = newBoard.adjacentMeadow(pitTrapTile.pos(), pitTrapZone);
                     Set<Animal> adjacentAnimals = Area.animals(adjacentMeadow, newBoard.cancelledAnimals());
-                    Set<Animal> adjacentDeers = adjacentAnimals.stream()
-                            .filter(animal -> animal.kind() == Animal.Kind.DEER).collect(Collectors.toSet());
-                    Set<Animal> farAwayDeers = deers.stream()
-                            .filter(animal -> !adjacentDeers.contains(animal)).collect(Collectors.toSet());
+                    Set<Animal> adjacentDeers = animalsOfKind(adjacentAnimals, Animal.Kind.DEER);
+                    Set<Animal> farAwayDeers = deers.stream().filter(deer -> !adjacentDeers.contains(deer)).collect(Collectors.toSet());
 
-                    // d'abord on ajoute les cerfs loins, puis les cerfs près
-                    orderedDeers.addAll(farAwayDeers);
-                    orderedDeers.addAll(adjacentDeers);
+                    newBoard = newBoard.withMoreCancelledAnimals(
+                            Stream.concat(farAwayDeers.stream(), deers.stream())
+                            .distinct()
+                            .limit(toCancelCount)
+                            .collect(Collectors.toSet())
+                    );
 
-                } else orderedDeers.addAll(deers);
+                    newMessageBoard = newMessageBoard.withScoredPitTrap(adjacentMeadow, newBoard.cancelledAnimals());
 
-                Iterator<Animal> deerIterator = orderedDeers.iterator();
-                while (deerIterator.hasNext() && toCancelCount > deersToCancel.size())
-                    deersToCancel.add(deerIterator.next());
+                } else newBoard = newBoard.withMoreCancelledAnimals(deers.stream().limit(toCancelCount).collect(Collectors.toSet()));
 
-                newBoard = newBoard.withMoreCancelledAnimals(deersToCancel);
-
-            }
-
-            // todo remove this code duplication plz
-            if (pitTrapZone != null) {
-                PlacedTile pitTrapTile = newBoard.tileWithId(pitTrapZone.tileId());
-                Area<Zone.Meadow> adjacentMeadow = newBoard.adjacentMeadow(pitTrapTile.pos(), pitTrapZone);
-                newMessageBoard = newMessageBoard.withScoredPitTrap(adjacentMeadow, newBoard.cancelledAnimals());
             }
 
             newMessageBoard = newMessageBoard.withScoredMeadow(meadowArea, newBoard.cancelledAnimals());
@@ -288,8 +274,7 @@ public record GameState (
 
     private boolean canOccupyTile(Set<Occupant> potentialOccupants, PlayerColor player) {
         return potentialOccupants
-            .stream()
-            .anyMatch(potentialOccupant -> freeOccupantsCount(player, potentialOccupant.kind()) > 0);
+            .stream().anyMatch(potentialOccupant -> freeOccupantsCount(player, potentialOccupant.kind()) > 0);
     }
 
     private List<PlayerColor> withNextPlayer () {
