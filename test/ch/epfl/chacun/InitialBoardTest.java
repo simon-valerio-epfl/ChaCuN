@@ -1,5 +1,6 @@
 package ch.epfl.chacun;
 
+import ch.epfl.chacun.tile.Tiles;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Modifier;
@@ -253,6 +254,24 @@ public class InitialBoardTest {
         assertThrows(IllegalArgumentException.class, () -> Board.EMPTY.withNewTile(placedTile622).withNewTile(placedTile623));
         assertDoesNotThrow(() -> Board.EMPTY.withNewTile(placedTile622).withNewTile(placedTile624));
         assertThrows(IllegalArgumentException.class, () -> Board.EMPTY.withNewTile(placedTile625).withNewTile(placedTile626));
+    }
+
+    @Test
+    void testCannotPlace() {
+        Tile tile13 = TileReader.readTileFromCSV(13);
+        PlacedTile placedTile13 = new PlacedTile(tile13, PlayerColor.RED, Rotation.NONE, new Pos(0, 0));
+        Tile tile35 = TileReader.readTileFromCSV(35);
+        PlacedTile placedTile35 = new PlacedTile(tile35, PlayerColor.RED, Rotation.NONE, new Pos(0, 1));
+        assertThrows(IllegalArgumentException.class, () -> Board.EMPTY.withNewTile(placedTile13).withNewTile(placedTile35));
+        Tile tile61 = TileReader.readTileFromCSV(61);
+        PlacedTile placedTile61 = new PlacedTile(tile61, PlayerColor.RED, Rotation.NONE, new Pos(0, 1));
+        assertThrows(IllegalArgumentException.class, () -> Board.EMPTY.withNewTile(placedTile13).withNewTile(placedTile61));
+
+        Tile tile57 = Tiles.TILES.get(57);
+        PlacedTile placedTile57 = new PlacedTile(tile57, PlayerColor.RED, Rotation.NONE, new Pos(0, 0));
+        Tile tile68 = TileReader.readTileFromCSV(68);
+        PlacedTile placedTile68 = new PlacedTile(tile68, PlayerColor.RED, Rotation.NONE, new Pos(0, 1));
+        assertDoesNotThrow(() -> Board.EMPTY.withNewTile(placedTile57).withNewTile(placedTile68));
     }
 
     @Test
