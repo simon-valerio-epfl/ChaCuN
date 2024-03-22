@@ -80,7 +80,6 @@ public record GameState (
                 }
             }
         }
-        // todo demander aux assistants s'ils nous mettraient 0 au rendu intermédiaire pour ce switch dans un filter
         return tile.potentialOccupants()
             .stream()
             .filter(occupant ->
@@ -128,7 +127,6 @@ public record GameState (
         if (specialPowerZone != null) {
             switch (specialPowerZone.specialPower()) {
                 case SHAMAN -> {
-                    // todo can we use when
                     if (board.occupantCount(currentPlayer(), Occupant.Kind.PAWN) > 0) {
                         return new GameState(players, tileDecks, null, newBoard, Action.RETAKE_PAWN, messageBoard);
                     }
@@ -181,28 +179,28 @@ public record GameState (
                 .filter(Area::hasMenhir)
                 .findFirst()
                 .orElse(null);
-        // todo demander à fabrice si le warning est important
-        boolean isLastTileNormal = newBoard.lastPlacedTile().kind() == Tile.Kind.NORMAL;
 
-        boolean menhirDoubleTour = false;
 
-        if (forestClosedMenhir != null && isLastTileNormal) {
+        assert newBoard.lastPlacedTile() != null;
+        if (forestClosedMenhir != null && newBoard.lastPlacedTile().kind() == Tile.Kind.NORMAL) {
             newTileDecks = newTileDecks.withTopTileDrawnUntil(Tile.Kind.MENHIR, newBoard::couldPlaceTile);
             boolean couldPlaceMenhirTile = newTileDecks.deckSize(Tile.Kind.MENHIR) > 0;
             if (couldPlaceMenhirTile) {
-                menhirDoubleTour = true;
                 newMessageBoard = newMessageBoard.withClosedForestWithMenhir(currentPlayer(), forestClosedMenhir);
+                return new GameState(players, newTileDecks.withTopTileDrawn(Tile.Kind.MENHIR),
+                        newTileDecks.topTile(Tile.Kind.MENHIR),
+                        newBoard, Action.PLACE_TILE, newMessageBoard
+                );
             }
         }
 
-        List<PlayerColor> newPlayers = menhirDoubleTour ? players : withNextPlayer();
-        Tile.Kind nextKind = menhirDoubleTour ? Tile.Kind.MENHIR : Tile.Kind.NORMAL;
+        newTileDecks = newTileDecks.withTopTileDrawnUntil(Tile.Kind.NORMAL, newBoard::couldPlaceTile);
 
-        newTileDecks = newTileDecks.withTopTileDrawnUntil(nextKind, newBoard::couldPlaceTile);
-        boolean couldPlaceTile = newTileDecks.deckSize(nextKind) > 0;
-
-        if (couldPlaceTile) {
-            return new GameState(newPlayers, newTileDecks.withTopTileDrawn(nextKind), newTileDecks.topTile(nextKind), newBoard, Action.PLACE_TILE, newMessageBoard);
+        if (newTileDecks.deckSize(Tile.Kind.NORMAL) > 0) {
+            return new GameState(withNextPlayer(), newTileDecks.withTopTileDrawn(Tile.Kind.NORMAL),
+                    newTileDecks.topTile(Tile.Kind.NORMAL),
+                    newBoard, Action.PLACE_TILE, newMessageBoard
+            );
         } else {
             return new GameState(players, tileDecks, null, newBoard, Action.END_GAME, newMessageBoard)
                 .withFinalPointsCounted();
@@ -239,7 +237,8 @@ public record GameState (
                     Area<Zone.Meadow> adjacentMeadow = newBoard.adjacentMeadow(pitTrapTile.pos(), pitTrapZone);
                     Set<Animal> adjacentAnimals = Area.animals(adjacentMeadow, newBoard.cancelledAnimals());
                     Set<Animal> adjacentDeers = animalsOfKind(adjacentAnimals, Animal.Kind.DEER);
-                    Set<Animal> farAwayDeers = deers.stream().filter(deer -> !adjacentDeers.contains(deer)).collect(Collectors.toSet());
+                    Set<Animal> farAwayDeers = deers.stream()
+                            .filter(deer -> !adjacentDeers.contains(deer)).collect(Collectors.toSet());
 
                     newBoard = newBoard.withMoreCancelledAnimals(
                             Stream.concat(farAwayDeers.stream(), deers.stream())
@@ -250,7 +249,9 @@ public record GameState (
 
                     newMessageBoard = newMessageBoard.withScoredPitTrap(adjacentMeadow, newBoard.cancelledAnimals());
 
-                } else newBoard = newBoard.withMoreCancelledAnimals(deers.stream().limit(toCancelCount).collect(Collectors.toSet()));
+                } else newBoard = newBoard.withMoreCancelledAnimals(
+                        deers.stream().limit(toCancelCount).collect(Collectors.toSet())
+                );
 
             }
 
@@ -291,16 +292,19 @@ public record GameState (
     public GameState withOccupantRemoved(Occupant occupant){
         Preconditions.checkArgument(nextAction == Action.RETAKE_PAWN);
         Preconditions.checkArgument(occupant == null || occupant.kind() == Occupant.Kind.PAWN);
-        return new GameState(players, tileDecks, null, occupant != null ? board.withoutOccupant(occupant) : board, Action.OCCUPY_TILE, messageBoard)
-                .withTurnFinishedIfOccupationImpossible();
+        return new GameState(players, tileDecks, null,
+            occupant != null ? board.withoutOccupant(occupant) : board,
+            Action.OCCUPY_TILE, messageBoard)
+        .withTurnFinishedIfOccupationImpossible();
     }
 
     public GameState withNewOccupant(Occupant occupant) {
         Preconditions.checkArgument(nextAction == Action.OCCUPY_TILE);
         Preconditions.checkArgument(board.lastPlacedTile() != null);
-        // todo est-ce que l'action a la sortie de withNewOccupant
-        return new GameState(players, tileDecks, tileToPlace, occupant != null ? board.withOccupant(occupant) : board, Action.OCCUPY_TILE, messageBoard)
-                .withTurnFinished();
+        return new GameState(players, tileDecks, tileToPlace,
+            occupant != null ? board.withOccupant(occupant) : board,
+            Action.OCCUPY_TILE, messageBoard)
+        .withTurnFinished();
     }
 
     public enum Action {
