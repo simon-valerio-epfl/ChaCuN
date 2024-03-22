@@ -267,12 +267,15 @@ public class InitialBoardTest {
 
     @Test
     void testLastPlacedTile() {
-        Board board = getStandardBoard();
+        PlacedTile placedTile61 = new PlacedTile(Tiles.TILES.get(61), PlayerColor.RED, Rotation.LEFT, new Pos(3, 1));
+        PlacedTile placedTile62 = new PlacedTile(Tiles.TILES.get(62), PlayerColor.RED, Rotation.NONE, new Pos(4, 1));
 
-        Tile tile42 = TileReader.readTileFromCSV(42);
-        PlacedTile placedTile42 = new PlacedTile(tile42, PlayerColor.RED, Rotation.LEFT, new Pos(3, 1));
+        Board board = Board.EMPTY.withNewTile(placedTile61);
 
-        assertEquals(placedTile42, board.lastPlacedTile());
+        assertEquals(placedTile61, board.lastPlacedTile());
+        assertEquals(placedTile62, board.withNewTile(placedTile62).lastPlacedTile());
+
+        assertNull(Board.EMPTY.lastPlacedTile());
     }
 
     @Test

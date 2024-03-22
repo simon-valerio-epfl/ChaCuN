@@ -104,7 +104,7 @@ public final class Board {
      */
     public Set<Occupant> occupants() {
         Set<Occupant> occupants = new HashSet<>();
-        for (int index : orderedTileIndexes) {
+        for (int index: orderedTileIndexes) {
             PlacedTile placedTile = placedTiles[index];
             if (placedTile.occupant() != null) {
                 occupants.add(placedTile.occupant());
@@ -114,18 +114,18 @@ public final class Board {
     }
     /**
      * Returns the area of the forest containing the given forest zone
-     * throws an exception if the zone is not in any area
      * @param forest the forest zone to get the area of
      * @return the area of the forest containing the given forest zone
+     * @throws IllegalArgumentException if the zone is not in any area
      */
     public Area<Zone.Forest> forestArea(Zone.Forest forest) {
         return zonePartitions.forests().areaContaining(forest);
     }
     /**
      * Returns the area of the meadow containing the given meadow zone
-     * throws an exception if the zone is not in any area
      * @param meadow the meadow zone to get the area of
      * @return the area of the meadow containing the given meadow zone
+     * @throws IllegalArgumentException if the zone is not in any area
      */
     public Area<Zone.Meadow> meadowArea(Zone.Meadow meadow) {
         return zonePartitions.meadows().areaContaining(meadow);
@@ -133,9 +133,9 @@ public final class Board {
 
     /**
      * Returns the area of the river containing the given river zone,
-     * throws an exception if the zone is not in any area
      * @param river the river zone to get the area of
      * @return the area of the river containing the given river zone
+     * @throws IllegalArgumentException if the zone is not in any area
      */
     public Area<Zone.River> riverArea(Zone.River river) {
         return zonePartitions.rivers().areaContaining(river);
@@ -143,9 +143,9 @@ public final class Board {
 
     /**
      * Returns the area of the river system containing the given water zone,
-     * throws an exception if the zone is not in any area
      * @param water the water zone to get the area of
      * @return the area of the river system containing the given water zone
+     * @throws IllegalArgumentException if the zone is not in any area
      */
     public Area<Zone.Water> riverSystemArea(Zone.Water water) {
         return zonePartitions.riverSystems().areaContaining(water);
@@ -173,8 +173,8 @@ public final class Board {
      * @return whether the given tile is adjacent to the tile at the given position
      */
     private boolean isTileAdjacentTo(Pos centerPos, PlacedTile toTest) {
-        int w = Math.abs(centerPos.y() - toTest.pos().y());
-        int h = Math.abs(centerPos.x() - toTest.pos().x());
+        int h = Math.abs(centerPos.y() - toTest.pos().y());
+        int w = Math.abs(centerPos.x() - toTest.pos().x());
         return w <= 1 && h <= 1;
     }
 
@@ -230,13 +230,13 @@ public final class Board {
     public Set<Pos> insertionPositions() {
         Set<Pos> insertionPositions = new HashSet<>();
         // we loop over the tiles that we have already placed
-        for (int idx: orderedTileIndexes) {
-            Pos tilePos = placedTiles[idx].pos();
+        for (int index: orderedTileIndexes) {
+            Pos tilePos = placedTiles[index].pos();
             // loop over N, E, S, W
             for (Direction direction: Direction.ALL) {
                 // get the new position in the direction we want to test
                 Pos neighbouringPosition = tilePos.neighbor(direction);
-                if (isPosInBoard(neighbouringPosition) && (tileAt(neighbouringPosition)) == null) {
+                if (isPosInBoard(neighbouringPosition) && tileAt(neighbouringPosition) == null) {
                     insertionPositions.add(neighbouringPosition);
                 }
             }
@@ -259,9 +259,7 @@ public final class Board {
      * @return the last placed tile on the board, null if no tile has been placed yet
      */
     public PlacedTile lastPlacedTile() {
-        return !isEmpty()
-            ? placedTiles[orderedTileIndexes[orderedTileIndexes.length - 1]]
-            : null;
+        return isEmpty() ? null : placedTiles[orderedTileIndexes[orderedTileIndexes.length - 1]];
     }
 
     /**

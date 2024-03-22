@@ -47,6 +47,7 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
      * Returns the area that contains the specified zone
      * @param zone the zone we are looking for
      * @return the area that contains the specified zone
+     * @throws IllegalArgumentException if the zone is not in any area
      */
     public Area<Z> areaContaining(Z zone) {
         return ZonePartition.areaContaining(zone, areas);
