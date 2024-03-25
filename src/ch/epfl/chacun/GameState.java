@@ -66,13 +66,13 @@ public record GameState (
                         potentialOccupants.add(occupant);
                     }
                 }
-                case Zone.River riverZone -> {
-                    if (!board.riverArea(riverZone).isOccupied() && occupant.kind() == Occupant.Kind.PAWN) {
+                case Zone.River riverZone when occupant.kind() == Occupant.Kind.PAWN -> {
+                    if (!board.riverArea(riverZone).isOccupied()) {
                         potentialOccupants.add(occupant);
                     }
                 }
-                case Zone.Lake lakeZone -> {
-                    if (!board.riverSystemArea(lakeZone).isOccupied()) {
+                case Zone.Water waterZone -> {
+                    if (!board.riverSystemArea(waterZone).isOccupied()) {
                         potentialOccupants.add(occupant);
                     }
                 }
