@@ -52,36 +52,35 @@ public record GameState (
         PlacedTile tile = board.lastPlacedTile();
         // if the board is empty, lastPlacedTile will return null
         Preconditions.checkArgument(tile != null);
-        Set<Integer> occupiedZonesIds = new HashSet<>();
-        // le problème : une hutte sur une rivière sera toujours considérée OK alors que parfois devrait NON
-        for (Zone zone: tile.tile().zones()) {
+        Set<Occupant> potentialOccupants = new HashSet<>();
+        for (Occupant occupant: tile.potentialOccupants()) {
+            Zone zone = tile.zoneWithId(occupant.zoneId());
             switch (zone) {
                 case Zone.Forest forestZone -> {
-                    if (board.forestArea(forestZone).isOccupied()) {
-                        occupiedZonesIds.add(forestZone.id());
+                    if (!board.forestArea(forestZone).isOccupied()) {
+                        potentialOccupants.add(occupant);
                     }
                 }
                 case Zone.Meadow meadowZone -> {
-                    if (board.meadowArea(meadowZone).isOccupied()) {
-                        occupiedZonesIds.add(meadowZone.id());
+                    if (!board.meadowArea(meadowZone).isOccupied()) {
+                        potentialOccupants.add(occupant);
                     }
                 }
-                // todo use better switch
-                case Zone.River riverZone -> {
-                    if (board.riverArea(riverZone).isOccupied() || board.riverSystemArea(riverZone).isOccupied()) {
-                        occupiedZonesIds.add(riverZone.id());
+                case Zone.River riverZone when occupant.kind() == Occupant.Kind.PAWN -> {
+                    if (!board.riverArea(riverZone).isOccupied()) {
+                        potentialOccupants.add(occupant);
                     }
                 }
-                case Zone.Lake lakeZone -> {
-                    if (board.riverSystemArea(lakeZone).isOccupied()) {
-                        occupiedZonesIds.add(lakeZone.id());
+                case Zone.Water waterZone -> {
+                    if (!board.riverSystemArea(waterZone).isOccupied()) {
+                        potentialOccupants.add(occupant);
                     }
                 }
             }
         }
-        return tile.potentialOccupants()
+        return potentialOccupants
             .stream()
-            .filter(occupant -> !occupiedZonesIds.contains(occupant.zoneId()))
+            .filter(occupant -> freeOccupantsCount(currentPlayer(), occupant.kind()) > 0)
             .collect(Collectors.toSet());
     }
 
@@ -267,11 +266,6 @@ public record GameState (
         return new GameState(players, tileDecks, null, newBoard, Action.END_GAME, newMessageBoard);
     }
 
-    private boolean canOccupyTile(Set<Occupant> potentialOccupants, PlayerColor player) {
-        return potentialOccupants
-            .stream().anyMatch(potentialOccupant -> freeOccupantsCount(player, potentialOccupant.kind()) > 0);
-    }
-
     private List<PlayerColor> withNextPlayer () {
         List<PlayerColor> newPlayers = new LinkedList<>(players);
         PlayerColor placer = newPlayers.removeFirst();
@@ -295,7 +289,7 @@ public record GameState (
     public GameState withNewOccupant(Occupant occupant) {
         Preconditions.checkArgument(nextAction == Action.OCCUPY_TILE);
         Preconditions.checkArgument(board.lastPlacedTile() != null);
-        return new GameState(players, tileDecks, tileToPlace,
+        return new GameState(players, tileDecks, null,
             occupant != null ? board.withOccupant(occupant) : board,
             Action.OCCUPY_TILE, messageBoard)
         .withTurnFinished();
