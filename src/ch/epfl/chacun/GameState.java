@@ -173,8 +173,8 @@ public record GameState (
             if (couldPlaceMenhirTile) {
                 newMessageBoard = newMessageBoard.withClosedForestWithMenhir(currentPlayer(), forestClosedMenhir);
                 return new GameState(players, newTileDecks.withTopTileDrawn(Tile.Kind.MENHIR),
-                        newTileDecks.topTile(Tile.Kind.MENHIR),
-                        newBoard, Action.PLACE_TILE, newMessageBoard
+                    newTileDecks.topTile(Tile.Kind.MENHIR),
+                    newBoard, Action.PLACE_TILE, newMessageBoard
                 );
             }
         }
@@ -183,8 +183,8 @@ public record GameState (
 
         if (newTileDecks.deckSize(Tile.Kind.NORMAL) > 0) {
             return new GameState(withNextPlayer(), newTileDecks.withTopTileDrawn(Tile.Kind.NORMAL),
-                    newTileDecks.topTile(Tile.Kind.NORMAL),
-                    newBoard, Action.PLACE_TILE, newMessageBoard
+                newTileDecks.topTile(Tile.Kind.NORMAL),
+                newBoard, Action.PLACE_TILE, newMessageBoard
             );
         } else {
             return new GameState(players, tileDecks, null, newBoard, Action.END_GAME, newMessageBoard)
