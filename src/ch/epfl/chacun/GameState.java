@@ -149,8 +149,7 @@ public record GameState (
 
     private GameState withTurnFinishedIfOccupationImpossible() {
         Preconditions.checkArgument(nextAction == Action.OCCUPY_TILE);
-        return canOccupyTile(lastTilePotentialOccupants(), currentPlayer())
-                ? this : withTurnFinished();
+        return lastTilePotentialOccupants().isEmpty() ? withTurnFinished() : this;
     }
 
     private GameState withTurnFinished () {
