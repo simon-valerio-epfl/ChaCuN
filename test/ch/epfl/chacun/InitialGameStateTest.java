@@ -333,14 +333,23 @@ class InitialGameStateTest {
         assertEquals("Player YELLOW has closed a forest with a menhir.", branch2.messageBoard().messages().getLast().text());
 
         assertEquals(PlayerColor.YELLOW, branch2.currentPlayer());
+        assertEquals(GameState.Action.PLACE_TILE, branch2.nextAction());
+
+        branch2 = branch2.withPlacedTile(
+                new PlacedTile(
+                        Tiles.TILES.get(88),
+                        branch2.currentPlayer(),
+                        Rotation.HALF_TURN,
+                        new Pos(2, -1)
+                )
+        );
+
         assertEquals(GameState.Action.RETAKE_PAWN, branch2.nextAction());
 
         branch2 = branch2.withOccupantRemoved(occupant1T);
         assertEquals(0, branch2.board().occupantCount(PlayerColor.YELLOW, Occupant.Kind.PAWN));
 
-        assertEquals(GameState.Action.PLACE_TILE, branch2.nextAction());
-        assertEquals(PlayerColor.RED, branch2.currentPlayer());
-
+        
 
         // at the end of the game
         // assert currentPlayer is null
