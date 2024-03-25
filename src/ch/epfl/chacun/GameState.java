@@ -57,24 +57,16 @@ public record GameState (
             Zone zone = tile.zoneWithId(occupant.zoneId());
             switch (zone) {
                 case Zone.Forest forestZone -> {
-                    if (!board.forestArea(forestZone).isOccupied()) {
-                        potentialOccupants.add(occupant);
-                    }
+                    if (!board.forestArea(forestZone).isOccupied()) potentialOccupants.add(occupant);
                 }
                 case Zone.Meadow meadowZone -> {
-                    if (!board.meadowArea(meadowZone).isOccupied()) {
-                        potentialOccupants.add(occupant);
-                    }
+                    if (!board.meadowArea(meadowZone).isOccupied()) potentialOccupants.add(occupant);
                 }
                 case Zone.River riverZone when occupant.kind() == Occupant.Kind.PAWN -> {
-                    if (!board.riverArea(riverZone).isOccupied()) {
-                        potentialOccupants.add(occupant);
-                    }
+                    if (!board.riverArea(riverZone).isOccupied()) potentialOccupants.add(occupant);
                 }
                 case Zone.Water waterZone -> {
-                    if (!board.riverSystemArea(waterZone).isOccupied()) {
-                        potentialOccupants.add(occupant);
-                    }
+                    if (!board.riverSystemArea(waterZone).isOccupied()) potentialOccupants.add(occupant);
                 }
             }
         }
