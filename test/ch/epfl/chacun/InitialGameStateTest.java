@@ -348,13 +348,16 @@ class InitialGameStateTest {
 
         branch2 = branch2.withOccupantRemoved(occupant1T);
         assertEquals(0, branch2.board().occupantCount(PlayerColor.YELLOW, Occupant.Kind.PAWN));
+        branch2 = branch2.withNewOccupant(occupant1T);
 
-        
+        assertEquals(GameState.Action.END_GAME, branch2.nextAction());
+        assertEquals("The winners are [RED] with 8 points.", branch2.messageBoard().messages().getLast().text());
+
+        assertNull(branch2.currentPlayer());
 
         // at the end of the game
-        // assert currentPlayer is null
         // assert free occupants count (standard situation + after closing a forest/river)
-
+        // assert deers
 
     }
 
