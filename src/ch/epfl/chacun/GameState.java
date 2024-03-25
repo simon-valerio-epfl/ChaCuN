@@ -70,10 +70,15 @@ public record GameState (
                 }
             }
         }
-        return potentialOccupants
-            .stream()
-            .filter(occupant -> freeOccupantsCount(currentPlayer(), occupant.kind()) > 0)
-            .collect(Collectors.toSet());
+        // todo ask M. Schinz
+        return Arrays.stream(Occupant.Kind.values())
+                .filter(kind -> freeOccupantsCount(currentPlayer(), kind) > 0)
+                .flatMap(kind -> potentialOccupants.stream().filter(occupant -> occupant.kind() == kind))
+                .collect(Collectors.toSet());
+//        return potentialOccupants
+//            .stream()
+//            .filter(occupant -> freeOccupantsCount(currentPlayer(), occupant.kind()) > 0)
+//            .collect(Collectors.toSet());
     }
 
     public GameState withStartingTilePlaced() {
