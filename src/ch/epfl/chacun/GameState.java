@@ -95,48 +95,40 @@ public record GameState (
     }
 
     private SimpleEntry<Integer, Set<PlayerColor>> getWinnersPoints(Map<PlayerColor, Integer> scorersToPoints) {
-        Set<PlayerColor> winners = new HashSet<>();
-        int max = -1; // todo maybe change that ask fabrice
-        for (Map.Entry<PlayerColor, Integer> scorerToPoints: scorersToPoints.entrySet()) {
-            int scorerPoints = scorerToPoints.getValue();
-            if (scorerPoints > max) {
-                max = scorerPoints;
-                winners.clear();
-            }
-            if (scorerPoints == max) winners.add(scorerToPoints.getKey());
-        }
-        return new SimpleEntry<>(max, winners);
+        int maxCount = scorersToPoints.values().stream().max(Integer::compareTo).orElse(0);
+        return new SimpleEntry<>(maxCount, scorersToPoints.entrySet().stream()
+            .filter(entry -> entry.getValue() == maxCount)
+            .map(Map.Entry::getKey)
+            .collect(Collectors.toSet()));
     }
 
     public GameState withPlacedTile(PlacedTile tile) {
-        Preconditions.checkArgument(nextAction == Action.PLACE_TILE);
+        Preconditions.checkArgument(nextAction == Action.PLACE_TILE && tile.occupant() == null);
 
         MessageBoard newMessageBoard = messageBoard;
         Board newBoard = board.withNewTile(tile);
 
-        Zone specialPowerZone = tile.specialPowerZone();
-        if (specialPowerZone != null) {
-            switch (specialPowerZone.specialPower()) {
-                case SHAMAN -> {
-                    if (board.occupantCount(currentPlayer(), Occupant.Kind.PAWN) > 0) {
-                        return new GameState(players, tileDecks, null, newBoard, Action.RETAKE_PAWN, messageBoard);
-                    }
-                }
-                case LOGBOAT -> {
-                    Area<Zone.Water> riverSystem = newBoard.riverSystemArea((Zone.Water) specialPowerZone);
-                    newMessageBoard = newMessageBoard.withScoredLogboat(currentPlayer(), riverSystem);
-                }
-                case HUNTING_TRAP -> {
-                    Area<Zone.Meadow> adjacentMeadow = newBoard.adjacentMeadow(tile.pos(), (Zone.Meadow) specialPowerZone);
-                    Set<Animal> animals = Area.animals(adjacentMeadow, newBoard.cancelledAnimals());
-                    int deerCount = animalsOfKind(animals, Animal.Kind.DEER).size();
-                    int tigerCount = animalsOfKind(animals, Animal.Kind.TIGER).size();
-                    int deerCountToCancel = tigerCount > deerCount ? 0 : deerCount - tigerCount;
-                    // todo calculer les cerfs
-                    newBoard = newBoard.withMoreCancelledAnimals(animals);
-                    newMessageBoard = newMessageBoard.withScoredHuntingTrap(currentPlayer(), adjacentMeadow);
+        switch(tile.specialPowerZone()) {
+            case Zone.Lake lake when lake.specialPower() == Zone.SpecialPower.LOGBOAT -> {
+                Area<Zone.Water> riverSystem = newBoard.riverSystemArea(lake);
+                newMessageBoard = newMessageBoard.withScoredLogboat(currentPlayer(), riverSystem);
+            }
+            case Zone.Meadow meadow when meadow.specialPower() == Zone.SpecialPower.SHAMAN -> {
+                if (board.occupantCount(currentPlayer(), Occupant.Kind.PAWN) > 0) {
+                    return new GameState(players, tileDecks, null, newBoard, Action.RETAKE_PAWN, messageBoard);
                 }
             }
+            case Zone.Meadow meadow when meadow.specialPower() == Zone.SpecialPower.HUNTING_TRAP -> {
+                Area<Zone.Meadow> adjacentMeadow = newBoard.adjacentMeadow(tile.pos(), meadow);
+                Set<Animal> animals = Area.animals(adjacentMeadow, newBoard.cancelledAnimals());
+                int deerCount = animalsOfKind(animals, Animal.Kind.DEER).size();
+                int tigerCount = animalsOfKind(animals, Animal.Kind.TIGER).size();
+                int deerCountToCancel = tigerCount > deerCount ? 0 : deerCount - tigerCount;
+                // todo calculer les cerfs
+                newBoard = newBoard.withMoreCancelledAnimals(animals);
+                newMessageBoard = newMessageBoard.withScoredHuntingTrap(currentPlayer(), adjacentMeadow);
+            }
+            case null, default -> {}
         }
 
         return new GameState(players, tileDecks, null, newBoard, Action.OCCUPY_TILE, newMessageBoard)
@@ -187,7 +179,9 @@ public record GameState (
         newTileDecks = newTileDecks.withTopTileDrawnUntil(Tile.Kind.NORMAL, newBoard::couldPlaceTile);
 
         if (newTileDecks.deckSize(Tile.Kind.NORMAL) > 0) {
-            return new GameState(withNextPlayer(), newTileDecks.withTopTileDrawn(Tile.Kind.NORMAL),
+            List<PlayerColor> newPlayers = new LinkedList<>(players);
+            Collections.rotate(newPlayers, -1);
+            return new GameState(newPlayers, newTileDecks.withTopTileDrawn(Tile.Kind.NORMAL),
                 newTileDecks.topTile(Tile.Kind.NORMAL),
                 newBoard, Action.PLACE_TILE, newMessageBoard
             );
@@ -263,17 +257,6 @@ public record GameState (
         return new GameState(players, tileDecks, null, newBoard, Action.END_GAME, newMessageBoard);
     }
 
-    private List<PlayerColor> withNextPlayer () {
-        List<PlayerColor> newPlayers = new LinkedList<>(players);
-        PlayerColor placer = newPlayers.removeFirst();
-        newPlayers.addLast(placer);
-        return newPlayers;
-    }
-
-    // cette méthode est appelée quand la personne pose une tuile menhir
-    // et que cette tuile menhir contient le chaman
-    // alors AVANT qu'il ne puisse décider s'il veut occuper la tuile
-    // on lui propose de retirer un pion
     public GameState withOccupantRemoved(Occupant occupant){
         Preconditions.checkArgument(nextAction == Action.RETAKE_PAWN);
         Preconditions.checkArgument(occupant == null || occupant.kind() == Occupant.Kind.PAWN);
