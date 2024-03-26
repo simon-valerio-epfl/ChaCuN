@@ -184,15 +184,6 @@ public record GameState (
         return animals.stream().filter(animal -> animal.kind() == kind).collect(Collectors.toSet());
     }
 
-    private SimpleEntry<Integer, Set<PlayerColor>> getWinnersPoints(Map<PlayerColor, Integer> scorersToPoints) {
-        // todo why convert to long?
-        int maxCount = scorersToPoints.values().stream().max(Integer::compareTo).orElse(0);
-        return new SimpleEntry<>(maxCount, scorersToPoints.entrySet().stream()
-            .filter(entry -> entry.getValue() == maxCount)
-            .map(Map.Entry::getKey)
-            .collect(Collectors.toSet()));
-    }
-
     private GameState withFinalPointsCounted () {
 
         Board newBoard = board;
@@ -248,8 +239,13 @@ public record GameState (
 
         }
 
-        SimpleEntry<Integer, Set<PlayerColor>> winners = getWinnersPoints(newMessageBoard.points());
-        newMessageBoard = newMessageBoard.withWinners(winners.getValue(), winners.getKey());
+        Map<PlayerColor, Integer> points = newMessageBoard.points();
+        int maxCount = points.values().stream().max(Integer::compareTo).orElse(0);
+        Set<PlayerColor> winners = points.entrySet().stream()
+            .filter(e -> e.getValue() == maxCount)
+            .map(Map.Entry::getKey)
+            .collect(Collectors.toSet());
+        newMessageBoard = newMessageBoard.withWinners(winners, maxCount);
 
         return new GameState(players, tileDecks, null, newBoard, Action.END_GAME, newMessageBoard);
     }
