@@ -55,6 +55,7 @@ public record GameState (
         Set<Occupant> potentialOccupants = new HashSet<>();
         for (Occupant occupant: tile.potentialOccupants()) {
             Zone zone = tile.zoneWithId(occupant.zoneId());
+            // todo rcheck removeif?
             switch (zone) {
                 case Zone.Forest forestZone -> {
                     if (!board.forestArea(forestZone).isOccupied()) potentialOccupants.add(occupant);
@@ -101,7 +102,7 @@ public record GameState (
                 Area<Zone.Water> riverSystem = newBoard.riverSystemArea(lake);
                 newMessageBoard = newMessageBoard.withScoredLogboat(currentPlayer(), riverSystem);
             }
-            case Zone.Meadow meadow when meadow.specialPower() == Zone.SpecialPower.SHAMAN -> {
+            case Zone zone when zone.specialPower() == Zone.SpecialPower.SHAMAN -> {
                 if (board.occupantCount(currentPlayer(), Occupant.Kind.PAWN) > 0) {
                     return new GameState(players, tileDecks, null, newBoard, Action.RETAKE_PAWN, messageBoard);
                 }
@@ -146,10 +147,7 @@ public record GameState (
 
         // on regarde s'il existe une forêt menhir fermée
         Area<Zone.Forest> forestClosedMenhir = closedForests.stream()
-                .filter(Area::hasMenhir)
-                .findFirst()
-                .orElse(null);
-
+            .filter(Area::hasMenhir).findFirst().orElse(null);
 
         assert newBoard.lastPlacedTile() != null;
         if (forestClosedMenhir != null && newBoard.lastPlacedTile().kind() == Tile.Kind.NORMAL) {
