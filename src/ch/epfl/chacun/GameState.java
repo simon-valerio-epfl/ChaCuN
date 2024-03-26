@@ -70,15 +70,11 @@ public record GameState (
                 }
             }
         }
-        // todo ask M. Schinz
-        return Arrays.stream(Occupant.Kind.values())
-                .filter(kind -> freeOccupantsCount(currentPlayer(), kind) > 0)
-                .flatMap(kind -> potentialOccupants.stream().filter(occupant -> occupant.kind() == kind))
-                .collect(Collectors.toSet());
-//        return potentialOccupants
-//            .stream()
-//            .filter(occupant -> freeOccupantsCount(currentPlayer(), occupant.kind()) > 0)
-//            .collect(Collectors.toSet());
+        // M. Schinz said: "in this game, readability is more important than performance"
+        return potentialOccupants
+            .stream()
+            .filter(occupant -> freeOccupantsCount(currentPlayer(), occupant.kind()) > 0)
+            .collect(Collectors.toSet());
     }
 
     public GameState withStartingTilePlaced() {
@@ -92,14 +88,6 @@ public record GameState (
         Tile tileToPlace = newDecks.topTile(Tile.Kind.NORMAL);
         newDecks = newDecks.withTopTileDrawn(Tile.Kind.NORMAL);
         return new GameState(players, newDecks, tileToPlace, newBoard, Action.PLACE_TILE, messageBoard);
-    }
-
-    private SimpleEntry<Integer, Set<PlayerColor>> getWinnersPoints(Map<PlayerColor, Integer> scorersToPoints) {
-        int maxCount = scorersToPoints.values().stream().max(Integer::compareTo).orElse(0);
-        return new SimpleEntry<>(maxCount, scorersToPoints.entrySet().stream()
-            .filter(entry -> entry.getValue() == maxCount)
-            .map(Map.Entry::getKey)
-            .collect(Collectors.toSet()));
     }
 
     public GameState withPlacedTile(PlacedTile tile) {
@@ -194,6 +182,15 @@ public record GameState (
 
     private Set<Animal> animalsOfKind(Set<Animal> animals, Animal.Kind kind) {
         return animals.stream().filter(animal -> animal.kind() == kind).collect(Collectors.toSet());
+    }
+
+    private SimpleEntry<Integer, Set<PlayerColor>> getWinnersPoints(Map<PlayerColor, Integer> scorersToPoints) {
+        // todo why convert to long?
+        int maxCount = scorersToPoints.values().stream().max(Integer::compareTo).orElse(0);
+        return new SimpleEntry<>(maxCount, scorersToPoints.entrySet().stream()
+            .filter(entry -> entry.getValue() == maxCount)
+            .map(Map.Entry::getKey)
+            .collect(Collectors.toSet()));
     }
 
     private GameState withFinalPointsCounted () {
