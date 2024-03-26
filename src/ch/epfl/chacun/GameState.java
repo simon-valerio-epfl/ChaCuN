@@ -197,39 +197,40 @@ public record GameState (
             Zone.Meadow pitTrapZone = meadowArea.zones().stream()
                     .filter(z -> z.specialPower() == Zone.SpecialPower.PIT_TRAP).findAny().orElse(null);
 
-            if (!hasWildFireZone) {
 
-                Set<Animal> allAnimals = Area.animals(meadowArea, newBoard.cancelledAnimals());
-                Set<Animal> deers = animalsOfKind(allAnimals, Animal.Kind.DEER);
-                Set<Animal> tigers = animalsOfKind(allAnimals, Animal.Kind.TIGER);
-                int toCancelCount = Math.min(tigers.size(), deers.size());
+            Set<Animal> allAnimals = Area.animals(meadowArea, newBoard.cancelledAnimals());
+            Set<Animal> deers = animalsOfKind(allAnimals, Animal.Kind.DEER);
+            Set<Animal> tigers = animalsOfKind(allAnimals, Animal.Kind.TIGER);
+            int toCancelCount = Math.min(tigers.size(), deers.size());
 
-                if (pitTrapZone != null) {
-                    PlacedTile pitTrapTile = newBoard.tileWithId(pitTrapZone.tileId());
-                    Area<Zone.Meadow> adjacentMeadow = newBoard.adjacentMeadow(pitTrapTile.pos(), pitTrapZone);
+            if (pitTrapZone != null) {
+                PlacedTile pitTrapTile = newBoard.tileWithId(pitTrapZone.tileId());
+                Area<Zone.Meadow> adjacentMeadow = newBoard.adjacentMeadow(pitTrapTile.pos(), pitTrapZone);
+                // removes the deers if there is no fire
+                if (!hasWildFireZone) {
                     Set<Animal> adjacentAnimals = Area.animals(adjacentMeadow, newBoard.cancelledAnimals());
                     Set<Animal> adjacentDeers = animalsOfKind(adjacentAnimals, Animal.Kind.DEER);
                     Set<Animal> farAwayDeers = deers.stream()
                             .filter(deer -> !adjacentDeers.contains(deer)).collect(Collectors.toSet());
 
                     newBoard = newBoard.withMoreCancelledAnimals(
-                            Stream.concat(farAwayDeers.stream(), deers.stream())
+                        Stream.concat(farAwayDeers.stream(), deers.stream())
                             .distinct()
                             .limit(toCancelCount)
                             .collect(Collectors.toSet())
                     );
+                }
 
-                    newMessageBoard = newMessageBoard.withScoredPitTrap(adjacentMeadow, newBoard.cancelledAnimals());
-
-                } else newBoard = newBoard.withMoreCancelledAnimals(
-                        deers.stream().limit(toCancelCount).collect(Collectors.toSet())
-                );
-
+                newMessageBoard = newMessageBoard.withScoredPitTrap(adjacentMeadow, newBoard.cancelledAnimals());
+            } else if (!hasWildFireZone) {
+                newBoard = newBoard.withMoreCancelledAnimals(deers.stream().limit(toCancelCount)
+                        .collect(Collectors.toSet()));
             }
 
             newMessageBoard = newMessageBoard.withScoredMeadow(meadowArea, newBoard.cancelledAnimals());
 
         }
+
 
         for (Area<Zone.Water> waterArea: newBoard.riverSystemAreas()) {
 
