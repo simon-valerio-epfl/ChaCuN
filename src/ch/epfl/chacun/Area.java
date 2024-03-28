@@ -209,13 +209,13 @@ public record Area <Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, 
      * @param specialPower the special power to look for
      * @return the zone with the given special power in the current instance of area, or null if there is none
      */
+
+    //TODO: I CHANGED THIS
     public Zone zoneWithSpecialPower (Zone.SpecialPower specialPower) {
-        for (Zone zone: zones) {
-            if (zone.specialPower() != null && zone.specialPower().equals(specialPower)) {
-                return zone;
-            }
-        }
-        return null;
+        return zones().stream()
+                .filter
+                        (zone -> zone.specialPower() != null && zone.specialPower().equals(specialPower))
+                .findAny().orElse(null);
     }
 
     /**

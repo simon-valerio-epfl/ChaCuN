@@ -180,8 +180,8 @@ public final class Board {
 
     /**
      * Returns the area of the meadow containing the given meadow zone
-     * and the meadow zones surrounding the tile where the given zone
-     * the returned area contains all the animals of the entire meadow,
+     * and the meadow zones surrounding the tile where the given zone is.
+     * The returned area contains all the animals of the entire meadow,
      * and has 0 open connections
      * @param pos the position of the tile containing the meadow zone
      * @param meadowZone the meadow zone to get the surrounding area from
@@ -319,9 +319,9 @@ public final class Board {
     }
 
     /**
-     * Returns whether the given tile can be placed on the board at any position
+     * Returns whether the given tile can be placed on the board at any position and rotation
      * @param tile the tile to test
-     * @return whether the given tile can be placed on the board at any position
+     * @return whether the given tile can be placed on the board at any position and rotation
      */
     public boolean couldPlaceTile(Tile tile) {
         for (Pos pos: insertionPositions()) {
@@ -331,6 +331,11 @@ public final class Board {
             }
         }
         return false;
+        //TODO: I think the other one is easier to read
+//        return insertionPositions().stream().
+//                anyMatch(pos -> Rotation.ALL.stream().
+//                        anyMatch(rotation -> canAddTile(new PlacedTile(tile, null, rotation, pos)))
+//                );
     }
 
     /**
