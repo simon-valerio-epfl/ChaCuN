@@ -313,9 +313,7 @@ public record GameState (
                     // we order the deers by decreasing distance to the pit trap,
                     // and cancel as many deers as we have to remove
                     newBoard = newBoard.withMoreCancelledAnimals(
-                        Stream.concat(farAwayDeers.stream(), adjacentDeers.stream())
-                            .distinct()
-                            .limit(toCancelCount)
+                        Stream.concat(farAwayDeers.stream(), adjacentDeers.stream()).limit(toCancelCount)
                             .collect(Collectors.toSet())
                     );
                 }
