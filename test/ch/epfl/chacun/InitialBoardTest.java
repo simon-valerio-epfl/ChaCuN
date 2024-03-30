@@ -1,11 +1,14 @@
 package ch.epfl.chacun;
 
+import ch.epfl.chacun.tile.Tiles;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -117,14 +120,16 @@ public class InitialBoardTest {
         Tile tile61 = TileReader.readTileFromCSV(61);
         Tile tile62 = TileReader.readTileFromCSV(62);
 
-        PlacedTile placedTile62 = new PlacedTile(tile62, PlayerColor.RED, Rotation.NONE, new Pos(0, 0));
-        PlacedTile placedTile27 = new PlacedTile(tile27, PlayerColor.RED, Rotation.NONE, new Pos(0, 1));
-        PlacedTile placedTile61 = new PlacedTile(tile61, PlayerColor.RED, Rotation.NONE, new Pos(1, 0));
-        PlacedTile placedTile49 = new PlacedTile(tile49, PlayerColor.RED, Rotation.NONE, new Pos(1, 1));
-        PlacedTile placedTile94 = new PlacedTile(tile94, PlayerColor.RED, Rotation.NONE, new Pos(2, 0));
-        PlacedTile placedTile56 = new PlacedTile(tile56, PlayerColor.RED, Rotation.NONE, new Pos(2, 1));
-        PlacedTile placedTile60 = new PlacedTile(tile60, PlayerColor.RED, Rotation.RIGHT, new Pos(3, 0));
-        PlacedTile placedTile42 = new PlacedTile(tile42, PlayerColor.RED, Rotation.LEFT, new Pos(3, 1));
+        int shift = 9;
+
+        PlacedTile placedTile62 = new PlacedTile(tile62, PlayerColor.RED, Rotation.NONE, new Pos(0 + shift, 0));
+        PlacedTile placedTile27 = new PlacedTile(tile27, PlayerColor.RED, Rotation.NONE, new Pos(0 + shift, 1));
+        PlacedTile placedTile61 = new PlacedTile(tile61, PlayerColor.RED, Rotation.NONE, new Pos(1 + shift, 0));
+        PlacedTile placedTile49 = new PlacedTile(tile49, PlayerColor.RED, Rotation.NONE, new Pos(1 + shift, 1));
+        PlacedTile placedTile94 = new PlacedTile(tile94, PlayerColor.RED, Rotation.NONE, new Pos(2 + shift, 0));
+        PlacedTile placedTile56 = new PlacedTile(tile56, PlayerColor.RED, Rotation.NONE, new Pos(2 + shift, 1));
+        PlacedTile placedTile60 = new PlacedTile(tile60, PlayerColor.RED, Rotation.RIGHT, new Pos(3 + shift, 0));
+        PlacedTile placedTile42 = new PlacedTile(tile42, PlayerColor.RED, Rotation.LEFT, new Pos(3 + shift, 1));
 
         Board board = Board.EMPTY
                 .withNewTile(placedTile62)
@@ -138,9 +143,9 @@ public class InitialBoardTest {
                 .withNewTile(placedTile60)
                 .withNewTile(placedTile42);
 
-        assertEquals(5, board.adjacentMeadow(new Pos(2, 0), new Zone.Meadow(941, List.of(), Zone.SpecialPower.HUNTING_TRAP)).tileIds().size());
-        assertEquals(0, board.adjacentMeadow(new Pos(2, 0), new Zone.Meadow(941, List.of(), Zone.SpecialPower.HUNTING_TRAP)).openConnections());
-        assertEquals(1, board.adjacentMeadow(new Pos(2, 0), new Zone.Meadow(941, List.of(), Zone.SpecialPower.HUNTING_TRAP)).occupants().size());
+        assertEquals(5, board.adjacentMeadow(new Pos(2 + shift, 0), new Zone.Meadow(941, List.of(), Zone.SpecialPower.HUNTING_TRAP)).tileIds().size());
+        assertEquals(0, board.adjacentMeadow(new Pos(2 + shift, 0), new Zone.Meadow(941, List.of(), Zone.SpecialPower.HUNTING_TRAP)).openConnections());
+        assertEquals(1, board.adjacentMeadow(new Pos(2 + shift, 0), new Zone.Meadow(941, List.of(), Zone.SpecialPower.HUNTING_TRAP)).occupants().size());
 
         assertEquals(2, board.occupantCount(PlayerColor.RED, Occupant.Kind.PAWN));
 
@@ -152,12 +157,43 @@ public class InitialBoardTest {
         board = board.withoutOccupant(new Occupant(Occupant.Kind.PAWN, meadowZone62));
         assertEquals(1, board.occupantCount(PlayerColor.RED, Occupant.Kind.PAWN));
 
-        assertEquals(12, board.insertionPositions().size());
+        assertEquals(10, board.insertionPositions().size());
 
         assertEquals(Set.of(
                 new Occupant(Occupant.Kind.PAWN, 272)
         ), board.occupants());
 
+    }
+
+    private PlacedTile placeTile(Tile tile, Pos pos) {
+        return new PlacedTile(tile, null, Rotation.NONE, pos);
+    }
+
+    @Test
+    void testAdajcentMeadow2 () {
+        PlacedTile tile94 = placeTile(Tiles.TILES.get(94), new Pos(11, 12));
+        PlacedTile tile61 = placeTile(Tiles.TILES.get(61), new Pos(10, 12));
+        PlacedTile tile49 = placeTile(Tiles.TILES.get(49), new Pos(10, 11));
+        PlacedTile tile26 = placeTile(Tiles.TILES.get(26), new Pos(9, 11));
+        PlacedTile tile56 = placeTile(Tiles.TILES.get(56), new Pos(11, 11));
+        PlacedTile tile42 = new PlacedTile(Tiles.TILES.get(42), null, Rotation.LEFT, new Pos(12, 11));
+
+        Board board = Board.EMPTY
+                .withNewTile(tile94)
+                .withNewTile(tile61)
+                .withNewTile(tile49)
+                .withNewTile(tile26)
+                .withNewTile(tile56)
+                .withNewTile(tile42);
+
+        /*
+        List<Integer> expectedArr = List.of(94, 61, 49, 26, 56, 42);
+        for (int i = 0; i < board.orderedTileIndexes.length; i++) {
+            assertEquals(expectedArr.get(i), board.placedTiles[board.orderedTileIndexes[i]].id());
+        }
+        */
+
+        assertEquals(Set.of(94, 61, 49, 56), board.adjacentMeadow(new Pos(11, 12), new Zone.Meadow(941, List.of(), Zone.SpecialPower.HUNTING_TRAP)).tileIds().stream().collect(Collectors.toSet()));
     }
 
     @Test
@@ -179,6 +215,8 @@ public class InitialBoardTest {
         Board board = Board.EMPTY.withNewTile(new PlacedTile(TileReader.readTileFromCSV(56), PlayerColor.RED, Rotation.NONE, new Pos(0, 0)));
         assertEquals(56, board.tileWithId(56).id());
         assertThrows(IllegalArgumentException.class, () -> board.tileWithId(100000));
+        assertThrows(IllegalArgumentException.class, () -> board.tileWithId(625));
+        assertDoesNotThrow(() -> board.tileWithId(56));
     }
 
     @Test
@@ -229,12 +267,48 @@ public class InitialBoardTest {
 
     @Test
     void testLastPlacedTile() {
-        Board board = getStandardBoard();
+        PlacedTile placedTile61 = new PlacedTile(Tiles.TILES.get(61), PlayerColor.RED, Rotation.LEFT, new Pos(3, 1));
+        PlacedTile placedTile62 = new PlacedTile(Tiles.TILES.get(62), PlayerColor.RED, Rotation.NONE, new Pos(4, 1));
 
-        Tile tile42 = TileReader.readTileFromCSV(42);
-        PlacedTile placedTile42 = new PlacedTile(tile42, PlayerColor.RED, Rotation.LEFT, new Pos(3, 1));
+        Board board = Board.EMPTY.withNewTile(placedTile61);
 
-        assertEquals(placedTile42, board.lastPlacedTile());
+        assertEquals(placedTile61, board.lastPlacedTile());
+        assertEquals(placedTile62, board.withNewTile(placedTile62).lastPlacedTile());
+
+        assertNull(Board.EMPTY.lastPlacedTile());
+    }
+
+    @Test
+    void testOutOfBoundsPlaceTile() {
+        Tile tile62 = TileReader.readTileFromCSV(62);
+        PlacedTile placedTile62 = new PlacedTile(tile62, PlayerColor.RED, Rotation.LEFT, new Pos(0, -12));
+        PlacedTile placedTile622 = new PlacedTile(tile62, PlayerColor.RED, Rotation.LEFT, new Pos(-13, 0));
+        PlacedTile placedTile623 = new PlacedTile(tile62, PlayerColor.RED, Rotation.LEFT, new Pos(-13, 1));
+        PlacedTile placedTile624 = new PlacedTile(tile62, PlayerColor.RED, Rotation.LEFT, new Pos(-12, 0));
+        PlacedTile placedTile625 = new PlacedTile(tile62, PlayerColor.RED, Rotation.LEFT, new Pos(13, -13));
+        PlacedTile placedTile626 = new PlacedTile(tile62, PlayerColor.RED, Rotation.LEFT, new Pos(12, -12));
+        assertThrows(IllegalArgumentException.class, () -> Board.EMPTY.withNewTile(placedTile62).withNewTile(placedTile622));
+        assertThrows(IllegalArgumentException.class, () -> Board.EMPTY.withNewTile(placedTile622).withNewTile(placedTile623));
+        assertDoesNotThrow(() -> Board.EMPTY.withNewTile(placedTile622).withNewTile(placedTile624));
+        assertThrows(IllegalArgumentException.class, () -> Board.EMPTY.withNewTile(placedTile625).withNewTile(placedTile626));
+    }
+
+    @Test
+    void testCannotPlace() {
+        Tile tile13 = TileReader.readTileFromCSV(13);
+        PlacedTile placedTile13 = new PlacedTile(tile13, PlayerColor.RED, Rotation.NONE, new Pos(0, 0));
+        Tile tile35 = TileReader.readTileFromCSV(35);
+        PlacedTile placedTile35 = new PlacedTile(tile35, PlayerColor.RED, Rotation.NONE, new Pos(0, 1));
+        assertThrows(IllegalArgumentException.class, () -> Board.EMPTY.withNewTile(placedTile13).withNewTile(placedTile35));
+        Tile tile61 = TileReader.readTileFromCSV(61);
+        PlacedTile placedTile61 = new PlacedTile(tile61, PlayerColor.RED, Rotation.NONE, new Pos(0, 1));
+        assertThrows(IllegalArgumentException.class, () -> Board.EMPTY.withNewTile(placedTile13).withNewTile(placedTile61));
+
+        Tile tile57 = Tiles.TILES.get(57);
+        PlacedTile placedTile57 = new PlacedTile(tile57, PlayerColor.RED, Rotation.NONE, new Pos(0, 0));
+        Tile tile68 = TileReader.readTileFromCSV(68);
+        PlacedTile placedTile68 = new PlacedTile(tile68, PlayerColor.RED, Rotation.NONE, new Pos(0, 1));
+        assertDoesNotThrow(() -> Board.EMPTY.withNewTile(placedTile57).withNewTile(placedTile68));
     }
 
     @Test

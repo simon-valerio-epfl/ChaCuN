@@ -32,10 +32,10 @@ public record Pos (int x, int y) {
      */
     public Pos neighbor (Direction direction) {
         return switch (direction){
-            case N -> translated(0,-1);
+            case N -> translated(0, -1);
             case E -> translated(1, 0);
-            case S -> translated(0,1);
-            case W -> translated(-1,0);
+            case S -> translated(0, 1);
+            case W -> translated(-1, 0);
         };
     }
 
