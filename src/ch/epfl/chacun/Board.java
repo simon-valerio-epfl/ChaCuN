@@ -1,6 +1,13 @@
 package ch.epfl.chacun;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Valerio De Santis (373247)
@@ -209,18 +216,14 @@ public final class Board {
      * @return the number of occupants of the given kind and the given player present on the board
      */
     public int occupantCount(PlayerColor player, Occupant.Kind occupantKind) {
-        int count = 0;
-        for (int index: orderedTileIndexes) {
-            PlacedTile placedTile = placedTiles[index];
-            if (
-                placedTile.occupant() != null
-                && placedTile.occupant().kind() == occupantKind
-                && placedTile.placer() == player
-            ) {
-                count++;
-            }
-        }
-        return count;
+        return (int) Arrays.stream(orderedTileIndexes)
+            .mapToObj(idx -> placedTiles[idx])
+            .filter((tile) ->
+                tile.occupant() != null
+                && tile.occupant().kind() == occupantKind
+                && tile.placer() == player
+            )
+            .count();
     }
 
     /**
@@ -270,12 +273,8 @@ public final class Board {
      */
     public Set<Area<Zone.Forest>> forestsClosedByLastTile() {
         if (lastPlacedTile() == null) return Set.of();
-        Set<Area<Zone.Forest>> areas = new HashSet<>();
-        for (Zone.Forest forestZone: lastPlacedTile().forestZones()) {
-            Area<Zone.Forest> area = forestArea(forestZone);
-            if (area.isClosed()) areas.add(area);
-        }
-        return areas;
+        return lastPlacedTile().forestZones().stream()
+                .map(this::forestArea).filter(Area::isClosed).collect(Collectors.toSet());
     }
 
     /**
@@ -286,14 +285,10 @@ public final class Board {
      */
     public Set<Area<Zone.River>> riversClosedByLastTile() {
         if (lastPlacedTile() == null) return Set.of();
-        Set<Area<Zone.River>> areas = new HashSet<>();
-        for (Zone.River riverZone: lastPlacedTile().riverZones()) {
-            // this is correct because there is always a river before each lake
-            // closing a rivers area, the lake merely being an internal zone
-            Area<Zone.River> area = riverArea(riverZone);
-            if (area.isClosed()) areas.add(area);
-        }
-        return areas;
+        // this is correct because there is always a river before each lake
+        // closing a rivers area, the lake merely being an internal zone
+        return lastPlacedTile().riverZones().stream()
+                .map(this::riverArea).filter(Area::isClosed).collect(Collectors.toSet());
     }
 
     /**
@@ -324,18 +319,9 @@ public final class Board {
      * @return whether the given tile can be placed on the board at any position and rotation
      */
     public boolean couldPlaceTile(Tile tile) {
-        for (Pos pos: insertionPositions()) {
-            for (Rotation rotation : Rotation.ALL) {
-                PlacedTile placedTile = new PlacedTile(tile, null, rotation, pos);
-                if (canAddTile(placedTile)) return true;
-            }
-        }
-        return false;
-        //TODO: I think the other one is easier to read
-//        return insertionPositions().stream().
-//                anyMatch(pos -> Rotation.ALL.stream().
-//                        anyMatch(rotation -> canAddTile(new PlacedTile(tile, null, rotation, pos)))
-//                );
+        return insertionPositions()
+                .stream()
+                .anyMatch(pos -> Rotation.ALL.stream().anyMatch(rot -> canAddTile(new PlacedTile(tile, null, rot, pos))));
     }
 
     /**
@@ -442,13 +428,9 @@ public final class Board {
             Occupant occupant = placedTile.occupant();
             Zone occupiedZone = placedTile.zoneWithId(occupant.zoneId());
             if (occupiedZone instanceof Zone.Forest forest) {
-                if (forests.contains(forestArea(forest))) {
-                    newPlacedTiles[index] = placedTile.withNoOccupant();
-                }
+                if (forests.contains(forestArea(forest))) newPlacedTiles[index] = placedTile.withNoOccupant();
             } else if (occupiedZone instanceof Zone.River river) {
-                if (rivers.contains(riverArea(river))) {
-                    newPlacedTiles[index] = placedTile.withNoOccupant();
-                }
+                if (rivers.contains(riverArea(river))) newPlacedTiles[index] = placedTile.withNoOccupant();
             }
         }
 
