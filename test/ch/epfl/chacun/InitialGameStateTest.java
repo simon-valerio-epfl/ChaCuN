@@ -173,6 +173,102 @@ class InitialGameStateTest {
     }
 
     @Test
+    void testNoOccupantCount() {
+
+        List<Tile> startingTiles = List.of(Tiles.TILES.get(56));
+        List<Tile> normalTiles = List.of(
+                Tiles.TILES.get(67),
+                Tiles.TILES.get(25),
+                Tiles.TILES.get(90),
+                Tiles.TILES.get(40),
+                Tiles.TILES.get(42),
+                Tiles.TILES.get(43),
+                Tiles.TILES.get(44),
+                Tiles.TILES.get(45)
+        );
+        List<Tile> menhirTiles = List.of(
+                Tiles.TILES.get(88)
+        );
+
+        TileDecks startingTileDecks = new TileDecks(startingTiles, normalTiles, menhirTiles);
+
+        GameState game = GameState.initial(
+                List.of(PlayerColor.RED, PlayerColor.BLUE),
+                startingTileDecks,
+                new TextMakerTestImplementation()
+        );
+
+        game = game.withStartingTilePlaced();
+
+        // make them use all their pawns
+        game = game.withPlacedTile(new PlacedTile(
+                Tiles.TILES.get(54),
+                PlayerColor.RED,
+                Rotation.NONE,
+                new Pos(1, 0)
+        ));
+
+        game = game.withNewOccupant(new Occupant(Occupant.Kind.PAWN, 540));
+
+        game = game.withPlacedTile(new PlacedTile(
+                Tiles.TILES.get(25),
+                PlayerColor.RED,
+                Rotation.NONE,
+                new Pos(-1, 0)
+        ));
+
+        game = game.withNewOccupant(new Occupant(Occupant.Kind.PAWN, 251));
+
+        game = game.withPlacedTile(new PlacedTile(
+                Tiles.TILES.get(90),
+                PlayerColor.RED,
+                Rotation.HALF_TURN,
+                new Pos(0, -1)
+        ));
+
+        game = game.withNewOccupant(new Occupant(Occupant.Kind.PAWN, 900));
+
+        game = game.withPlacedTile(new PlacedTile(
+                Tiles.TILES.get(75),
+                PlayerColor.RED,
+                Rotation.LEFT,
+                new Pos(0, 1)
+        ));
+
+        game = game.withNewOccupant(new Occupant(Occupant.Kind.PAWN, 750));
+
+        game = game.withPlacedTile(new PlacedTile(
+                Tiles.TILES.get(76),
+                PlayerColor.RED,
+                Rotation.LEFT,
+                new Pos(0, 2)
+        ));
+
+        game = game.withNewOccupant(new Occupant(Occupant.Kind.PAWN, 761));
+
+        game = game.withPlacedTile(new PlacedTile(
+                Tiles.TILES.get(73),
+                PlayerColor.RED,
+                Rotation.LEFT,
+                new Pos(0, 3)
+        ));
+
+        game = game.withNewOccupant(new Occupant(Occupant.Kind.PAWN, 731));
+
+
+        game = game.withPlacedTile(new PlacedTile(
+                Tiles.TILES.get(78),
+                PlayerColor.RED,
+                Rotation.LEFT,
+                new Pos(0, 4)
+        ));
+
+        // can't place pawn anymore
+        assertEquals(GameState.Action.PLACE_TILE, game.nextAction());
+
+    }
+
+    @Test
     void testGame() {
 
         List<Tile> startingTiles = List.of(Tiles.TILES.get(56));

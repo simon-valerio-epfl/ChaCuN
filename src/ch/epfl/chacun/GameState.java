@@ -93,31 +93,19 @@ public record GameState (
         PlacedTile tile = board.lastPlacedTile();
         // if the board is empty, lastPlacedTile will return null
         Preconditions.checkArgument(tile != null);
-        Set<Occupant> potentialOccupants = new HashSet<>();
-        for (Occupant occupant: tile.potentialOccupants()) {
-            Zone zone = tile.zoneWithId(occupant.zoneId());
-            // todo rcheck removeif? it can be replaced with when !board.forestArea(forestZone).isOccupied(),
-            // if monsieur Simon wants. (Must add default do nothing in case)
-            switch (zone) {
-                case Zone.Forest forestZone -> {
-                    if (!board.forestArea(forestZone).isOccupied()) potentialOccupants.add(occupant);
-                }
-                case Zone.Meadow meadowZone -> {
-                    if (!board.meadowArea(meadowZone).isOccupied()) potentialOccupants.add(occupant);
-                }
-                case Zone.River riverZone when occupant.kind() == Occupant.Kind.PAWN -> {
-                    if (!board.riverArea(riverZone).isOccupied()) potentialOccupants.add(occupant);
-                }
-                // here we handle the case when the occupant is a hut
-                case Zone.Water waterZone -> {
-                    if (!board.riverSystemArea(waterZone).isOccupied()) potentialOccupants.add(occupant);
-                }
-            }
-        }
-        return potentialOccupants
+        Set<Occupant> potentialOccupants = tile.potentialOccupants()
             .stream()
             .filter(occupant -> freeOccupantsCount(currentPlayer(), occupant.kind()) > 0)
             .collect(Collectors.toSet());
+        potentialOccupants.removeIf(occupant -> switch (tile.zoneWithId(occupant.zoneId())) {
+            case Zone.Forest forestZone -> board.forestArea(forestZone).isOccupied();
+            case Zone.Meadow meadowZone -> board.meadowArea(meadowZone).isOccupied();
+            case Zone.River riverZone when occupant.kind() == Occupant.Kind.PAWN ->
+                    board.riverArea(riverZone).isOccupied();
+            // here we handle the case when the occupant is a hut
+            case Zone.Water waterZone -> board.riverSystemArea(waterZone).isOccupied();
+        });
+        return potentialOccupants;
     }
 
     /**
@@ -326,9 +314,7 @@ public record GameState (
                     // we order the deers by decreasing distance to the pit trap,
                     // and cancel as many deers as we have to remove
                     newBoard = newBoard.withMoreCancelledAnimals(
-                        Stream.concat(farAwayDeers.stream(), deers.stream())
-                            .distinct()
-                            .limit(toCancelCount)
+                        Stream.concat(farAwayDeers.stream(), adjacentDeers.stream()).limit(toCancelCount)
                             .collect(Collectors.toSet())
                     );
                 }
