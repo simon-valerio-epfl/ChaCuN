@@ -93,18 +93,19 @@ public record GameState (
         PlacedTile tile = board.lastPlacedTile();
         // if the board is empty, lastPlacedTile will return null
         Preconditions.checkArgument(tile != null);
-        return tile.potentialOccupants()
+        Set<Occupant> potentialOccupants = tile.potentialOccupants()
             .stream()
             .filter(occupant -> freeOccupantsCount(currentPlayer(), occupant.kind()) > 0)
-            .collect(Collectors.toSet())
-            .removeIf(occupant -> switch (tile.zoneWithId(occupant.zoneId())) {
-                case Zone.Forest forestZone -> board.forestArea(forestZone).isOccupied();
-                case Zone.Meadow meadowZone -> board.meadowArea(meadowZone).isOccupied();
-                case Zone.River riverZone when occupant.kind() == Occupant.Kind.PAWN ->
-                        board.riverArea(riverZone).isOccupied();
-                // here we handle the case when the occupant is a hut
-                case Zone.Water waterZone -> board.riverSystemArea(waterZone).isOccupied()
-            });
+            .collect(Collectors.toSet());
+        potentialOccupants.removeIf(occupant -> switch (tile.zoneWithId(occupant.zoneId())) {
+            case Zone.Forest forestZone -> board.forestArea(forestZone).isOccupied();
+            case Zone.Meadow meadowZone -> board.meadowArea(meadowZone).isOccupied();
+            case Zone.River riverZone when occupant.kind() == Occupant.Kind.PAWN ->
+                    board.riverArea(riverZone).isOccupied();
+            // here we handle the case when the occupant is a hut
+            case Zone.Water waterZone -> board.riverSystemArea(waterZone).isOccupied();
+        });
+        return potentialOccupants;
     }
 
     /**
