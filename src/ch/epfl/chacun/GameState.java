@@ -166,9 +166,9 @@ public record GameState (
         Preconditions.checkArgument(nextAction == Action.RETAKE_PAWN);
         Preconditions.checkArgument(occupant == null || occupant.kind() == Occupant.Kind.PAWN);
         return new GameState(players, tileDecks, null,
-                occupant != null ? board.withoutOccupant(occupant) : board,
-                Action.OCCUPY_TILE, messageBoard)
-                .withTurnFinishedIfOccupationImpossible();
+            occupant == null ? board : board.withoutOccupant(occupant),
+            Action.OCCUPY_TILE, messageBoard)
+            .withTurnFinishedIfOccupationImpossible();
     }
 
     /**
@@ -182,9 +182,9 @@ public record GameState (
         Preconditions.checkArgument(nextAction == Action.OCCUPY_TILE);
         Preconditions.checkArgument(board.lastPlacedTile() != null);
         return new GameState(players, tileDecks, null,
-                occupant != null ? board.withOccupant(occupant) : board,
-                Action.OCCUPY_TILE, messageBoard)
-                .withTurnFinished();
+            occupant == null ? board : board.withOccupant(occupant),
+            Action.OCCUPY_TILE, messageBoard)
+            .withTurnFinished();
     }
 
     /**
@@ -222,12 +222,14 @@ public record GameState (
             case Zone.Meadow meadow when meadow.specialPower() == Zone.SpecialPower.HUNTING_TRAP -> {
                 Area<Zone.Meadow> adjacentMeadow = newBoard.adjacentMeadow(tile.pos(), meadow);
                 Set<Animal> animals = Area.animals(adjacentMeadow, newBoard.cancelledAnimals());
-                int deerCount = animalsOfKind(animals, Animal.Kind.DEER).size();
-                int tigerCount = animalsOfKind(animals, Animal.Kind.TIGER).size();
-                int deerCountToCancel = tigerCount > deerCount ? 0 : deerCount - tigerCount;
+                Set<Animal> deers = animalsOfKind(animals, Animal.Kind.DEER);
+                Set<Animal> tigers = animalsOfKind(animals, Animal.Kind.TIGER);
+                int toCancelCount = Math.min(tigers.size(), deers.size());
+                Set<Animal> cancelledDeers = deers.stream().limit(toCancelCount).collect(Collectors.toSet());
                 // todo calculer les cerfs
-                newBoard = newBoard.withMoreCancelledAnimals(animals);
+                // newMessageBoard = newMessageBoard.withScoredHuntingTrap(currentPlayer(), adjacentMeadow, cancelledDeers);
                 newMessageBoard = newMessageBoard.withScoredHuntingTrap(currentPlayer(), adjacentMeadow);
+                newBoard = newBoard.withMoreCancelledAnimals(animals);
             }
             case null, default -> {}
         }
@@ -339,8 +341,6 @@ public record GameState (
         for (Area<Zone.Meadow> meadowArea: newBoard.meadowAreas()) {
 
             // checks if there is a meadow area containing a wild fire zone or one containing a pit trap zone
-
-            //TODO, I CHANGED THIS, CHECK IF IT WORKS
             boolean hasWildFireZone = meadowArea.zoneWithSpecialPower(Zone.SpecialPower.WILD_FIRE) != null;
             Zone.Meadow pitTrapZone = (Zone.Meadow) meadowArea.zoneWithSpecialPower(Zone.SpecialPower.PIT_TRAP);
 
