@@ -385,6 +385,7 @@ public record GameState (
             Action.OCCUPY_TILE, messageBoard)
         .withTurnFinished();
     }
+
     /**
      * Represents the possible actions that can be performed in a game
      */

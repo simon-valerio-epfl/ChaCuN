@@ -18,8 +18,8 @@ public record Occupant(Kind kind, int zoneId) {
      * Defines the number of pawns and huts
      * a player has during the game
      */
-    public static final int PAWN_COUNT = 5;
-    public static final int HUT_COUNT = 3;
+    private static final int PAWN_COUNT = 5;
+    private static final int HUT_COUNT = 3;
 
     /**
      * Constructor for Occupant
