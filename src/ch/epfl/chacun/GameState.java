@@ -260,7 +260,7 @@ public record GameState (
                 newBoard, Action.PLACE_TILE, newMessageBoard
             );
         } else {
-            return new GameState(players, tileDecks, null, newBoard, Action.END_GAME, newMessageBoard)
+            return new GameState(players, newTileDecks, null, newBoard, Action.END_GAME, newMessageBoard)
                 .withFinalPointsCounted();
         }
 
@@ -295,8 +295,8 @@ public record GameState (
             boolean hasWildFireZone = meadowArea.zoneWithSpecialPower(Zone.SpecialPower.WILD_FIRE) != null;
             Zone.Meadow pitTrapZone = (Zone.Meadow) meadowArea.zoneWithSpecialPower(Zone.SpecialPower.PIT_TRAP);
 
-
             Set<Animal> allAnimals = Area.animals(meadowArea, newBoard.cancelledAnimals());
+            // todo: maybe use a map to use this once
             Set<Animal> deers = animalsOfKind(allAnimals, Animal.Kind.DEER);
             Set<Animal> tigers = animalsOfKind(allAnimals, Animal.Kind.TIGER);
             int toCancelCount = Math.min(tigers.size(), deers.size());
