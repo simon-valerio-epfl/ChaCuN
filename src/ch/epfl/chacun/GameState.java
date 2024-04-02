@@ -20,6 +20,18 @@ public record GameState (
         Action nextAction,
         MessageBoard messageBoard
 ) {
+
+    /**
+     * Represents the possible actions that can be performed in a game
+     */
+    public enum Action {
+        START_GAME,
+        PLACE_TILE,
+        RETAKE_PAWN,
+        OCCUPY_TILE,
+        END_GAME
+    }
+
     /**
      * Constructs a new game state, validating the arguments.
      * It is important that there isn't a tile to place if the next action is not to place a tile.
@@ -70,8 +82,8 @@ public record GameState (
      * @return the color of the player who is currently playing, or null if the game is not started or ended
      */
     public PlayerColor currentPlayer() {
-        return nextAction == Action.START_GAME || nextAction == Action.END_GAME
-            ? null : players.getFirst();
+        boolean isGameRunning = nextAction != Action.START_GAME && nextAction != Action.END_GAME;
+        return isGameRunning ? players.getFirst() : null;
     }
 
     /**
@@ -83,6 +95,7 @@ public record GameState (
     public int freeOccupantsCount(PlayerColor player, Occupant.Kind kind) {
         return Occupant.occupantsCount(kind) - board.occupantCount(player, kind);
     }
+
     /**
      * Returns the set of occupants that the placer may use to occupy
      * the last placed tile, the latter having to be non-null
@@ -123,10 +136,10 @@ public record GameState (
         // at position (0, 0), with no rotation and no placer
         Tile startingTile = tileDecks.topTile(Tile.Kind.START);
         PlacedTile startingPlacedTile = new PlacedTile(
-                startingTile,
-                null,
-                Rotation.NONE,
-                new Pos(0, 0)
+            startingTile,
+            null,
+            Rotation.NONE,
+            new Pos(0, 0)
         );
         // updates the tile decks by removing the drawn starting tile
         TileDecks newDecks = tileDecks.withTopTileDrawn(Tile.Kind.START);
@@ -166,8 +179,8 @@ public record GameState (
             case Zone zone when zone.specialPower() == Zone.SpecialPower.SHAMAN -> {
                 // returns a new game state with retake pawn action
                 // if the player has at least a pawn on the board (to be removed)
-                if (board.occupantCount(currentPlayer(), Occupant.Kind.PAWN) > 0) {
-                    return new GameState(players, tileDecks, null, newBoard, Action.RETAKE_PAWN, messageBoard);
+                if (newBoard.occupantCount(currentPlayer(), Occupant.Kind.PAWN) > 0) {
+                    return new GameState(players, tileDecks, null, newBoard, Action.RETAKE_PAWN, newMessageBoard);
                 }
             }
             case Zone.Meadow meadow when meadow.specialPower() == Zone.SpecialPower.HUNTING_TRAP -> {
@@ -384,17 +397,6 @@ public record GameState (
             occupant != null ? board.withOccupant(occupant) : board,
             Action.OCCUPY_TILE, messageBoard)
         .withTurnFinished();
-    }
-
-    /**
-     * Represents the possible actions that can be performed in a game
-     */
-    public enum Action {
-        START_GAME,
-        PLACE_TILE,
-        RETAKE_PAWN,
-        OCCUPY_TILE,
-        END_GAME
     }
 
 }
