@@ -110,13 +110,13 @@ public record GameState (
             .stream()
             .filter(occupant ->
                 freeOccupantsCount(currentPlayer(), occupant.kind()) > 0
-                && switch (tile.zoneWithId(occupant.zoneId())) {
-                    case Zone.Forest forestZone -> !board.forestArea(forestZone).isOccupied();
-                    case Zone.Meadow meadowZone -> !board.meadowArea(meadowZone).isOccupied();
+                && !switch (tile.zoneWithId(occupant.zoneId())) {
+                    case Zone.Forest forestZone -> board.forestArea(forestZone).isOccupied();
+                    case Zone.Meadow meadowZone -> board.meadowArea(meadowZone).isOccupied();
                     case Zone.River riverZone when occupant.kind() == Occupant.Kind.PAWN ->
-                            !board.riverArea(riverZone).isOccupied();
+                            board.riverArea(riverZone).isOccupied();
                     // here we handle the case when the occupant is a hut
-                    case Zone.Water waterZone -> !board.riverSystemArea(waterZone).isOccupied();
+                    case Zone.Water waterZone -> board.riverSystemArea(waterZone).isOccupied();
                 }
             )
             .collect(Collectors.toSet());
