@@ -152,6 +152,41 @@ public record GameState (
     }
 
     /**
+     * Returns a new game state with the given pawn removed,
+     * if the player can occupy the last placed tile, he is given the opportunity to do it
+     * during the next action, their turn will end otherwise
+     * @param occupant the pawn that the player decided to retake, null if he chose to retake none
+     * @return a new game state with the given pawn removed, and the player to occupy the tile,
+     *                                          with their turn ending if he can not occupy it
+     * @throws IllegalArgumentException if the next action is not to retake a pawn
+     *                                  or if the given occupant is neither a pawn nor null
+     */
+    public GameState withOccupantRemoved(Occupant occupant){
+        Preconditions.checkArgument(nextAction == Action.RETAKE_PAWN);
+        Preconditions.checkArgument(occupant == null || occupant.kind() == Occupant.Kind.PAWN);
+        return new GameState(players, tileDecks, null,
+                occupant != null ? board.withoutOccupant(occupant) : board,
+                Action.OCCUPY_TILE, messageBoard)
+                .withTurnFinishedIfOccupationImpossible();
+    }
+
+    /**
+     * Returns a new game state with the given occupant added and the player's turn finished
+     * @param occupant the occupant that the player decided to place, null if he chose to place none
+     * @return a new game state with the given occupant added and the player's turn finished
+     * @throws IllegalArgumentException if the next action is not to occupy a tile
+     *                                  or if the last placed tile is null
+     */
+    public GameState withNewOccupant(Occupant occupant) {
+        Preconditions.checkArgument(nextAction == Action.OCCUPY_TILE);
+        Preconditions.checkArgument(board.lastPlacedTile() != null);
+        return new GameState(players, tileDecks, null,
+                occupant != null ? board.withOccupant(occupant) : board,
+                Action.OCCUPY_TILE, messageBoard)
+                .withTurnFinished();
+    }
+
+    /**
      * Places a tile on the board and handles the special power it may have.
      * If there is a shaman, and the player has at least a pawn on the board,
      * then the next action will be to retake a pawn.
@@ -362,41 +397,6 @@ public record GameState (
         newMessageBoard = newMessageBoard.withWinners(winners, maxCount);
         // the game is ended, and the winners are determined
         return new GameState(players, tileDecks, null, newBoard, Action.END_GAME, newMessageBoard);
-    }
-
-    /**
-     * Returns a new game state with the given pawn removed,
-     * if the player can occupy the last placed tile, he is given the opportunity to do it
-     * during the next action, their turn will end otherwise
-     * @param occupant the pawn that the player decided to retake, null if he chose to retake none
-     * @return a new game state with the given pawn removed, and the player to occupy the tile,
-     *                                          with their turn ending if he can not occupy it
-     * @throws IllegalArgumentException if the next action is not to retake a pawn
-     *                                  or if the given occupant is neither a pawn nor null
-     */
-    public GameState withOccupantRemoved(Occupant occupant){
-        Preconditions.checkArgument(nextAction == Action.RETAKE_PAWN);
-        Preconditions.checkArgument(occupant == null || occupant.kind() == Occupant.Kind.PAWN);
-        return new GameState(players, tileDecks, null,
-            occupant != null ? board.withoutOccupant(occupant) : board,
-            Action.OCCUPY_TILE, messageBoard)
-        .withTurnFinishedIfOccupationImpossible();
-    }
-
-    /**
-     * Returns a new game state with the given occupant added and the player's turn finished
-     * @param occupant the occupant that the player decided to place, null if he chose to place none
-     * @return a new game state with the given occupant added and the player's turn finished
-     * @throws IllegalArgumentException if the next action is not to occupy a tile
-     *                                  or if the last placed tile is null
-     */
-    public GameState withNewOccupant(Occupant occupant) {
-        Preconditions.checkArgument(nextAction == Action.OCCUPY_TILE);
-        Preconditions.checkArgument(board.lastPlacedTile() != null);
-        return new GameState(players, tileDecks, null,
-            occupant != null ? board.withOccupant(occupant) : board,
-            Action.OCCUPY_TILE, messageBoard)
-        .withTurnFinished();
     }
 
 }
