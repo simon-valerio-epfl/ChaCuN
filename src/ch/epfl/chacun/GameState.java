@@ -191,10 +191,17 @@ public record GameState (
             .collect(Collectors.groupingBy(Animal::kind, Collectors.toSet()));
     }
 
+    private int calculateCancelCount(Map<Animal.Kind, Set<Animal>> animalsPerKind) {
+        Set<Animal> primaryAnimals = animalsPerKind.getOrDefault(Animal.Kind.DEER, Set.of());
+        Set<Animal> comparingAnimals = animalsPerKind.getOrDefault(Animal.Kind.TIGER, Set.of());
+        return Math.min(primaryAnimals.size(), comparingAnimals.size());
+    }
+
+    // todo optimize tahat
     private Set<Animal> cancelDeers (Area<Zone.Meadow> meadowArea) {
         Map<Animal.Kind, Set<Animal>> animalsPerKind = animalsPerKind(meadowArea);
         Set<Animal> deers = animalsPerKind.getOrDefault(Animal.Kind.DEER, Set.of());
-        int toCancelCount = Math.min(deers.size(), animalsPerKind.getOrDefault(Animal.Kind.TIGER, Set.of()).size());
+        int toCancelCount = calculateCancelCount(animalsPerKind);
         return deers.stream().limit(toCancelCount).collect(Collectors.toSet());
     }
 
@@ -204,15 +211,15 @@ public record GameState (
         Area<Zone.Meadow> adjacentMeadow = board.adjacentMeadow(board.tileWithId(pitTrapZone.tileId()).pos(), pitTrapZone);
         Map<Animal.Kind, Set<Animal>> adjacentAnimalsPerKind = animalsPerKind(adjacentMeadow);
         Set<Animal> globalDeers = animalsPerKind.getOrDefault(Animal.Kind.DEER, Set.of());
-        int toCancelCount = Math.min(globalDeers.size(), animalsPerKind.getOrDefault(Animal.Kind.TIGER, Set.of()).size());
+        int toCancelCount = calculateCancelCount(animalsPerKind);
         Set<Animal> adjacentDeers = adjacentAnimalsPerKind.getOrDefault(Animal.Kind.DEER, Set.of());
         Set<Animal> farAwayDeers = globalDeers.stream().filter(deer -> !adjacentDeers.contains(deer)).collect(Collectors.toSet());
 
         // we order the deers by decreasing distance to the pit trap,
         // and cancel as many deers as we have to remove
         return Stream.concat(farAwayDeers.stream(), adjacentDeers.stream())
-                .limit(toCancelCount)
-                .collect(Collectors.toSet());
+            .limit(toCancelCount)
+            .collect(Collectors.toSet());
     }
 
     /**
