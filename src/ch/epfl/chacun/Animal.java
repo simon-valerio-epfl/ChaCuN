@@ -9,11 +9,15 @@ package ch.epfl.chacun;
  * @author Simon Lefort (371918)
  */
 public record Animal (int id, Kind kind) {
+
+    // todo maybe valerio can find a better name
+    private static final int COUNT_PER_TILE = 10;
+
     /**
      * @return the id of the tile where the animal is
      */
     public int tileId () {
-        return Zone.tileId(id / 10);
+        return Zone.tileId(id / COUNT_PER_TILE);
     }
 
     /**

@@ -88,11 +88,11 @@ public final class Board {
      * @return the placed tile with the given id
      */
     public PlacedTile tileWithId(int tileId) {
-        for (int index: orderedTileIndexes) {
-            PlacedTile tile = placedTiles[index];
-            if (tile.id() == tileId) return tile;
-        }
-        throw new IllegalArgumentException();
+        return Arrays.stream(orderedTileIndexes)
+            .mapToObj(idx -> placedTiles[idx])
+            .filter(tile -> tile.id() == tileId)
+            .findFirst()
+            .orElseThrow(IllegalArgumentException::new);
     }
 
     /**
@@ -108,15 +108,13 @@ public final class Board {
      * @return the set of all occupants on the board
      */
     public Set<Occupant> occupants() {
-        Set<Occupant> occupants = new HashSet<>();
-        for (int index: orderedTileIndexes) {
-            PlacedTile placedTile = placedTiles[index];
-            if (placedTile.occupant() != null) {
-                occupants.add(placedTile.occupant());
-            }
-        }
-        return occupants;
+        return Arrays.stream(orderedTileIndexes)
+            .mapToObj(idx -> placedTiles[idx])
+            .map(PlacedTile::occupant)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet());
     }
+
     /**
      * Returns the area of the forest containing the given forest zone
      * @param forest the forest zone to get the area of
@@ -196,14 +194,9 @@ public final class Board {
      */
     public Area<Zone.Meadow> adjacentMeadow(Pos pos, Zone.Meadow meadowZone) {
         Area<Zone.Meadow> area = meadowArea(meadowZone);
-        Set<Zone.Meadow> adjacentZones = new HashSet<>();
-        for (Zone.Meadow meadow: area.zones()) {
-            PlacedTile tile = tileWithId(meadow.tileId());
-            if (isTileAdjacentTo(pos, tile)) {
-                adjacentZones.add(meadow);
-            }
-        }
-        return new Area<>(adjacentZones, area.occupants(), 0);
+        return area.zones().stream()
+            .filter(zone -> isTileAdjacentTo(pos, tileWithId(zone.tileId())))
+            .collect(Collectors.collectingAndThen(Collectors.toSet(), zones -> new Area<>(zones, area.occupants(), 0)));
     }
 
     /**
@@ -229,20 +222,12 @@ public final class Board {
      * @return the set of positions where the next tile may be placed
      */
     public Set<Pos> insertionPositions() {
-        Set<Pos> insertionPositions = new HashSet<>();
-        // we loop over the tiles that we have already placed
-        for (int index: orderedTileIndexes) {
-            Pos tilePos = placedTiles[index].pos();
-            // loop over N, E, S, W
-            for (Direction direction: Direction.ALL) {
-                // get the new position in the direction we want to test
-                Pos neighbouringPosition = tilePos.neighbor(direction);
-                if (isPosInBoard(neighbouringPosition) && tileAt(neighbouringPosition) == null) {
-                    insertionPositions.add(neighbouringPosition);
-                }
-            }
-        }
-        return insertionPositions;
+        return Arrays.stream(orderedTileIndexes)
+            .mapToObj(idx -> placedTiles[idx])
+            .map(PlacedTile::pos)
+            .flatMap(pos -> Direction.ALL.stream().map(pos::neighbor))
+            .filter(pos -> isPosInBoard(pos) && tileAt(pos) == null)
+            .collect(Collectors.toSet());
     }
 
     /**
@@ -251,7 +236,7 @@ public final class Board {
      * @return whether the given position is in the board
      */
     private boolean isPosInBoard(Pos pos) {
-        return Math.abs(pos.x()) <= 12 && Math.abs(pos.y()) <= 12;
+        return Math.abs(pos.x()) <= REACH && Math.abs(pos.y()) <= REACH;
     }
 
     /**
@@ -272,7 +257,9 @@ public final class Board {
     public Set<Area<Zone.Forest>> forestsClosedByLastTile() {
         if (lastPlacedTile() == null) return Set.of();
         return lastPlacedTile().forestZones().stream()
-                .map(this::forestArea).filter(Area::isClosed).collect(Collectors.toSet());
+            .map(this::forestArea)
+            .filter(Area::isClosed)
+            .collect(Collectors.toSet());
     }
 
     /**
@@ -286,7 +273,9 @@ public final class Board {
         // this is correct because there is always a river before each lake
         // closing a rivers area, the lake merely being an internal zone
         return lastPlacedTile().riverZones().stream()
-                .map(this::riverArea).filter(Area::isClosed).collect(Collectors.toSet());
+            .map(this::riverArea)
+            .filter(Area::isClosed)
+            .collect(Collectors.toSet());
     }
 
     /**
@@ -295,20 +284,16 @@ public final class Board {
      * @return whether the given placed tile can be put on the board at its position
      */
     public boolean canAddTile(PlacedTile tile) {
-        if (!insertionPositions().contains(tile.pos())) return false;
-        for (Direction direction: Direction.ALL) {
-            Pos neighbouringPosition = tile.pos().neighbor(direction);
-            PlacedTile neighbouringTile = tileAt(neighbouringPosition);
-            if (neighbouringTile != null) {
-                // we check that every border shared by the placing tile
-                // with any already placed neighbouring tile
-                // have corresponding kinds
-                TileSide sideOfNeighbour = neighbouringTile.side(direction.opposite());
-                TileSide sideOfTile = tile.side(direction);
-                if (!sideOfTile.isSameKindAs(sideOfNeighbour)) return false;
-            }
-        }
-        return true;
+        return insertionPositions().contains(tile.pos()) &&
+            Direction.ALL.stream()
+                .allMatch(direction -> {
+                    // we check that every border shared by the placing tile
+                    // with any already placed neighbouring tile
+                    // have corresponding kinds
+                    PlacedTile neighbouringTile = tileAt(tile.pos().neighbor(direction));
+                    return neighbouringTile == null ||
+                            tile.side(direction).isSameKindAs(neighbouringTile.side(direction.opposite()));
+                });
     }
 
     /**
@@ -318,8 +303,11 @@ public final class Board {
      */
     public boolean couldPlaceTile(Tile tile) {
         return insertionPositions()
-                .stream()
-                .anyMatch(pos -> Rotation.ALL.stream().anyMatch(rot -> canAddTile(new PlacedTile(tile, null, rot, pos))));
+            .stream()
+            .anyMatch(pos ->
+                    Rotation.ALL.stream()
+                    .anyMatch(rotation -> canAddTile(new PlacedTile(tile, null, rotation, pos)))
+            );
     }
 
     /**
@@ -360,6 +348,7 @@ public final class Board {
                 zonePartitionsBuilder.connectSides(sideOfNeighbour, sideOfTile);
             }
         }
+
         return new Board(newPlacedTiles, newOrderedTileIndexes, zonePartitionsBuilder.build(), cancelledAnimals);
     }
 
