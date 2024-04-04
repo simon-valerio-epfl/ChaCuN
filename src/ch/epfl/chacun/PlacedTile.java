@@ -126,21 +126,21 @@ public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos 
     public Set<Occupant> potentialOccupants() {
         if (placer == null) return Set.of();
         return Stream.concat(
-                tile.sideZones().stream()
-                    .flatMap(zone -> Stream.concat(
-                        // each side zone can have a pawn
-                        Stream.of(new Occupant(Occupant.Kind.PAWN, zone.id())),
-                        // and if it's a river, a hut (if there is no lake)
-                        zone instanceof Zone.River && !((Zone.River) zone).hasLake()
-                            ? Stream.of(new Occupant(Occupant.Kind.HUT, zone.id()))
-                            : Stream.empty()
-                    )),
-                // each lake can have a hut
-                tile.zones().stream()
-                    .filter(zone -> zone instanceof Zone.Lake)
-                    .map(zone -> new Occupant(Occupant.Kind.HUT, zone.id()))
-            )
-            .collect(Collectors.toSet());
+            tile.sideZones().stream()
+                .flatMap(zone -> Stream.concat(
+                    // each side zone can have a pawn
+                    Stream.of(new Occupant(Occupant.Kind.PAWN, zone.id())),
+                    // and if it's a river, a hut (if there is no lake)
+                    zone instanceof Zone.River && !((Zone.River) zone).hasLake()
+                        ? Stream.of(new Occupant(Occupant.Kind.HUT, zone.id()))
+                        : Stream.empty()
+                )),
+            // each lake can have a hut
+            tile.zones().stream()
+                .filter(zone -> zone instanceof Zone.Lake)
+                .map(zone -> new Occupant(Occupant.Kind.HUT, zone.id()))
+        )
+        .collect(Collectors.toSet());
     }
 
     /**
