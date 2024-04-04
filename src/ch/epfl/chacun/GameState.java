@@ -343,16 +343,6 @@ public record GameState (
     }
 
     /**
-     * Returns the subset of animals of a given kind in a set of animals
-     * @param animals the set of animals to filter
-     * @param kind the kind of the animals to keep
-     * @return the subset of animals of the given kind in the set of animals
-     */
-    private Set<Animal> animalsOfKind(Set<Animal> animals, Animal.Kind kind) {
-        return animals.stream().filter(animal -> animal.kind() == kind).collect(Collectors.toSet());
-    }
-
-    /**
      * Returns a new game state with the final points counted and the winners determined,
      * representing the end of the game
      * @return the ending game state with the final points counted and the winners determined
