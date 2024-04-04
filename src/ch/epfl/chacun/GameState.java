@@ -21,6 +21,8 @@ public record GameState (
         MessageBoard messageBoard
 ) {
 
+    private final static int MIN_PLAYER_COUNT = 2;
+
     /**
      * Represents the possible actions that can be performed in a game
      */
@@ -55,7 +57,7 @@ public record GameState (
 
         Objects.requireNonNull(players);
         players = List.copyOf(players);
-        Preconditions.checkArgument(players.size() >= 2);
+        Preconditions.checkArgument(players.size() >= MIN_PLAYER_COUNT);
 
         Preconditions.checkArgument(tileToPlace == null ^ nextAction == Action.PLACE_TILE);
     }
@@ -106,20 +108,17 @@ public record GameState (
         PlacedTile tile = board.lastPlacedTile();
         // if the board is empty, lastPlacedTile will return null
         Preconditions.checkArgument(tile != null);
-        return tile.potentialOccupants()
-            .stream()
-            .filter(occupant ->
-                freeOccupantsCount(currentPlayer(), occupant.kind()) > 0
-                && !switch (tile.zoneWithId(occupant.zoneId())) {
-                    case Zone.Forest forestZone -> board.forestArea(forestZone).isOccupied();
-                    case Zone.Meadow meadowZone -> board.meadowArea(meadowZone).isOccupied();
-                    case Zone.River riverZone when occupant.kind() == Occupant.Kind.PAWN ->
-                            board.riverArea(riverZone).isOccupied();
-                    // here we handle the case when the occupant is a hut
-                    case Zone.Water waterZone -> board.riverSystemArea(waterZone).isOccupied();
-                }
-            )
-            .collect(Collectors.toSet());
+        Set<Occupant> occupants = tile.potentialOccupants();
+        occupants.removeIf(occupant -> {
+            Zone occupantZone = tile.zoneWithId(occupant.zoneId());
+            return freeOccupantsCount(currentPlayer(), occupant.kind()) <= 0
+                || occupantZone instanceof Zone.Forest forest && board.forestArea(forest).isOccupied()
+                || occupantZone instanceof Zone.River river && occupant.kind() == Occupant.Kind.PAWN
+                        && board.riverArea(river).isOccupied()
+                || occupantZone instanceof Zone.Meadow meadow && board.meadowArea(meadow).isOccupied()
+                || occupantZone instanceof Zone.Lake lake && board.riverSystemArea(lake).isOccupied();
+        });
+        return occupants;
     }
 
     /**

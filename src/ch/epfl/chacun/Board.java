@@ -64,7 +64,16 @@ public final class Board {
     private boolean isIndexInRange(int idx) {
         // asserts that the given index is
         // on the board
-        return idx >= 0 && idx < SIZE*SIZE;
+        return idx >= 0 && idx < SIZE * SIZE;
+    }
+
+    /**
+     * Checks if the given position is in the board
+     * @param pos the position to check
+     * @return whether the given position is in the board
+     */
+    private boolean isPosInBoard(Pos pos) {
+        return Math.abs(pos.x()) <= REACH && Math.abs(pos.y()) <= REACH;
     }
 
     /**
@@ -228,15 +237,6 @@ public final class Board {
             .flatMap(pos -> Direction.ALL.stream().map(pos::neighbor))
             .filter(pos -> isPosInBoard(pos) && tileAt(pos) == null)
             .collect(Collectors.toSet());
-    }
-
-    /**
-     * Checks if the given position is in the board
-     * @param pos the position to check
-     * @return whether the given position is in the board
-     */
-    private boolean isPosInBoard(Pos pos) {
-        return Math.abs(pos.x()) <= REACH && Math.abs(pos.y()) <= REACH;
     }
 
     /**
