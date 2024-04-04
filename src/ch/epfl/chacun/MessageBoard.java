@@ -47,6 +47,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         if (points <= 0) return this;
         return switch (messageType) {
             case MEADOW -> {
+                if (!meadow.isOccupied()) yield this;
                 Set<PlayerColor> majorityOccupants = meadow.majorityOccupants();
                 yield withNewMessage(
                     textMaker.playersScoredMeadow(majorityOccupants, points, forMeadowAnimalCount(animals)),
@@ -62,6 +63,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
                meadow.tileIds()
            );
             case PIT_TRAP -> {
+                if (!meadow.isOccupied()) yield this;
                 Set<PlayerColor> majorityOccupants = meadow.majorityOccupants();
                 yield withNewMessage(
                     textMaker.playersScoredPitTrap(majorityOccupants, points, forMeadowAnimalCount(animals)),
