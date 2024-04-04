@@ -58,7 +58,7 @@ public final class Points {
     public static int forClosedForest(int tileCount, int mushroomGroupCount){
         Preconditions.checkArgument(tileCount > 1);
         Preconditions.checkArgument(mushroomGroupCount >= 0);
-        return tileCount*CLOSED_FOREST_TILE_POINTS + mushroomGroupCount*CLOSED_FOREST_MUSHROOM_POINTS;
+        return tileCount * CLOSED_FOREST_TILE_POINTS + mushroomGroupCount * CLOSED_FOREST_MUSHROOM_POINTS;
     }
 
     /**
@@ -70,7 +70,7 @@ public final class Points {
     public static int forClosedRiver(int tileCount, int fishCount){
         Preconditions.checkArgument(tileCount > 1);
         Preconditions.checkArgument(fishCount >= 0);
-        return tileCount*CLOSED_RIVER_TILE_POINTS + fishCount*CLOSED_RIVER_FISH_POINTS;
+        return tileCount*CLOSED_RIVER_TILE_POINTS + fishCount * CLOSED_RIVER_FISH_POINTS;
     }
 
     /**
@@ -85,7 +85,7 @@ public final class Points {
         Preconditions.checkArgument(aurochsCount >= 0);
         Preconditions.checkArgument(deerCount >= 0);
 
-        return mammothCount*MAMMOTH_POINTS + aurochsCount*AUROCHS_POINTS + deerCount*DEER_POINTS;
+        return mammothCount * MAMMOTH_POINTS + aurochsCount * AUROCHS_POINTS + deerCount * DEER_POINTS;
     }
 
     /**
@@ -95,7 +95,7 @@ public final class Points {
      */
     public static int forRiverSystem(int fishCount) {
         Preconditions.checkArgument(fishCount >= 0);
-        return fishCount*FISHER_HUT_POINTS;
+        return fishCount * FISHER_HUT_POINTS;
     }
 
     /**
@@ -105,7 +105,7 @@ public final class Points {
      */
     public static int forLogboat(int lakeCount) {
         Preconditions.checkArgument(lakeCount > 0);
-        return lakeCount*LOGBOAT_POINTS;
+        return lakeCount * LOGBOAT_POINTS;
     }
 
     /**
@@ -115,7 +115,7 @@ public final class Points {
      */
     public static int forRaft(int lakeCount) {
         Preconditions.checkArgument(lakeCount > 0);
-        return lakeCount*RAFT_POINTS;
+        return lakeCount * RAFT_POINTS;
     }
 
 

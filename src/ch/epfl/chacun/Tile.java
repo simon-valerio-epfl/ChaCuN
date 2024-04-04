@@ -3,6 +3,8 @@ package ch.epfl.chacun;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Represents a tile in the game
@@ -32,13 +34,9 @@ public record Tile(int id, Kind kind, TileSide n, TileSide e, TileSide s, TileSi
      * @return all the side zones of the tile
      */
     public Set<Zone> sideZones() {
-        int maxZonesPerSide = 3;
-        int initialCapacity = maxZonesPerSide * Direction.ALL.size();
-        Set<Zone> sideZones = new HashSet<>(initialCapacity);
-        for (TileSide side: this.sides()) {
-            sideZones.addAll(side.zones());
-        }
-        return sideZones;
+        return sides().stream()
+            .flatMap(side -> side.zones().stream())
+            .collect(Collectors.toSet());
     }
 
     /**
@@ -46,13 +44,15 @@ public record Tile(int id, Kind kind, TileSide n, TileSide e, TileSide s, TileSi
      * @return all the zones of the tile
      */
     public Set<Zone> zones() {
-        Set<Zone> zones = new HashSet<>(sideZones());
-        for (Zone sideZone : sideZones()) {
-            if (sideZone instanceof Zone.River river) {
-                if (river.hasLake()) zones.add(river.lake());
-            }
-        }
-        return zones;
+        return Stream.concat(
+            sideZones().stream(),
+            sideZones().stream()
+                .filter(zone -> zone instanceof Zone.River)
+                .map(zone -> (Zone.River) zone)
+                .filter(Zone.River::hasLake)
+                .map(Zone.River::lake)
+        )
+        .collect(Collectors.toSet());
     }
 
     /**
