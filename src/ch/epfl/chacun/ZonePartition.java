@@ -35,12 +35,10 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
      * @return the area that contains the specified zone
      */
     private static <Z extends Zone> Area<Z> areaContaining(Z zone, Set<Area<Z>> areas) {
-        for (Area<Z> area: areas) {
-            if (area.zones().contains(zone)) {
-                return area;
-            }
-        }
-        throw new IllegalArgumentException();
+        return areas.stream()
+            .filter(area -> area.zones().contains(zone))
+            .findFirst()
+            .orElseThrow(IllegalArgumentException::new);
     }
 
     /**
@@ -115,7 +113,7 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
          */
         public void removeAllOccupantsOf(Area<Z> area) {
             boolean areaIsFound = areas.remove(area);
-            if (!areaIsFound) throw new IllegalArgumentException();
+            Preconditions.checkArgument(areaIsFound);
             areas.add(area.withoutOccupants());
         }
 
