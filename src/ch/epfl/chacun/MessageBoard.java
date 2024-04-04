@@ -131,10 +131,10 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         int points = Points.forClosedForest(tileCount, mushroomCount);
         Set<PlayerColor> majorityOccupants = forest.majorityOccupants();
         return withNewMessage(
-                textMaker.playersScoredForest(majorityOccupants, points, mushroomCount, tileCount),
-                points,
-                majorityOccupants,
-                forest.tileIds()
+            textMaker.playersScoredForest(majorityOccupants, points, mushroomCount, tileCount),
+            points,
+            majorityOccupants,
+            forest.tileIds()
         );
     }
 
@@ -149,10 +149,10 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
      */
     public MessageBoard withClosedForestWithMenhir(PlayerColor player, Area<Zone.Forest> forest) {
         return withNewMessage(
-                textMaker.playerClosedForestWithMenhir(player),
-                0,
-                Set.of(),
-                forest.tileIds()
+            textMaker.playerClosedForestWithMenhir(player),
+            0,
+            Set.of(),
+            forest.tileIds()
         );
     }
 

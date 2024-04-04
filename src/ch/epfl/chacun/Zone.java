@@ -16,6 +16,8 @@ public sealed interface Zone {
      * @return the tile id
      */
     static int tileId(int zoneId) {
+        // assistants told us it was all right to keep
+        // this magic number (as we can not put it in a private static variable)
         return zoneId / 10;
     }
 
