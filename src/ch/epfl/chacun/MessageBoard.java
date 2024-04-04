@@ -40,9 +40,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
     }
 
     private MessageBoard withGenericScoredMeadow(
-            MeadowMessageType messageType,
-            Area<Zone.Meadow> meadow, Set<Animal> cancelledAnimals,
-            PlayerColor scorer
+        MeadowMessageType messageType, Area<Zone.Meadow> meadow, Set<Animal> cancelledAnimals, PlayerColor scorer
     ) {
         Set<Animal> animals = Area.animals(meadow, cancelledAnimals);
         int points = forMeadowTotalAnimals(animals);
@@ -82,11 +80,11 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
      */
     private int forMeadowTotalAnimals (Set<Animal> animals) {
         Map<Animal.Kind, Integer> points = forMeadowAnimalCount(animals);
-            return Points.forMeadow(
-                points.getOrDefault(Animal.Kind.MAMMOTH, 0),
-                points.getOrDefault(Animal.Kind.AUROCHS, 0),
-                points.getOrDefault(Animal.Kind.DEER, 0)
-            );
+        return Points.forMeadow(
+            points.getOrDefault(Animal.Kind.MAMMOTH, 0),
+            points.getOrDefault(Animal.Kind.AUROCHS, 0),
+            points.getOrDefault(Animal.Kind.DEER, 0)
+        );
     }
 
     /**
@@ -175,10 +173,10 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         int points = Points.forClosedRiver(tileCount, fishCount);
         Set<PlayerColor> majorityOccupants = river.majorityOccupants();
         return withNewMessage(
-                textMaker.playersScoredRiver(majorityOccupants, points, fishCount, tileCount),
-                points,
-                majorityOccupants,
-                river.tileIds()
+            textMaker.playersScoredRiver(majorityOccupants, points, fishCount, tileCount),
+            points,
+            majorityOccupants,
+            river.tileIds()
         );
     }
 
@@ -194,10 +192,10 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         int lakeCount = Area.lakeCount(riverSystem);
         int points = Points.forLogboat(lakeCount);
         return withNewMessage(
-                textMaker.playerScoredLogboat(scorer, points, lakeCount),
-                points,
-                Set.of(scorer),
-                riverSystem.tileIds()
+            textMaker.playerScoredLogboat(scorer, points, lakeCount),
+            points,
+            Set.of(scorer),
+            riverSystem.tileIds()
         );
     }
 
@@ -249,10 +247,10 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         if (points <= 0) return this;
         Set<PlayerColor> majorityOccupants = riverSystem.majorityOccupants();
         return withNewMessage(
-                textMaker.playersScoredRiverSystem(majorityOccupants, points, fishCount),
-                points,
-                majorityOccupants,
-                riverSystem.tileIds()
+            textMaker.playersScoredRiverSystem(majorityOccupants, points, fishCount),
+            points,
+            majorityOccupants,
+            riverSystem.tileIds()
         );
     }
 
@@ -268,10 +266,10 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         int points = Points.forRaft(lakeCount);
         Set<PlayerColor> majorityOccupants = riverSystem.majorityOccupants();
         return withNewMessage(
-                textMaker.playersScoredRaft(majorityOccupants, points, lakeCount),
-                points,
-                majorityOccupants,
-                riverSystem.tileIds()
+            textMaker.playersScoredRaft(majorityOccupants, points, lakeCount),
+            points,
+            majorityOccupants,
+            riverSystem.tileIds()
         );
     }
 
@@ -286,10 +284,10 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
      */
     public MessageBoard withWinners(Set<PlayerColor> winners, int points) {
         return withNewMessage(
-                textMaker.playersWon(winners, points),
-                0,
-                Set.of(),
-                Set.of()
+            textMaker.playersWon(winners, points),
+            0,
+            Set.of(),
+            Set.of()
         );
     }
 
