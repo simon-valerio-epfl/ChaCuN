@@ -1,11 +1,7 @@
 package ch.epfl.chacun;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Represents the message board of the game.
@@ -27,15 +23,56 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         messages = List.copyOf(messages);
     }
 
+    private enum MeadowMessageType {
+        HUNTING_TRAP, PIT_TRAP, MEADOW
+    }
+
     /**
      * Returns a map linking the kinds of animals to their number
      * @param animals the animals in the meadow
      * @return a map linking the kinds of animals to their number
      */
-    private Map<Animal.Kind, Integer> forMeadowAnimalCount (Set<Animal> animals) {
-        Map<Animal.Kind, Integer> count = new HashMap<>();
-        for (Animal animal: animals) count.put(animal.kind(), count.getOrDefault(animal.kind(), 0) + 1);
-        return count;
+    private Map<Animal.Kind, Integer> forMeadowAnimalCount(Set<Animal> animals) {
+        return animals.stream()
+            .collect(
+                Collectors.groupingBy(Animal::kind, Collectors.collectingAndThen(Collectors.counting(), Long::intValue))
+            );
+    }
+
+    private MessageBoard withGenericScoredMeadow(
+            MeadowMessageType messageType,
+            Area<Zone.Meadow> meadow, Set<Animal> cancelledAnimals,
+            PlayerColor scorer
+    ) {
+        Set<Animal> animals = Area.animals(meadow, cancelledAnimals);
+        int points = forMeadowTotalAnimals(animals);
+        if (points <= 0) return this;
+        return switch (messageType) {
+            case MEADOW -> {
+                Set<PlayerColor> majorityOccupants = meadow.majorityOccupants();
+                yield withNewMessage(
+                    textMaker.playersScoredMeadow(majorityOccupants, points, forMeadowAnimalCount(animals)),
+                    points,
+                    majorityOccupants,
+                    meadow.tileIds()
+                );
+            }
+            case HUNTING_TRAP -> withNewMessage(
+               textMaker.playerScoredHuntingTrap(scorer, points, forMeadowAnimalCount(animals)),
+               points,
+               Set.of(scorer),
+               meadow.tileIds()
+           );
+            case PIT_TRAP -> {
+                Set<PlayerColor> majorityOccupants = meadow.majorityOccupants();
+                yield withNewMessage(
+                    textMaker.playersScoredPitTrap(majorityOccupants, points, forMeadowAnimalCount(animals)),
+                    points,
+                    majorityOccupants,
+                    meadow.tileIds()
+                );
+            }
+        };
     }
 
     /**
@@ -73,13 +110,10 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
      * @return a map matching the scorers to the points they got from the messages on the message board
      */
     public Map<PlayerColor, Integer> points() {
-        Map<PlayerColor, Integer> playerPoints = new HashMap<>();
-        for (Message message: messages) {
-            for (PlayerColor player: message.scorers()) {
-                playerPoints.put(player, playerPoints.getOrDefault(player, 0) + message.points());
-            }
-        }
-        return playerPoints;
+        return messages.stream()
+            .flatMap(message -> message.scorers().stream()
+                    .map(scorer -> new AbstractMap.SimpleEntry<>(scorer, message.points())))
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, Integer::sum));
     }
 
     /**
@@ -149,31 +183,6 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
     }
 
     /**
-     * If placing the hunting trap got the player some points,
-     * the method returns a new message board with the message of the event added
-     * @param scorer the player who placed the hunting trap
-     * @param adjacentMeadow the meadow area adjacent to the hunting trap,
-     *                      containing the meadows surrounding the placed hunting trap
-     * @return a new message board with the message of the event added,
-     *                 the same message board if the hunting trap didn't get any point
-     */
-    public MessageBoard withScoredHuntingTrap(PlayerColor scorer, Area<Zone.Meadow> adjacentMeadow) {
-        // adjacentMeadow is an area created specifically for the hunting trap
-        // therefore it contains the right zones
-        // the ones from the main meadow, and the ones from the 8 neighboring tiles
-        Set<Animal> animals = Area.animals(adjacentMeadow, Set.of());
-        int points = forMeadowTotalAnimals(animals);
-        // if there is no animal the hunting trap won't give the placer any point
-        if (points <= 0) return this;
-        return withNewMessage(
-                textMaker.playerScoredHuntingTrap(scorer, points, forMeadowAnimalCount(animals)),
-                points,
-                Set.of(scorer),
-                adjacentMeadow.tileIds()
-        );
-    }
-
-    /**
      * Returns a new message board with the message of the event added,
      * signaling that the player got some points from placing the logboat
      * on the given river system
@@ -193,6 +202,19 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
     }
 
     /**
+     * If placing the hunting trap got the player some points,
+     * the method returns a new message board with the message of the event added
+     * @param scorer the player who placed the hunting trap
+     * @param adjacentMeadow the meadow area adjacent to the hunting trap,
+     *                      containing the meadows surrounding the placed hunting trap
+     * @return a new message board with the message of the event added,
+     *                 the same message board if the hunting trap didn't get any point
+     */
+    public MessageBoard withScoredHuntingTrap(PlayerColor scorer, Area<Zone.Meadow> adjacentMeadow) {
+        return withGenericScoredMeadow(MeadowMessageType.HUNTING_TRAP, adjacentMeadow, Set.of(), scorer);
+    }
+
+    /**
      * If the meadow area is occupied and the scored points are positive (depending on the animals in the meadow),
      * the method returns a new message board with the message of the event added
      * @param meadow the meadow area
@@ -200,18 +222,20 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
      * @return a new message board with the message of the event added if some player got some points
      */
     public MessageBoard withScoredMeadow(Area<Zone.Meadow> meadow, Set<Animal> cancelledAnimals) {
-        if (!meadow.isOccupied()) return this;
-        Set<Animal> animals = Area.animals(meadow, cancelledAnimals);
-        int points = forMeadowTotalAnimals(animals);
-        if (points <= 0) return this;
-        Set<PlayerColor> majorityOccupants = meadow.majorityOccupants();
-        return withNewMessage(
-                textMaker.playersScoredMeadow(majorityOccupants, points, forMeadowAnimalCount(animals)),
-                points,
-                majorityOccupants,
-                meadow.tileIds()
-        );
+        return withGenericScoredMeadow(MeadowMessageType.MEADOW, meadow, cancelledAnimals, null);
     }
+
+    /**
+     * If the meadow area is occupied and the scored points are positive (depending on the animals in the meadow),
+     * the method returns a new message board with the message of the event added
+     * @param adjacentMeadow the meadow area containing the pit trap and the meadows surrounding it
+     * @param cancelledAnimals the animals whose presence has to be ignored
+     * @return a new message board with the message of the event added if some player got some points
+     */
+    public MessageBoard withScoredPitTrap(Area<Zone.Meadow> adjacentMeadow, Set<Animal> cancelledAnimals) {
+        return withGenericScoredMeadow(MeadowMessageType.PIT_TRAP, adjacentMeadow, cancelledAnimals, null);
+    }
+
     /**
      * If the river system area is occupied and the scored points are positive (depending on the fishes in the system),
      * the method returns a new message board with the message of the event added
@@ -229,27 +253,6 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
                 points,
                 majorityOccupants,
                 riverSystem.tileIds()
-        );
-    }
-
-    /**
-     * If the meadow area is occupied and the scored points are positive (depending on the animals in the meadow),
-     * the method returns a new message board with the message of the event added
-     * @param adjacentMeadow the meadow area containing the pit trap and the meadows surrounding it
-     * @param cancelledAnimals the animals whose presence has to be ignored
-     * @return a new message board with the message of the event added if some player got some points
-     */
-    public MessageBoard withScoredPitTrap(Area<Zone.Meadow> adjacentMeadow, Set<Animal> cancelledAnimals) {
-        if (!adjacentMeadow.isOccupied()) return this;
-        Set<Animal> animals = Area.animals(adjacentMeadow, cancelledAnimals);
-        int points = forMeadowTotalAnimals(animals);
-        if (points <= 0) return this;
-        Set<PlayerColor> majorityOccupants = adjacentMeadow.majorityOccupants();
-        return withNewMessage(
-                textMaker.playersScoredPitTrap(majorityOccupants, points, forMeadowAnimalCount(animals)),
-                points,
-                majorityOccupants,
-                adjacentMeadow.tileIds()
         );
     }
 
