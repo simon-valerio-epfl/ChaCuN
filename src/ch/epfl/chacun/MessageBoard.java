@@ -141,7 +141,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
     /**
      * Returns a new message board with the message of the event added
      * signaling that the player can place another tile because the forest
-     * he has closed contains one or more menhirs.
+     * he has closed contains one or more menhir.
      * @param player the player who placed the tile
      * @param forest the forest area that has been closed
      * @return a new message board with the message of the event added

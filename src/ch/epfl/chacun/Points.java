@@ -90,7 +90,7 @@ public final class Points {
 
     /**
      * Returns the number of points gained by a player per river system at the end of the game
-     * @param fishCount the number of fish in the lake (non negative)
+     * @param fishCount the number of fish in the lake (non-negative)
      * @return the number of points gained by a player per river system at the end of the game
      */
     public static int forRiverSystem(int fishCount) {

@@ -111,7 +111,7 @@ public record Area <Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, 
     public static int riverFishCount(Area<Zone.River> river) {
         // at max, there will be river.zones().size() lakes
         // that's useful to prevent set extensions
-        Set<Zone.Lake> addedLakes = new HashSet<Zone.Lake>(river.zones().size());
+        Set<Zone.Lake> addedLakes = new HashSet<>(river.zones().size());
         return river.zones()
             .stream()
             // we map every zone to the number of fishes we will add

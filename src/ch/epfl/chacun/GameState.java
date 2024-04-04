@@ -225,7 +225,7 @@ public record GameState (
                 Set<Animal> tigers = animalsOfKind(animals, Animal.Kind.TIGER);
                 int toCancelCount = Math.min(tigers.size(), deers.size());
                 Set<Animal> cancelledDeers = deers.stream().limit(toCancelCount).collect(Collectors.toSet());
-                // todo calculer les cerfs
+                // todo cancel deers
                 // newMessageBoard = newMessageBoard.withScoredHuntingTrap(currentPlayer(), adjacentMeadow, cancelledDeers);
                 newMessageBoard = newMessageBoard.withScoredHuntingTrap(currentPlayer(), adjacentMeadow);
                 newBoard = newBoard.withMoreCancelledAnimals(animals);
@@ -339,7 +339,7 @@ public record GameState (
         // the first part of the method handles the scoring of the meadow areas
         for (Area<Zone.Meadow> meadowArea: newBoard.meadowAreas()) {
 
-            // checks if there is a meadow area containing a wild fire zone or one containing a pit trap zone
+            // checks if there is a meadow area containing a wildfire zone or one containing a pit trap zone
             boolean hasWildFireZone = meadowArea.zoneWithSpecialPower(Zone.SpecialPower.WILD_FIRE) != null;
             Zone.Meadow pitTrapZone = (Zone.Meadow) meadowArea.zoneWithSpecialPower(Zone.SpecialPower.PIT_TRAP);
 

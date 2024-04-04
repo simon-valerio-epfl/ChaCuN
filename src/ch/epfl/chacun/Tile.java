@@ -62,6 +62,6 @@ public record Tile(int id, Kind kind, TileSide n, TileSide e, TileSide s, TileSi
      * MENHIR is the kind of the special menhir tiles
      */
     public enum Kind {
-        START, NORMAL, MENHIR;
+        START, NORMAL, MENHIR
     }
 }
