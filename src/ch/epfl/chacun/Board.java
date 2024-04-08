@@ -97,11 +97,11 @@ public final class Board {
      * @return the placed tile with the given id
      */
     public PlacedTile tileWithId(int tileId) {
-        return Arrays.stream(orderedTileIndexes)
-            .mapToObj(idx -> placedTiles[idx])
-            .filter(tile -> tile.id() == tileId)
+        int tileIndex = Arrays.stream(orderedTileIndexes)
+            .dropWhile(idx -> placedTiles[idx].id() != tileId)
             .findFirst()
             .orElseThrow(IllegalArgumentException::new);
+        return placedTiles[tileIndex];
     }
 
     /**
