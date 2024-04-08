@@ -199,6 +199,9 @@ public record GameState (
         Map<Animal.Kind, Set<Animal>> animalsPerKind = animalsPerKind(meadowArea);
         Set<Animal> deers = animalsPerKind.getOrDefault(Animal.Kind.DEER, Set.of());
         return deers.stream()
+            // we can cancel at most as many deers as there are or
+            // as many as there are tigers, whichever is the smallest
+            // tells us how many deers we are going to cancel
             .limit(
                 Math.min(
                     deers.size(),
@@ -208,17 +211,23 @@ public record GameState (
             .collect(Collectors.toSet());
     }
 
-    private Set<Animal> cancelDeersOptimized (Zone.Meadow pitTrapZone) {
+    private Set<Animal> cancelDeersWithPitTrap (Zone.Meadow pitTrapZone) {
         Area<Zone.Meadow> meadowArea = board.meadowArea(pitTrapZone);
-        Area<Zone.Meadow> adjacentMeadow = board.adjacentMeadow(board.tileWithId(pitTrapZone.tileId()).pos(), pitTrapZone);
+        // we get the position of the tile where the pit trap
+        Pos pitTrapPosition = board.tileWithId(pitTrapZone.tileId()).pos();
+        // we get the meadow area surrounding the pit trap
+        Area<Zone.Meadow> adjacentMeadow = board.adjacentMeadow(pitTrapPosition, pitTrapZone);
         Map<Animal.Kind, Set<Animal>> animalsPerKind = animalsPerKind(meadowArea);
 
+
         Set<Animal> adjacentDeers = animalsPerKind(adjacentMeadow).getOrDefault(Animal.Kind.DEER, Set.of());
-        Set<Animal> outsideDeers = animalsPerKind(meadowArea).getOrDefault(Animal.Kind.DEER, Set.of());
+        // we create a new set with all the deers, then remove the adjacent deers
+        Set<Animal> outsideDeers = new HashSet<>(animalsPerKind.getOrDefault(Animal.Kind.DEER, Set.of()));
         outsideDeers.removeAll(adjacentDeers);
 
         // we order the deers by decreasing distance to the pit trap,
         // and cancel as many deers as we have to remove
+        // (the max between the number of deers and the number of tigers)
         return Stream.concat(outsideDeers.stream(), adjacentDeers.stream())
             .limit(
                 Math.min(
@@ -379,7 +388,7 @@ public record GameState (
                 // removes the deers if there is no fire protecting them
                 if (!hasWildFireZone) {
                     // todo REALLY MAKE SURE TO TRY THAT
-                    newBoard = newBoard.withMoreCancelledAnimals(cancelDeersOptimized(pitTrapZone));
+                    newBoard = newBoard.withMoreCancelledAnimals(cancelDeersWithPitTrap(pitTrapZone));
                 }
 
                 // the pit trap is scored after some deers have been removed
