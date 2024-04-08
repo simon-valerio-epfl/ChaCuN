@@ -39,8 +39,20 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
             );
     }
 
+
+    /**
+     * In the case of a meadow with a hunting trap,
+     * the scorer is the player who placed the tile containing it.
+     * Otherwise, the scorers are the majority occupants of the meadow.
+     * Returns a new message board with the message of the event added
+     * @param messageType the type of the meadow message
+     * @param meadow the meadow area to score
+     * @param cancelledAnimals the animals whose presence has to be ignored
+     * @param tilePlacer the player who placed the tile, if the message is about a hunting trap
+     * @return a new message board with the message of the event added
+     */
     private MessageBoard withGenericScoredMeadow(
-        MeadowMessageType messageType, Area<Zone.Meadow> meadow, Set<Animal> cancelledAnimals, PlayerColor scorer
+        MeadowMessageType messageType, Area<Zone.Meadow> meadow, Set<Animal> cancelledAnimals, PlayerColor tilePlacer
     ) {
         Set<Animal> animals = Area.animals(meadow, cancelledAnimals);
         int points = forMeadowTotalAnimals(animals);
@@ -57,9 +69,9 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
                 );
             }
             case HUNTING_TRAP -> withNewMessage(
-               textMaker.playerScoredHuntingTrap(scorer, points, forMeadowAnimalCount(animals)),
+               textMaker.playerScoredHuntingTrap(tilePlacer, points, forMeadowAnimalCount(animals)),
                points,
-               Set.of(scorer),
+               Set.of(tilePlacer),
                meadow.tileIds()
            );
             case PIT_TRAP -> {
@@ -73,6 +85,20 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
                 );
             }
         };
+    }
+
+    /**
+     * Returns a new message board with the message of the event added.
+     * The scorers are the majority occupants of the meadow.
+     * @param messageType the type of the meadow message
+     * @param meadow the meadow area to score
+     * @param cancelledAnimals the animals whose presence has to be ignored
+     * @return a new message board with the message of the event added
+     */
+    private MessageBoard withGenericScoredMeadow(
+            MeadowMessageType messageType, Area<Zone.Meadow> meadow, Set<Animal> cancelledAnimals
+    ) {
+       return withGenericScoredMeadow(messageType, meadow, cancelledAnimals, null);
     }
 
     /**
@@ -111,8 +137,10 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
      */
     public Map<PlayerColor, Integer> points() {
         return messages.stream()
+            // we map every message to a stream of simple entries (scorer, points)
             .flatMap(message -> message.scorers().stream()
                     .map(scorer -> new AbstractMap.SimpleEntry<>(scorer, message.points())))
+            // we collect the entries to a map, summing the points of the scorers that appear in more than one message
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, Integer::sum));
     }
 
@@ -222,7 +250,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
      * @return a new message board with the message of the event added if some player got some points
      */
     public MessageBoard withScoredMeadow(Area<Zone.Meadow> meadow, Set<Animal> cancelledAnimals) {
-        return withGenericScoredMeadow(MeadowMessageType.MEADOW, meadow, cancelledAnimals, null);
+        return withGenericScoredMeadow(MeadowMessageType.MEADOW, meadow, cancelledAnimals);
     }
 
     /**
@@ -233,7 +261,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
      * @return a new message board with the message of the event added if some player got some points
      */
     public MessageBoard withScoredPitTrap(Area<Zone.Meadow> adjacentMeadow, Set<Animal> cancelledAnimals) {
-        return withGenericScoredMeadow(MeadowMessageType.PIT_TRAP, adjacentMeadow, cancelledAnimals, null);
+        return withGenericScoredMeadow(MeadowMessageType.PIT_TRAP, adjacentMeadow, cancelledAnimals);
     }
 
     /**
