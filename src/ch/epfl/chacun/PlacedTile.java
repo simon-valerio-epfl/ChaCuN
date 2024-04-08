@@ -93,8 +93,8 @@ public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos 
     public Set<Zone.Forest> forestZones(){
         Set<Zone.Forest> forestZones = new HashSet<>();
         for (Zone zone : tile.zones()) {
-            if (zone instanceof Zone.Forest) {
-                forestZones.add((Zone.Forest) zone);
+            if (zone instanceof Zone.Forest forest) {
+                forestZones.add(forest);
             }
         }
         return forestZones;
@@ -107,8 +107,8 @@ public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos 
     public Set<Zone.River> riverZones () {
         Set<Zone.River> riverZones = new HashSet<>();
         for (Zone zone : tile.zones()) {
-            if (zone instanceof Zone.River) {
-                riverZones.add((Zone.River) zone);
+            if (zone instanceof Zone.River river) {
+                riverZones.add(river);
             }
         }
         return riverZones;
@@ -120,8 +120,8 @@ public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos 
     public Set<Zone.Meadow> meadowZones() {
         Set<Zone.Meadow> meadowZones = new HashSet<>();
         for (Zone zone : tile.zones()) {
-            if (zone instanceof Zone.Meadow) {
-                meadowZones.add((Zone.Meadow) zone);
+            if (zone instanceof Zone.Meadow meadow) {
+                meadowZones.add(meadow);
             }
         }
         return meadowZones;
