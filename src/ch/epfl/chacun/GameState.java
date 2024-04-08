@@ -277,7 +277,7 @@ public record GameState (
                 // newMessageBoard = newMessageBoard.withScoredHuntingTrap(currentPlayer(), adjacentMeadow, cancelledDeers);
                 newMessageBoard = newMessageBoard.withScoredHuntingTrap(currentPlayer(), adjacentMeadow);
                 // then cancel all other animals
-                newBoard = newBoard.withMoreCancelledAnimals(Area.animals(adjacentMeadow, Set.of()));
+                newBoard = newBoard.withMoreCancelledAnimals(Area.animals(adjacentMeadow, newBoard.cancelledAnimals()));
             }
             case null, default -> {}
         }

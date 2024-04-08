@@ -105,7 +105,7 @@ public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos 
      * @return the set of river zones of the placed tile (empty if there are none)
      */
     public Set<Zone.River> riverZones () {
-        Set<Zone.River> riverZones = new HashSet<>(MAX_ZONE_SAME_KIND_PER_TILE);
+        Set<Zone.River> riverZones = new HashSet<>();
         for (Zone zone : tile.zones()) {
             if (zone instanceof Zone.River) {
                 riverZones.add((Zone.River) zone);
