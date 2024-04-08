@@ -36,7 +36,9 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
      */
     private static <Z extends Zone> Area<Z> areaContaining(Z zone, Set<Area<Z>> areas) {
         return areas.stream()
-            .filter(area -> area.zones().contains(zone))
+            // we use a drop while rather than a filter because there is only one area containing the given zone,
+            // and we want to avoid iterating over the whole list
+            .dropWhile(area -> !area.zones().contains(zone))
             .findFirst()
             .orElseThrow(IllegalArgumentException::new);
     }
