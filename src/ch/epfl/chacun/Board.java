@@ -232,8 +232,11 @@ public final class Board {
      */
     public Set<Pos> insertionPositions() {
         return Arrays.stream(orderedTileIndexes)
+            // we loop over the tiles that we have already placed
             .mapToObj(idx -> placedTiles[idx].pos())
+            // loop over N, E, S, W and get the new position in the direction we want to test
             .flatMap(pos -> Direction.ALL.stream().map(pos::neighbor))
+            // check if the position belongs to the board and nothing is placed there
             .filter(pos -> isPosInBoard(pos) && tileAt(pos) == null)
             .collect(Collectors.toSet());
     }
