@@ -3,6 +3,8 @@ package ch.epfl.chacun;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Represents a tile in the game
@@ -32,13 +34,9 @@ public record Tile(int id, Kind kind, TileSide n, TileSide e, TileSide s, TileSi
      * @return all the side zones of the tile
      */
     public Set<Zone> sideZones() {
-        int maxZonesPerSide = 3;
-        int initialCapacity = maxZonesPerSide * Direction.ALL.size();
-        Set<Zone> sideZones = new HashSet<>(initialCapacity);
-        for (TileSide side: this.sides()) {
-            sideZones.addAll(side.zones());
-        }
-        return sideZones;
+        return sides().stream()
+            .flatMap(side -> side.zones().stream())
+            .collect(Collectors.toSet());
     }
 
     /**
@@ -62,6 +60,6 @@ public record Tile(int id, Kind kind, TileSide n, TileSide e, TileSide s, TileSi
      * MENHIR is the kind of the special menhir tiles
      */
     public enum Kind {
-        START, NORMAL, MENHIR;
+        START, NORMAL, MENHIR
     }
 }

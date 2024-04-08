@@ -22,13 +22,17 @@ public enum Rotation {
      * The number of possible rotations
      */
     public static final int COUNT = ALL.size();
+    /**
+     * The number of degrees in a quarter turn
+     */
+    private static final int QUARTER_TURN_DEGREES = 90;
 
     /**
      * Returns the number of degrees of the rotation.
      * @return the number of degrees of the rotation
      */
     public int degreesCW(){
-        return this.ordinal()*90;
+        return this.ordinal() * QUARTER_TURN_DEGREES;
     }
 
     /**
@@ -47,7 +51,7 @@ public enum Rotation {
     public Rotation negated(){
         //The mod 4 operation is used to ensure that this.ordinal being 0
         //works as expected
-        return ALL.get((COUNT - this.ordinal()) % 4);
+        return ALL.get((COUNT - this.ordinal()) % ALL.size());
     }
 
     /**

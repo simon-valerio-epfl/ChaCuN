@@ -86,31 +86,22 @@ public record Area <Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, 
      * @return the set of animals in the given area, excluding the ones who have been cancelled
      */
     public static Set<Animal> animals(Area<Zone.Meadow> meadow, Set<Animal> cancelledAnimals) {
-        Set<Animal> animals = new HashSet<>();
-        for (Zone.Meadow zone: meadow.zones()) {
-            for (Animal animal: zone.animals()) {
-                if (!cancelledAnimals.contains(animal)) animals.add(animal);
-            }
-        }
-        return animals;
-        /*
         return meadow.zones()
-                .stream()
-                // we generate a stream containing several streams (one for each zone),
-                // which contains the animals in each zone,
-                // then we flatten the stream of streams into a stream (flatMap())
+            .stream()
+            // we generate a stream containing several streams (one for each zone),
+            // which contains the animals in each zone,
+            // then we flatten the stream of streams into a stream (flatMap())
 
-                //we map every zone to the stream of animals it contains
-                .flatMap(zone -> zone.animals().stream())
-                // we remove all the animals that have been eaten
-                // when the lambda returns false (i.e. the animal is in the cancelledAnimals set)
-                // the animal is not kept in the stream
+            //we map every zone to the stream of animals it contains
+            .flatMap(zone -> zone.animals().stream())
+            // we remove all the animals that have been eaten
+            // when the lambda returns false (i.e. the animal is in the cancelledAnimals set)
+            // the animal is not kept in the stream
 
-                .filter(animal -> !cancelledAnimals.contains(animal))
-                // convert the stream to the set we will return, that will
-                // therefore contain all the animals living in the area
-                .collect(Collectors.toSet());
-         */
+            .filter(animal -> !cancelledAnimals.contains(animal))
+            // convert the stream to the set we will return, that will
+            // therefore contain all the animals living in the area
+            .collect(Collectors.toSet());
     }
     /**
      * Counts the number of fishes in a certain river area and in the lakes connected to it.
@@ -118,21 +109,23 @@ public record Area <Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, 
      * @return the number of fishes in the given river area and in the lakes connected to it
      */
     public static int riverFishCount(Area<Zone.River> river) {
-        Set<Zone.Lake> addedLakes = new HashSet<Zone.Lake>();
+        // at max, there will be river.zones().size() lakes
+        // that's useful to prevent set extensions
+        Set<Zone.Lake> addedLakes = new HashSet<>();
         return river.zones()
-                .stream()
-                // we map every zone to the number of fishes we will add
-                // because of it
-                .mapToInt((zone) ->
-                        // we sum the fishes in the river...
-                        zone.fishCount() +
-                        // ...and the fishes in the neighbouring lakes (only once!)
-                        (zone.hasLake() && addedLakes.add(zone.lake())
-                                ? zone.lake().fishCount()
-                                : 0
-                        ))
-                // we sum the number of fishes we got in every zone
-                .sum();
+            .stream()
+            // we map every zone to the number of fishes we will add
+            // because of it
+            .mapToInt((zone) ->
+                    // we sum the fishes in the river...
+                    zone.fishCount() +
+                    // ...and the fishes in the neighbouring lakes (only once!)
+                    (zone.hasLake() && addedLakes.add(zone.lake())
+                            ? zone.lake().fishCount()
+                            : 0
+                    ))
+            // we sum the number of fishes we got in every zone
+            .sum();
     }
 
     /**
@@ -175,11 +168,11 @@ public record Area <Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, 
      * @return the set of players having the majority of occupants in this area
      */
     public Set<PlayerColor> majorityOccupants() {
-        Map<PlayerColor, Long> m = occupants.stream().collect(Collectors.groupingBy(c -> c, Collectors.counting()));
-        long maxCount = m.values().stream().mapToLong(l -> l).max().orElse(0);
-        return m.keySet().stream().filter(c -> m.get(c) == maxCount).collect(Collectors.toSet());
+        Map<PlayerColor, Long> playerPoints = occupants.stream()
+            .collect(Collectors.groupingBy(c -> c, Collectors.counting()));
+        long maxCount = playerPoints.values().stream().mapToLong(l -> l).max().orElse(0);
+        return playerPoints.keySet().stream().filter(c -> playerPoints.get(c) == maxCount).collect(Collectors.toSet());
     }
-
 
     /**
      * Connects the current instance of area to the given one.
@@ -197,9 +190,7 @@ public record Area <Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, 
         //by subtracting 2 from the sum of the open connections in the two areas if they are different,
         //or by subtracting 2 from the open connections in the current area if it is the same area
         //(we compare their references to know if they are the same area)
-        int connectedOpenConnections = this.equals(that)
-                ? openConnections - 2
-                : openConnections + that.openConnections() - 2;
+        int connectedOpenConnections = openConnections + (this.equals(that) ? 0 : that.openConnections()) - 2;
         return new Area<>(connectedZones, connectedOccupants, connectedOpenConnections);
     }
 
@@ -209,13 +200,10 @@ public record Area <Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, 
      * @param specialPower the special power to look for
      * @return the zone with the given special power in the current instance of area, or null if there is none
      */
-
-    //TODO: I CHANGED THIS
     public Zone zoneWithSpecialPower (Zone.SpecialPower specialPower) {
         return zones().stream()
-                .filter
-                        (zone -> zone.specialPower() != null && zone.specialPower().equals(specialPower))
-                .findAny().orElse(null);
+            .filter(zone -> zone.specialPower() != null && zone.specialPower().equals(specialPower))
+            .findAny().orElse(null);
     }
 
     /**

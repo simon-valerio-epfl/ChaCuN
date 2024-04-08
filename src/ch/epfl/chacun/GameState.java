@@ -21,6 +21,8 @@ public record GameState (
         MessageBoard messageBoard
 ) {
 
+    private final static int MIN_PLAYER_COUNT = 2;
+
     /**
      * Represents the possible actions that can be performed in a game
      */
@@ -55,7 +57,7 @@ public record GameState (
 
         Objects.requireNonNull(players);
         players = List.copyOf(players);
-        Preconditions.checkArgument(players.size() >= 2);
+        Preconditions.checkArgument(players.size() >= MIN_PLAYER_COUNT);
 
         Preconditions.checkArgument(tileToPlace == null ^ nextAction == Action.PLACE_TILE);
     }
@@ -187,6 +189,55 @@ public record GameState (
             .withTurnFinished();
     }
 
+    private Map<Animal.Kind, Set<Animal>> animalsPerKind (Area<Zone.Meadow> meadowArea) {
+        return Area.animals(meadowArea, board.cancelledAnimals()).stream()
+            .collect(Collectors.groupingBy(Animal::kind, Collectors.toSet()));
+    }
+
+    // todo optimize that
+    private Set<Animal> deersToCancel (Area<Zone.Meadow> meadowArea) {
+        Map<Animal.Kind, Set<Animal>> animalsPerKind = animalsPerKind(meadowArea);
+        Set<Animal> deers = animalsPerKind.getOrDefault(Animal.Kind.DEER, Set.of());
+        return deers.stream()
+            // we can cancel at most as many deers as there are or
+            // as many as there are tigers, whichever is the smallest
+            // tells us how many deers we are going to cancel
+            .limit(
+                Math.min(
+                    deers.size(),
+                    animalsPerKind.getOrDefault(Animal.Kind.TIGER, Set.of()).size()
+                )
+            )
+            .collect(Collectors.toSet());
+    }
+
+    private Set<Animal> deersToCancelWithPitTrap (Zone.Meadow pitTrapZone) {
+        Area<Zone.Meadow> meadowArea = board.meadowArea(pitTrapZone);
+        // we get the position of the tile where the pit trap
+        Pos pitTrapPosition = board.tileWithId(pitTrapZone.tileId()).pos();
+        // we get the meadow area surrounding the pit trap
+        Area<Zone.Meadow> adjacentMeadow = board.adjacentMeadow(pitTrapPosition, pitTrapZone);
+        Map<Animal.Kind, Set<Animal>> animalsPerKind = animalsPerKind(meadowArea);
+
+
+        Set<Animal> adjacentDeers = animalsPerKind(adjacentMeadow).getOrDefault(Animal.Kind.DEER, Set.of());
+        // we create a new set with all the deers, then remove the adjacent deers
+        Set<Animal> outsideDeers = new HashSet<>(animalsPerKind.getOrDefault(Animal.Kind.DEER, Set.of()));
+        outsideDeers.removeAll(adjacentDeers);
+
+        // we order the deers by decreasing distance to the pit trap,
+        // and cancel as many deers as we have to remove
+        // (the max between the number of deers and the number of tigers)
+        return Stream.concat(outsideDeers.stream(), adjacentDeers.stream())
+            .limit(
+                Math.min(
+                    animalsPerKind.getOrDefault(Animal.Kind.DEER, Set.of()).size(),
+                    animalsPerKind.getOrDefault(Animal.Kind.TIGER, Set.of()).size()
+                )
+            )
+            .collect(Collectors.toSet());
+    }
+
     /**
      * Places a tile on the board and handles the special power it may have.
      * If there is a shaman, and the player has at least a pawn on the board,
@@ -221,15 +272,12 @@ public record GameState (
             }
             case Zone.Meadow meadow when meadow.specialPower() == Zone.SpecialPower.HUNTING_TRAP -> {
                 Area<Zone.Meadow> adjacentMeadow = newBoard.adjacentMeadow(tile.pos(), meadow);
-                Set<Animal> animals = Area.animals(adjacentMeadow, newBoard.cancelledAnimals());
-                Set<Animal> deers = animalsOfKind(animals, Animal.Kind.DEER);
-                Set<Animal> tigers = animalsOfKind(animals, Animal.Kind.TIGER);
-                int toCancelCount = Math.min(tigers.size(), deers.size());
-                Set<Animal> cancelledDeers = deers.stream().limit(toCancelCount).collect(Collectors.toSet());
-                // todo calculer les cerfs
+                Set<Animal> deers = deersToCancel(adjacentMeadow);
+                // todo cancel deers
                 // newMessageBoard = newMessageBoard.withScoredHuntingTrap(currentPlayer(), adjacentMeadow, cancelledDeers);
                 newMessageBoard = newMessageBoard.withScoredHuntingTrap(currentPlayer(), adjacentMeadow);
-                newBoard = newBoard.withMoreCancelledAnimals(animals);
+                // then cancel all other animals
+                newBoard = newBoard.withMoreCancelledAnimals(Area.animals(adjacentMeadow, newBoard.cancelledAnimals()));
             }
             case null, default -> {}
         }
@@ -318,16 +366,6 @@ public record GameState (
     }
 
     /**
-     * Returns the subset of animals of a given kind in a set of animals
-     * @param animals the set of animals to filter
-     * @param kind the kind of the animals to keep
-     * @return the subset of animals of the given kind in the set of animals
-     */
-    private Set<Animal> animalsOfKind(Set<Animal> animals, Animal.Kind kind) {
-        return animals.stream().filter(animal -> animal.kind() == kind).collect(Collectors.toSet());
-    }
-
-    /**
      * Returns a new game state with the final points counted and the winners determined,
      * representing the end of the game
      * @return the ending game state with the final points counted and the winners determined
@@ -340,39 +378,25 @@ public record GameState (
         // the first part of the method handles the scoring of the meadow areas
         for (Area<Zone.Meadow> meadowArea: newBoard.meadowAreas()) {
 
-            // checks if there is a meadow area containing a wild fire zone or one containing a pit trap zone
+            // checks if there is a meadow area containing a wildfire zone or one containing a pit trap zone
             boolean hasWildFireZone = meadowArea.zoneWithSpecialPower(Zone.SpecialPower.WILD_FIRE) != null;
             Zone.Meadow pitTrapZone = (Zone.Meadow) meadowArea.zoneWithSpecialPower(Zone.SpecialPower.PIT_TRAP);
 
-            Set<Animal> allAnimals = Area.animals(meadowArea, newBoard.cancelledAnimals());
-            // todo: maybe use a map to use this once
-            Set<Animal> deers = animalsOfKind(allAnimals, Animal.Kind.DEER);
-            Set<Animal> tigers = animalsOfKind(allAnimals, Animal.Kind.TIGER);
-            int toCancelCount = Math.min(tigers.size(), deers.size());
             // if there is no fire and a pit trap zone, the deers adjacent to it are removed at last
             if (pitTrapZone != null) {
                 PlacedTile pitTrapTile = newBoard.tileWithId(pitTrapZone.tileId());
-                Area<Zone.Meadow> adjacentMeadow = newBoard.adjacentMeadow(pitTrapTile.pos(), pitTrapZone);
                 // removes the deers if there is no fire protecting them
                 if (!hasWildFireZone) {
-                    Set<Animal> adjacentAnimals = Area.animals(adjacentMeadow, newBoard.cancelledAnimals());
-                    Set<Animal> adjacentDeers = animalsOfKind(adjacentAnimals, Animal.Kind.DEER);
-                    Set<Animal> farAwayDeers = deers.stream()
-                            .filter(deer -> !adjacentDeers.contains(deer)).collect(Collectors.toSet());
-
-                    // we order the deers by decreasing distance to the pit trap,
-                    // and cancel as many deers as we have to remove
-                    newBoard = newBoard.withMoreCancelledAnimals(
-                        Stream.concat(farAwayDeers.stream(), adjacentDeers.stream()).limit(toCancelCount)
-                            .collect(Collectors.toSet())
-                    );
+                    // todo REALLY MAKE SURE TO TRY THAT
+                    newBoard = newBoard.withMoreCancelledAnimals(deersToCancelWithPitTrap(pitTrapZone));
                 }
+
                 // the pit trap is scored after some deers have been removed
+                Area<Zone.Meadow> adjacentMeadow = newBoard.adjacentMeadow(pitTrapTile.pos(), pitTrapZone);
                 newMessageBoard = newMessageBoard.withScoredPitTrap(adjacentMeadow, newBoard.cancelledAnimals());
             } else if (!hasWildFireZone) {
                 // if there is no pit trap and no fire, the deers are cancelled following an arbitrary order
-                newBoard = newBoard.withMoreCancelledAnimals(deers.stream().limit(toCancelCount)
-                        .collect(Collectors.toSet()));
+                newBoard = newBoard.withMoreCancelledAnimals(deersToCancel(meadowArea));
             }
             // the meadow is scored independently of the presence of a pit trap
             newMessageBoard = newMessageBoard.withScoredMeadow(meadowArea, newBoard.cancelledAnimals());

@@ -65,7 +65,7 @@ public sealed interface Zone {
      * @author Simon Lefort (371918)
      */
     enum SpecialPower {
-        SHAMAN, LOGBOAT, HUNTING_TRAP, PIT_TRAP, WILD_FIRE, RAFT;
+        SHAMAN, LOGBOAT, HUNTING_TRAP, PIT_TRAP, WILD_FIRE, RAFT
     }
 
     /**
@@ -84,7 +84,7 @@ public sealed interface Zone {
          * @author Simon Lefort (371918)
          */
         public enum Kind {
-            PLAIN, WITH_MENHIR, WITH_MUSHROOMS;
+            PLAIN, WITH_MENHIR, WITH_MUSHROOMS
         }
     }
 

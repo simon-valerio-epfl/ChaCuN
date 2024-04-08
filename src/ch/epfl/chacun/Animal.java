@@ -9,11 +9,21 @@ package ch.epfl.chacun;
  * @author Simon Lefort (371918)
  */
 public record Animal (int id, Kind kind) {
+
     /**
      * @return the id of the tile where the animal is
      */
     public int tileId () {
-        return Zone.tileId(id / 10);
+        return Zone.tileId(zoneId());
+    }
+
+    /**
+     * we do a right shift to get the zone id,
+     * as the id of the animal is the zone id * 10 + the local id
+     * @return the zone id of the animal
+     */
+    private int zoneId () {
+        return id / 10;
     }
 
     /**

@@ -3,6 +3,8 @@ package ch.epfl.chacun;
 import java.util.Objects;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 /**
@@ -67,12 +69,12 @@ public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos 
      * @return the zone of the placed tile with the given id if present, throws an exception otherwise
      */
     public Zone zoneWithId (int id) {
-        for (Zone zone: tile.zones()) {
-            if (zone.id() == id) {
-                return zone;
-            }
-        }
-        throw new IllegalArgumentException();
+        return tile.zones().stream()
+            // we use a drop while rather than a filter because there is only one zone with the given id,
+            // and we want to avoid iterating over the whole list
+            .dropWhile(zone -> zone.id() != id)
+            .findFirst()
+            .orElseThrow(IllegalArgumentException::new);
     }
 
     /**
@@ -80,12 +82,12 @@ public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos 
      * @return the zone of the placed tile having a special power if present, null otherwise
      */
     public Zone specialPowerZone(){
-        for (Zone zone: tile.zones()) {
-            if (zone.specialPower() != null) {
-                return zone;
-            }
-        }
-        return null;
+        return tile.zones().stream()
+            // we use a drop while rather than a filter because there is only one zone with a special power,
+            // and we want to avoid iterating over the whole list
+            .dropWhile(zone -> zone.specialPower() == null)
+            .findFirst()
+            .orElse(null);
     }
 
     /**
@@ -94,7 +96,7 @@ public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos 
      */
     public Set<Zone.Forest> forestZones(){
         Set<Zone.Forest> forestZones = new HashSet<>();
-        for (Zone zone: tile.zones()) {
+        for (Zone zone : tile.zones()) {
             if (zone instanceof Zone.Forest forest) {
                 forestZones.add(forest);
             }
@@ -108,7 +110,7 @@ public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos 
      */
     public Set<Zone.River> riverZones () {
         Set<Zone.River> riverZones = new HashSet<>();
-        for (Zone zone: tile.zones()) {
+        for (Zone zone : tile.zones()) {
             if (zone instanceof Zone.River river) {
                 riverZones.add(river);
             }
@@ -121,7 +123,7 @@ public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos 
      */
     public Set<Zone.Meadow> meadowZones() {
         Set<Zone.Meadow> meadowZones = new HashSet<>();
-        for (Zone zone: tile.zones()) {
+        for (Zone zone : tile.zones()) {
             if (zone instanceof Zone.Meadow meadow) {
                 meadowZones.add(meadow);
             }
@@ -129,36 +131,29 @@ public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos 
         return meadowZones;
     }
 
-
     /**
      * Gets the set of the potential occupants that the player can place on the tile
      * depending on the zones of the tile
      * @return the set of potential occupants that the player can place on the tile
      */
     public Set<Occupant> potentialOccupants() {
-        Set<Occupant> potentialOccupants = new HashSet<>();
-        // the starting tile has no potential occupant
-        if (placer == null) {
-            return potentialOccupants;
-        }
-        // each side zone can have a pawn, and if it's a river, a hut (if there is no lake)
-        for (Zone zone: tile.sideZones()) {
-            Occupant potentialOccupant = new Occupant(Occupant.Kind.PAWN, zone.id());
-            potentialOccupants.add(potentialOccupant);
-            if (zone instanceof Zone.River river) {
-                if (!river.hasLake()) {
-                    Occupant potentialRiverOccupant = new Occupant(Occupant.Kind.HUT, zone.id());
-                    potentialOccupants.add(potentialRiverOccupant);
-                }
-            }
-        }
-        for (Zone zone: tile.zones()) {
-            if (zone instanceof Zone.Lake) {
-                Occupant potentialLakeOccupant = new Occupant(Occupant.Kind.HUT, zone.id());
-                potentialOccupants.add(potentialLakeOccupant);
-            }
-        }
-         return potentialOccupants;
+        if (placer == null) return Set.of();
+        return Stream.concat(
+            tile.sideZones().stream()
+                .flatMap(zone -> {
+                    // each side zone can have a pawn
+                    Occupant pawn = new Occupant(Occupant.Kind.PAWN, zone.id());
+                    // and if it's a river, a hut (if there is no lake)
+                    return zone instanceof Zone.River river && !river.hasLake()
+                        ? Stream.of(pawn, new Occupant(Occupant.Kind.HUT, zone.id()))
+                        : Stream.of(pawn);
+                }),
+            // each lake can have a hut
+            tile.zones().stream()
+                .filter(zone -> zone instanceof Zone.Lake)
+                .map(lake -> new Occupant(Occupant.Kind.HUT, lake.id()))
+        )
+        .collect(Collectors.toSet());
     }
 
     /**
