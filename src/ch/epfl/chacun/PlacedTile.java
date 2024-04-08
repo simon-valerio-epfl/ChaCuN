@@ -70,7 +70,9 @@ public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos 
      */
     public Zone zoneWithId (int id) {
         return tile.zones().stream()
-            .filter(zone -> zone.id() == id)
+            // we use a drop while rather than a filter because there is only one zone with the given id,
+            // and we want to avoid iterating over the whole list
+            .dropWhile(zone -> zone.id() != id)
             .findFirst()
             .orElseThrow(IllegalArgumentException::new);
     }
@@ -81,7 +83,9 @@ public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos 
      */
     public Zone specialPowerZone(){
         return tile.zones().stream()
-            .filter(zone -> zone.specialPower() != null)
+            // we use a drop while rather than a filter because there is only one zone with a special power,
+            // and we want to avoid iterating over the whole list
+            .dropWhile(zone -> zone.specialPower() == null)
             .findFirst()
             .orElse(null);
     }

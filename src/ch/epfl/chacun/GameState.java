@@ -195,7 +195,7 @@ public record GameState (
     }
 
     // todo optimize that
-    private Set<Animal> cancelDeers (Area<Zone.Meadow> meadowArea) {
+    private Set<Animal> deersToCancel (Area<Zone.Meadow> meadowArea) {
         Map<Animal.Kind, Set<Animal>> animalsPerKind = animalsPerKind(meadowArea);
         Set<Animal> deers = animalsPerKind.getOrDefault(Animal.Kind.DEER, Set.of());
         return deers.stream()
@@ -211,7 +211,7 @@ public record GameState (
             .collect(Collectors.toSet());
     }
 
-    private Set<Animal> cancelDeersWithPitTrap (Zone.Meadow pitTrapZone) {
+    private Set<Animal> deersToCancelWithPitTrap (Zone.Meadow pitTrapZone) {
         Area<Zone.Meadow> meadowArea = board.meadowArea(pitTrapZone);
         // we get the position of the tile where the pit trap
         Pos pitTrapPosition = board.tileWithId(pitTrapZone.tileId()).pos();
@@ -272,7 +272,7 @@ public record GameState (
             }
             case Zone.Meadow meadow when meadow.specialPower() == Zone.SpecialPower.HUNTING_TRAP -> {
                 Area<Zone.Meadow> adjacentMeadow = newBoard.adjacentMeadow(tile.pos(), meadow);
-                Set<Animal> deers = cancelDeers(adjacentMeadow);
+                Set<Animal> deers = deersToCancel(adjacentMeadow);
                 // todo cancel deers
                 // newMessageBoard = newMessageBoard.withScoredHuntingTrap(currentPlayer(), adjacentMeadow, cancelledDeers);
                 newMessageBoard = newMessageBoard.withScoredHuntingTrap(currentPlayer(), adjacentMeadow);
@@ -388,7 +388,7 @@ public record GameState (
                 // removes the deers if there is no fire protecting them
                 if (!hasWildFireZone) {
                     // todo REALLY MAKE SURE TO TRY THAT
-                    newBoard = newBoard.withMoreCancelledAnimals(cancelDeersWithPitTrap(pitTrapZone));
+                    newBoard = newBoard.withMoreCancelledAnimals(deersToCancelWithPitTrap(pitTrapZone));
                 }
 
                 // the pit trap is scored after some deers have been removed
@@ -396,7 +396,7 @@ public record GameState (
                 newMessageBoard = newMessageBoard.withScoredPitTrap(adjacentMeadow, newBoard.cancelledAnimals());
             } else if (!hasWildFireZone) {
                 // if there is no pit trap and no fire, the deers are cancelled following an arbitrary order
-                newBoard = newBoard.withMoreCancelledAnimals(cancelDeers(meadowArea));
+                newBoard = newBoard.withMoreCancelledAnimals(deersToCancel(meadowArea));
             }
             // the meadow is scored independently of the presence of a pit trap
             newMessageBoard = newMessageBoard.withScoredMeadow(meadowArea, newBoard.cancelledAnimals());

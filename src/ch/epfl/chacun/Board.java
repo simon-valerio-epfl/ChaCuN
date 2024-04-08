@@ -98,6 +98,8 @@ public final class Board {
      */
     public PlacedTile tileWithId(int tileId) {
         int tileIndex = Arrays.stream(orderedTileIndexes)
+            // we use a drop while rather than a filter because there is only one tile with the given id,
+            // and we want to avoid iterating over the whole list
             .dropWhile(idx -> placedTiles[idx].id() != tileId)
             .findFirst()
             .orElseThrow(IllegalArgumentException::new);
