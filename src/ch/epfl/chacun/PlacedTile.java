@@ -118,7 +118,7 @@ public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos 
      * @return the set of meadow zones of the placed tile (empty if there are none)
      */
     public Set<Zone.Meadow> meadowZones() {
-        Set<Zone.Meadow> meadowZones = new HashSet<>(MAX_ZONE_SAME_KIND_PER_TILE);
+        Set<Zone.Meadow> meadowZones = new HashSet<>();
         for (Zone zone : tile.zones()) {
             if (zone instanceof Zone.Meadow) {
                 meadowZones.add((Zone.Meadow) zone);
