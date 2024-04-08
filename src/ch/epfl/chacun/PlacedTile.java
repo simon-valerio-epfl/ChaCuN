@@ -21,8 +21,6 @@ import java.util.stream.Stream;
 
 public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos pos, Occupant occupant) {
 
-    private static final int MAX_ZONE_SAME_KIND_PER_TILE = 4;
-
     /**
      * Constructor for PlacedTile, validating the parameters
      */
@@ -93,7 +91,7 @@ public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos 
      * @return the set of forest zones of the placed tile (empty if there are none)
      */
     public Set<Zone.Forest> forestZones(){
-        Set<Zone.Forest> forestZones = new HashSet<>(MAX_ZONE_SAME_KIND_PER_TILE);
+        Set<Zone.Forest> forestZones = new HashSet<>();
         for (Zone zone : tile.zones()) {
             if (zone instanceof Zone.Forest) {
                 forestZones.add((Zone.Forest) zone);
