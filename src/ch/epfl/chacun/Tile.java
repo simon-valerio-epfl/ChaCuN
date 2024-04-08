@@ -44,15 +44,13 @@ public record Tile(int id, Kind kind, TileSide n, TileSide e, TileSide s, TileSi
      * @return all the zones of the tile
      */
     public Set<Zone> zones() {
-        return Stream.concat(
-            sideZones().stream(),
-            sideZones().stream()
-                .filter(zone -> zone instanceof Zone.River)
-                .map(zone -> (Zone.River) zone)
-                .filter(Zone.River::hasLake)
-                .map(Zone.River::lake)
-        )
-        .collect(Collectors.toSet());
+        Set<Zone> zones = new HashSet<>(sideZones());
+        for (Zone sideZone : sideZones()) {
+            if (sideZone instanceof Zone.River river) {
+                if (river.hasLake()) zones.add(river.lake());
+            }
+        }
+        return zones;
     }
 
     /**
