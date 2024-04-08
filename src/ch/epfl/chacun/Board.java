@@ -232,8 +232,7 @@ public final class Board {
      */
     public Set<Pos> insertionPositions() {
         return Arrays.stream(orderedTileIndexes)
-            .mapToObj(idx -> placedTiles[idx])
-            .map(PlacedTile::pos)
+            .mapToObj(idx -> placedTiles[idx].pos())
             .flatMap(pos -> Direction.ALL.stream().map(pos::neighbor))
             .filter(pos -> isPosInBoard(pos) && tileAt(pos) == null)
             .collect(Collectors.toSet());
