@@ -112,7 +112,7 @@ public record GameState (
             .stream()
             .filter(occupant ->
                 freeOccupantsCount(currentPlayer(), occupant.kind()) > 0
-                    && !switch (tile.zoneWithId(occupant.zoneId())) {
+                && !switch (tile.zoneWithId(occupant.zoneId())) {
                     case Zone.Forest forestZone -> board.forestArea(forestZone).isOccupied();
                     case Zone.Meadow meadowZone -> board.meadowArea(meadowZone).isOccupied();
                     case Zone.River riverZone when occupant.kind() == Occupant.Kind.PAWN ->
