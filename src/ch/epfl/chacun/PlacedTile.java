@@ -21,7 +21,7 @@ import java.util.stream.Stream;
 
 public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos pos, Occupant occupant) {
 
-    private static int MAX_ZONE_SAME_KIND_PER_TILE = 4;
+    private static final int MAX_ZONE_SAME_KIND_PER_TILE = 4;
 
     /**
      * Constructor for PlacedTile, validating the parameters
