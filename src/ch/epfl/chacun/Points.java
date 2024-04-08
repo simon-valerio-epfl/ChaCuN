@@ -70,7 +70,7 @@ public final class Points {
     public static int forClosedRiver(int tileCount, int fishCount){
         Preconditions.checkArgument(tileCount > 1);
         Preconditions.checkArgument(fishCount >= 0);
-        return tileCount*CLOSED_RIVER_TILE_POINTS + fishCount * CLOSED_RIVER_FISH_POINTS;
+        return tileCount * CLOSED_RIVER_TILE_POINTS + fishCount * CLOSED_RIVER_FISH_POINTS;
     }
 
     /**
