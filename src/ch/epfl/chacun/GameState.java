@@ -210,13 +210,13 @@ public record GameState (
         Area<Zone.Meadow> adjacentMeadow = board.adjacentMeadow(board.tileWithId(pitTrapZone.tileId()).pos(), pitTrapZone);
         Map<Animal.Kind, Set<Animal>> animalsPerKind = animalsPerKind(meadowArea);
 
-        Set<Animal> adjacentAnimals = Area.animals(adjacentMeadow, board.cancelledAnimals());
-        Set<Animal> outsideAnimals = Area.animals(meadowArea, board.cancelledAnimals());
-        outsideAnimals.removeAll(adjacentAnimals);
+        Set<Animal> adjacentDeers = animalsPerKind(adjacentMeadow).getOrDefault(Animal.Kind.DEER, Set.of());
+        Set<Animal> outsideDeers = animalsPerKind(meadowArea).getOrDefault(Animal.Kind.DEER, Set.of());
+        outsideDeers.removeAll(adjacentDeers);
 
         // we order the deers by decreasing distance to the pit trap,
         // and cancel as many deers as we have to remove
-        return Stream.concat(outsideAnimals.stream(), adjacentAnimals.stream())
+        return Stream.concat(outsideDeers.stream(), adjacentDeers.stream())
             .limit(
                 Math.min(
                     animalsPerKind.getOrDefault(Animal.Kind.DEER, Set.of()).size(),
