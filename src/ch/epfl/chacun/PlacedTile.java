@@ -70,7 +70,7 @@ public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos 
      */
     public Zone zoneWithId (int id) {
         return tile.zones().stream()
-            .filter(zone -> zone.id() == id)
+            .dropWhile(zone -> zone.id() != id)
             .findFirst()
             .orElseThrow(IllegalArgumentException::new);
     }
