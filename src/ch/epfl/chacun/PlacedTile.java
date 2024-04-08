@@ -21,6 +21,8 @@ import java.util.stream.Stream;
 
 public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos pos, Occupant occupant) {
 
+    private static int MAX_ZONE_SAME_KIND_PER_TILE = 4;
+
     /**
      * Constructor for PlacedTile, validating the parameters
      */
@@ -91,10 +93,13 @@ public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos 
      * @return the set of forest zones of the placed tile (empty if there are none)
      */
     public Set<Zone.Forest> forestZones(){
-        return tile.zones().stream()
-            .filter(zone -> zone instanceof Zone.Forest)
-            .map(zone -> (Zone.Forest) zone)
-            .collect(Collectors.toSet());
+        Set<Zone.Forest> forestZones = new HashSet<>(MAX_ZONE_SAME_KIND_PER_TILE);
+        for (Zone zone : tile.zones()) {
+            if (zone instanceof Zone.Forest) {
+                forestZones.add((Zone.Forest) zone);
+            }
+        }
+        return forestZones;
     }
 
     /**
@@ -102,20 +107,26 @@ public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos 
      * @return the set of river zones of the placed tile (empty if there are none)
      */
     public Set<Zone.River> riverZones () {
-        return tile.zones().stream()
-            .filter(zone -> zone instanceof Zone.River)
-            .map(zone -> (Zone.River) zone)
-            .collect(Collectors.toSet());
+        Set<Zone.River> riverZones = new HashSet<>(MAX_ZONE_SAME_KIND_PER_TILE);
+        for (Zone zone : tile.zones()) {
+            if (zone instanceof Zone.River) {
+                riverZones.add((Zone.River) zone);
+            }
+        }
+        return riverZones;
     }
     /**
      * Gets the set of meadow zones of the placed tile, returning an empty set if there are none
      * @return the set of meadow zones of the placed tile (empty if there are none)
      */
     public Set<Zone.Meadow> meadowZones() {
-        return tile.zones().stream()
-            .filter(zone -> zone instanceof Zone.Meadow)
-            .map(zone -> (Zone.Meadow) zone)
-            .collect(Collectors.toSet());
+        Set<Zone.Meadow> meadowZones = new HashSet<>(MAX_ZONE_SAME_KIND_PER_TILE);
+        for (Zone zone : tile.zones()) {
+            if (zone instanceof Zone.Meadow) {
+                meadowZones.add((Zone.Meadow) zone);
+            }
+        }
+        return meadowZones;
     }
 
     /**
