@@ -45,9 +45,9 @@ final public class TextMakerFr implements TextMaker {
      */
     private String itemsToString (List<String> items) {
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < items.size(); i++) {
+        for (int i = 0; i < items.size(); i++) { // 0, 1
             sb.append(items.get(i));
-            sb.append(i < items.size() - 1 ? ", " : i == items.size() - 2 ? " et " : " ");
+            sb.append(i < items.size() - 2 ? ", " : i == items.size() - 2 ? " et " : "");
         }
         return sb.toString();
     }
@@ -114,9 +114,9 @@ final public class TextMakerFr implements TextMaker {
             earnMessageMajorityOccupants(scorers, points)
         } d'une forêt composée de \{
             pluralizeGameItems(GameItem.TILE, tileCount)
-        } \{
+        }\{
             mushroomGroupCount > 0
-                ? STR."et de \{pluralizeGameItems(GameItem.MUSHROOM_GROUP, mushroomGroupCount)} de champignons."
+                ? STR." et de \{pluralizeGameItems(GameItem.MUSHROOM_GROUP, mushroomGroupCount)} de champignons."
                 : "."
         }";
     }
@@ -129,7 +129,7 @@ final public class TextMakerFr implements TextMaker {
             pluralizeGameItems(GameItem.TILE, tileCount)
         }\{
             fishCount > 0
-            ? STR."et contenant \{pluralizeGameItems(GameItem.FISH, fishCount)} poissons."
+            ? STR." et contenant \{pluralizeGameItems(GameItem.FISH, fishCount)}."
         : "."}";
     }
 
