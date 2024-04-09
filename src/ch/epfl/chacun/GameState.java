@@ -189,6 +189,7 @@ public record GameState (
             .withTurnFinished();
     }
 
+    // remplacer par une simple entry tiger count
     private Map<Animal.Kind, Set<Animal>> animalsPerKind (Area<Zone.Meadow> meadowArea) {
         return Area.animals(meadowArea, board.cancelledAnimals()).stream()
             .collect(Collectors.groupingBy(Animal::kind, Collectors.toSet()));

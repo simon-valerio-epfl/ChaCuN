@@ -57,16 +57,9 @@ final public class TextMakerFr implements TextMaker {
      */
     private String earnMessage (Set<PlayerColor> scorers) {
         Preconditions.checkArgument(!scorers.isEmpty());
-        // Edgar|Alice|Bruno
         List<String> sortedPlayerNames = scorers.stream().sorted().map(this::playerName).toList();
-        // Alice, Edgar et Bruno
-        // Alice et Bruno
-        // Alice
         //the players are already ordered
         String playersToString = itemsToString(sortedPlayerNames);
-        // Alice, Edgar et Bruno ont remporté
-        // Alice et Bruno ont remporté
-        // Alice a remporté
         return STR."\{scorers.size() == 1 ? STR."\{playersToString} a" : STR."\{playersToString} ont"} remporté";
     }
 
