@@ -4,31 +4,32 @@ echo "Compilation en cours..."
 
 javac -version
 
-# ChaCuN/scripts/run_tests
+# Chemin vers la racine de votre projet (ajustez selon votre structure de répertoire)
 ROOT_DIR=../..
 
+# Trouver les fichiers source et de test
 find "${ROOT_DIR}/src/ch/epfl/chacun" -name "*.java" > src_files.txt
 find "${ROOT_DIR}/test/ch/epfl/chacun" -name "*.java" > test_files.txt
 
+# Nettoyer le répertoire de sortie précédent
 rm -rf ./out
 
-# Assurez-vous que cette variable pointe vers le dossier lib du SDK JavaFX téléchargé
+# Assurez-vous que cette variable pointe vers le répertoire lib de JavaFX SDK
 JAVAFX_LIB_PATH="${JAVAFX_SDK_PATH}/lib"
 
-# Compilation des classes de production avec JavaFX
-javac --enable-preview \
+# Compilation avec prise en compte de JavaFX et des fonctionnalités de preview
+javac --enable-preview --release 21 \
       --module-path "${JAVAFX_LIB_PATH}" \
       --add-modules javafx.controls,javafx.fxml \
       -d out/production/classes @src_files.txt
 
-# Compilation des classes de test
-javac --enable-preview \
+javac --enable-preview --release 21 \
       --module-path "${JAVAFX_LIB_PATH}" \
       --add-modules javafx.controls,javafx.fxml \
       -d out/test/classes -classpath out/production/classes:junit-platform-console-standalone-1.10.2.jar @test_files.txt
 
 # Exécution des tests
-CSV_FILE_PATH="${ROOT_DIR}/test/ch/epfl/chacun/tuiles.csv" java --enable-preview \
+CSV_FILE_PATH="${ROOT_DIR}/test/ch/epfl/chacun/tuiles.csv" java --enable-preview --release 21 \
       --module-path "${JAVAFX_LIB_PATH}" \
       --add-modules javafx.controls,javafx.fxml \
       -jar junit-platform-console-standalone-1.10.2.jar \
