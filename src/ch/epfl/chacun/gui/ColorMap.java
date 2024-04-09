@@ -5,10 +5,9 @@ import javafx.scene.paint.Color;
 
 import java.util.Map;
 
-public class ColorMap {
+final public class ColorMap {
 
-    private ColorMap() {}
-
+    private ColorMap () {}
 
     private final static Map<PlayerColor, Color> fillColorMap = Map.of(
         PlayerColor.RED, Color.RED,
