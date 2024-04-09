@@ -142,7 +142,7 @@ public record GameState (
             startingTile,
             null,
             Rotation.NONE,
-            new Pos(0, 0)
+            Pos.ORIGIN
         );
         // updates the tile decks by removing the drawn starting tile
         TileDecks newDecks = tileDecks.withTopTileDrawn(Tile.Kind.START);
