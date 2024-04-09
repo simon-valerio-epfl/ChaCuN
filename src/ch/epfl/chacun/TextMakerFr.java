@@ -3,9 +3,30 @@ package ch.epfl.chacun;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 final public class TextMakerFr implements TextMaker {
+
+    enum GameItem {
+        MUSHROOM_GROUP("groupe"),
+        FISH("poisson"),
+        LAKE("lac"),
+        TILE("tuile");
+
+        private final String frenchName;
+        public String getFrenchName() {
+            return frenchName;
+        }
+        GameItem(String frenchName) {
+            this.frenchName = frenchName;
+        }
+    }
+
+    private static final Map<Animal.Kind, String> animalFrenchNames = Map.of(
+        Animal.Kind.MAMMOTH, "mammoth",
+        Animal.Kind.AUROCHS, "auroch",
+        Animal.Kind.DEER, "cerf",
+        Animal.Kind.TIGER, "tigre"
+    );
 
     private final Map<PlayerColor, String> names;
 
@@ -13,14 +34,22 @@ final public class TextMakerFr implements TextMaker {
         this.names = names;
     }
 
-    private void formatMiscElements(Map<String, Integer> elements) {
-        // on veut trier la map (en fonction des key), et afficher
-        // 1 element1, 1 element2, 3 élement3s, etc.
-        return elements.keySet().stream().sorted()
-            .map(el -> {
-                int value = elements.get(el);
-                return value + " " + pluralize(el, )
-            })
+    private String pluralizeGameItems(GameItem item, int count) {
+        return STR."\{count} \{pluralize(item.getFrenchName(), count)}";
+    }
+
+    /**
+     * takes an ordered list
+     * @param items
+     * @return
+     */
+    private String itemsToString (List<String> items) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < items.size(); i++) {
+            sb.append(items.get(i));
+            sb.append(i < items.size() - 1 ? ", " : i == items.size() - 2 ? " et " : " ");
+        }
+        return sb.toString();
     }
 
     /**
@@ -28,26 +57,47 @@ final public class TextMakerFr implements TextMaker {
      */
     private String earnMessage (Set<PlayerColor> scorers) {
         Preconditions.checkArgument(!scorers.isEmpty());
-        // Alice|Edgar|Bruno
+        // Edgar|Alice|Bruno
         List<String> sortedPlayerNames = scorers.stream().sorted().map(this::playerName).toList();
-        // Alice, Edgar et Bruno ont
-        // Alice et Bruno ont
-        // Alice a
-        String names = scorers.size() == 1 ? STR."\{sortedPlayerNames.getFirst()} a"
-            : STR."\{
-                sortedPlayerNames.stream().limit(sortedPlayerNames.size() - 1).collect(Collectors.joining(", "))
-            } et \{
-                // we know this will always be defined because players.size() > 1
-                sortedPlayerNames.getLast()
-            } ont";
-        return STR."\{names} remporté ";
+        // Alice, Edgar et Bruno
+        // Alice et Bruno
+        // Alice
+        //the players are already ordered
+        String playersToString = itemsToString(sortedPlayerNames);
+        // Alice, Edgar et Bruno ont remporté
+        // Alice et Bruno ont remporté
+        // Alice a remporté
+        return STR."\{scorers.size() == 1 ? STR."\{playersToString} a" : STR."\{playersToString} ont"} remporté";
+    }
+
+    private String earnMessagePoints (Set<PlayerColor> scorers, int points) {
+        // 10 points
+        // 1 point
+        return STR."\{earnMessage(scorers)} \{points(points)}";
     }
 
     private String earnMessageMajorityOccupants (Set<PlayerColor> scorers, int points) {
-        // 10 points
-        // 1 point
-        String pts = points + pluralize("point", points);
-        return earnMessage(scorers) + pts + STR." en tant qu'\{pluralizeWithSuffix("occupant·e", scorers.size(), "·")} \{pluralize("majoritaire", scorers.size())}";
+        int count = scorers.size();
+        return STR."\{
+            earnMessagePoints(scorers, points)
+        } en tant qu'occupant·e\{
+            count > 1 ? "·s" : ""
+        } \{
+            pluralize("majoritaire", count)
+        }";
+    }
+
+    private String pluralize(String word, int count) {
+        return count > 1 ? STR."\{word}s" : word;
+    }
+
+    private String animalsToString(Map<Animal.Kind, Integer> animals) {
+        List<String> animalsList = animals
+                .entrySet()
+                .stream()
+                .map(e -> STR."\{e.getValue()} \{pluralize(animalFrenchNames.get(e.getKey()), e.getValue())}")
+                .toList();
+        return itemsToString(animalsList);
     }
 
     @Override
@@ -55,88 +105,94 @@ final public class TextMakerFr implements TextMaker {
         return names.get(playerColor);
     }
 
-    private String selectPluralForm (String singularWord, String pluralWord, int count) {
-        return count == 1 ? singularWord : pluralWord;
-    }
-
-    private String pluralizeWithSuffix(String word, int count, String suffix) {
-        return selectPluralForm(word, STR."\{word}\{suffix}s", count);
-    }
-
-    private String pluralize(String word, int count) {
-        return pluralizeWithSuffix(word, count, "");
-    }
-
     @Override
     public String points(int points) {
-        return "";
+        return STR."\{points} \{pluralize("point", points)}";
     }
 
     @Override
     public String playerClosedForestWithMenhir(PlayerColor player) {
-        return STR."\{playerName(player)} a fermé une forêt contenant un menhir et peut donc placer une tuile menhir. ";
+        return STR."\{playerName(player)} a fermé une forêt contenant un menhir et peut donc placer une tuile menhir.";
     }
 
     @Override
     public String playersScoredForest(Set<PlayerColor> scorers, int points, int mushroomGroupCount, int tileCount) {
-        return STR."\{earnMessageMajorityOccupants(scorers, points)} d'une forêt composée de \{tileCount} \{pluralize("tuile", tileCount)} \{
-                mushroomGroupCount>0
-                ? STR."et de \{mushroomGroupCount} \{pluralize("groupe", mushroomGroupCount)} de champignons."
-                : "."}";
+        return STR."\{
+            earnMessageMajorityOccupants(scorers, points)
+        } d'une forêt composée de \{
+            pluralizeGameItems(GameItem.TILE, tileCount)
+        } \{
+            mushroomGroupCount > 0
+                ? STR."et de \{pluralizeGameItems(GameItem.MUSHROOM_GROUP, mushroomGroupCount)} de champignons."
+                : "."
+        }";
     }
 
     @Override
     public String playersScoredRiver(Set<PlayerColor> scorers, int points, int fishCount, int tileCount) {
-        return "";
+        return STR."\{
+            earnMessageMajorityOccupants(scorers, points)
+        } d'une rivière composée de \{
+            pluralizeGameItems(GameItem.TILE, tileCount)
+        }\{
+            fishCount > 0
+            ? STR."et contenant \{pluralizeGameItems(GameItem.FISH, fishCount)} poissons."
+        : "."}";
     }
 
     @Override
     public String playerScoredHuntingTrap(PlayerColor scorer, int points, Map<Animal.Kind, Integer> animals) {
-        return "";
+        return STR."\{
+            earnMessagePoints(Set.of(scorer), points)
+        } en plaçant la fosse à pieux dans un pré dans lequel elle est entourée de \{
+            animalsToString(animals)
+        }.";
     }
 
     @Override
     public String playerScoredLogboat(PlayerColor scorer, int points, int lakeCount) {
-        return "";
+        return STR."\{
+            earnMessagePoints(Set.of(scorer), points)
+        } en plaçant la pirogue dans un réseau hydrographique contenant \{
+            pluralizeGameItems(GameItem.LAKE, lakeCount)
+        }.";
     }
 
     @Override
     public String playersScoredMeadow(Set<PlayerColor> scorers, int points, Map<Animal.Kind, Integer> animals) {
-        return "";
+        return STR."\{earnMessageMajorityOccupants(scorers, points)} d'un pré contenant \{animalsToString(animals)}.";
     }
 
     @Override
     public String playersScoredRiverSystem(Set<PlayerColor> scorers, int points, int fishCount) {
-        return "";
+        return STR."\{
+            earnMessageMajorityOccupants(scorers, points)
+        } d'un réseau hydrographique contenant \{
+            pluralizeGameItems(GameItem.FISH, fishCount)
+        }.";
     }
 
     @Override
     public String playersScoredPitTrap(Set<PlayerColor> scorers, int points, Map<Animal.Kind, Integer> animals) {
-        return STR."\{earnMessageMajorityOccupants(scorers, points)} d'un pré contenant la grande fosse à pieux entourés de "
+        return STR."\{
+            earnMessageMajorityOccupants(scorers, points)
+        } d'un pré contenant la grande fosse à pieux entourés de \{
+            animalsToString(animals)
+        }.";
     }
 
     @Override
     public String playersScoredRaft(Set<PlayerColor> scorers, int points, int lakeCount) {
         return STR."\{
-                formatPlayerNames(scorers)
-            } \{
-                selectPluralForm("a", "ont", scorers.size())
-            } remporté \{
-                pluralize("point", points)
-            } en tant qu'\{
-                pluralizeWithSuffix("occupant·e", scorers.size(), "·")
-            } \{pluralize("majoritaire", scorers.size())
-                } d'un réseau hydrographique contenant le radeau et \{
-                lakeCount
-            } \{
-                pluralize("lac", lakeCount)
-            }.";
+            earnMessageMajorityOccupants(scorers, points)
+        } d'un réseau hydrographique contenant le radeau et \{
+            pluralizeGameItems(GameItem.LAKE, lakeCount)
+        }.";
     }
 
     @Override
     public String playersWon(Set<PlayerColor> winners, int points) {
-        String verb = winners.size() == 1 ? "a" : "ont";
-        return STR."\{formatPlayerNames(winners)} \{verb} gagné avec \{points} points !";
+        return STR."\{earnMessage(winners)} la partie avec \{points(points)} !";
     }
 
     @Override
