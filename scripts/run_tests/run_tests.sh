@@ -13,9 +13,9 @@ find "${ROOT_DIR}/test/ch/epfl/chacun" -name "*.java" > test_files.txt
 rm -rf ./out
 
 # build production class
-javac -d out/production/classes @src_files.txt --enable-preview
+javac -d out/production/classes @src_files.txt --enable-preview --release 21
 # build test class
-javac -d out/test/classes -classpath out/production/classes:junit-platform-console-standalone-1.10.2.jar @test_files.txt --enable-preview
+javac -d out/test/classes -classpath out/production/classes:junit-platform-console-standalone-1.10.2.jar @test_files.txt --enable-preview --release 21
 CSV_FILE_PATH="${ROOT_DIR}/test/ch/epfl/chacun/tuiles.csv" java -jar junit-platform-console-standalone-1.10.2.jar execute -cp out/production/classes:out/test/classes: --select-package ch.epfl.chacun --reports-dir reports
 
 grep -q "failures=\"0\"" reports/TEST-junit-jupiter.xml && grep -q "errors=\"0\"" reports/TEST-junit-jupiter.xml || exit 1
