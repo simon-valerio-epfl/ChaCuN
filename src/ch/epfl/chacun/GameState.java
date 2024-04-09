@@ -189,16 +189,10 @@ public record GameState (
             .withTurnFinished();
     }
 
-    // remplacer par une simple entry tiger count
-    private Map<Animal.Kind, Set<Animal>> animalsPerKind (Area<Zone.Meadow> meadowArea) {
-        return Area.animals(meadowArea, board.cancelledAnimals()).stream()
-            .collect(Collectors.groupingBy(Animal::kind, Collectors.toSet()));
-    }
-
-    // todo optimize that
     private Set<Animal> deersToCancel (Area<Zone.Meadow> meadowArea) {
-        Map<Animal.Kind, Set<Animal>> animalsPerKind = animalsPerKind(meadowArea);
-        Set<Animal> deers = animalsPerKind.getOrDefault(Animal.Kind.DEER, Set.of());
+        Set<Animal> animals = Area.animals(meadowArea, board.cancelledAnimals());
+        Set<Animal> deers = animals.stream().filter(animal -> animal.kind() == Animal.Kind.DEER)
+            .collect(Collectors.toSet());
         return deers.stream()
             // we can cancel at most as many deers as there are or
             // as many as there are tigers, whichever is the smallest
@@ -206,7 +200,7 @@ public record GameState (
             .limit(
                 Math.min(
                     deers.size(),
-                    animalsPerKind.getOrDefault(Animal.Kind.TIGER, Set.of()).size()
+                    animals.stream().filter(animal -> animal.kind() == Animal.Kind.TIGER).count()
                 )
             )
             .collect(Collectors.toSet());
@@ -214,16 +208,20 @@ public record GameState (
 
     private Set<Animal> deersToCancelWithPitTrap (Zone.Meadow pitTrapZone) {
         Area<Zone.Meadow> meadowArea = board.meadowArea(pitTrapZone);
+        Set<Animal> animals = Area.animals(meadowArea, board.cancelledAnimals());
+
         // we get the position of the tile where the pit trap
         Pos pitTrapPosition = board.tileWithId(pitTrapZone.tileId()).pos();
         // we get the meadow area surrounding the pit trap
         Area<Zone.Meadow> adjacentMeadow = board.adjacentMeadow(pitTrapPosition, pitTrapZone);
-        Map<Animal.Kind, Set<Animal>> animalsPerKind = animalsPerKind(meadowArea);
 
+        Set<Animal> adjacentDeers = Area.animals(adjacentMeadow, board.cancelledAnimals())
+            .stream().filter(animal -> animal.kind() == Animal.Kind.DEER)
+            .collect(Collectors.toSet());
 
-        Set<Animal> adjacentDeers = animalsPerKind(adjacentMeadow).getOrDefault(Animal.Kind.DEER, Set.of());
         // we create a new set with all the deers, then remove the adjacent deers
-        Set<Animal> outsideDeers = new HashSet<>(animalsPerKind.getOrDefault(Animal.Kind.DEER, Set.of()));
+        Set<Animal> outsideDeers = animals.stream().filter(animal -> animal.kind() == Animal.Kind.DEER)
+            .collect(Collectors.toSet());
         outsideDeers.removeAll(adjacentDeers);
 
         // we order the deers by decreasing distance to the pit trap,
@@ -232,8 +230,8 @@ public record GameState (
         return Stream.concat(outsideDeers.stream(), adjacentDeers.stream())
             .limit(
                 Math.min(
-                    animalsPerKind.getOrDefault(Animal.Kind.DEER, Set.of()).size(),
-                    animalsPerKind.getOrDefault(Animal.Kind.TIGER, Set.of()).size()
+                    outsideDeers.size() + adjacentDeers.size(),
+                    animals.stream().filter(animal -> animal.kind() == Animal.Kind.TIGER).count()
                 )
             )
             .collect(Collectors.toSet());
