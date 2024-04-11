@@ -138,6 +138,7 @@ public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos 
      */
     public Set<Occupant> potentialOccupants() {
         if (placer == null) return Set.of();
+        // todo maybe rollback to for loop for better readability
         return Stream.concat(
             tile.sideZones().stream()
                 .flatMap(zone -> {

@@ -32,7 +32,8 @@ public enum Direction {
      * @return the direction obtained by rotating this direction by the given rotation
      */
     public final Direction rotated(Rotation rotation) {
-        return ALL.get((this.ordinal() + rotation.quarterTurnsCW()) % COUNT);
+        int withQuarterTurns = this.ordinal() + rotation.quarterTurnsCW();
+        return ALL.get(withQuarterTurns % COUNT);
     }
 
 

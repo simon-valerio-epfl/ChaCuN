@@ -319,16 +319,18 @@ public record GameState (
 
         // adds a message for every closed forest and river
         Set<Area<Zone.Forest>> closedForests = newBoard.forestsClosedByLastTile();
-        for (Area<Zone.Forest> forest: closedForests) newMessageBoard = newMessageBoard.withScoredForest(forest);
+        Area<Zone.Forest> forestClosedMenhir = null;
+        for (Area<Zone.Forest> forest: closedForests) {
+            // we look for a closed forest with a menhir if there is one
+            if (Area.hasMenhir(forest)) forestClosedMenhir = forest;
+            newMessageBoard = newMessageBoard.withScoredForest(forest);
+        }
 
         Set<Area<Zone.River>> closedRivers = newBoard.riversClosedByLastTile();
         for (Area<Zone.River> river: closedRivers) newMessageBoard = newMessageBoard.withScoredRiver(river);
         // removes the gatherers and fishers from the closed forests and rivers after they have been scored
         newBoard = newBoard.withoutGatherersOrFishersIn(closedForests, closedRivers);
 
-        // we look for a closed forest with a menhir if there is one
-        Area<Zone.Forest> forestClosedMenhir = closedForests.stream()
-            .filter(Area::hasMenhir).findFirst().orElse(null);
 
         assert newBoard.lastPlacedTile() != null;
         // if there is a forest containing a menhir that has just been closed by a normal tile,
@@ -385,10 +387,7 @@ public record GameState (
             if (pitTrapZone != null) {
                 PlacedTile pitTrapTile = newBoard.tileWithId(pitTrapZone.tileId());
                 // removes the deers if there is no fire protecting them
-                if (!hasWildFireZone) {
-                    // todo REALLY MAKE SURE TO TRY THAT
-                    newBoard = newBoard.withMoreCancelledAnimals(deersToCancelWithPitTrap(pitTrapZone));
-                }
+                if (!hasWildFireZone) newBoard = newBoard.withMoreCancelledAnimals(deersToCancelWithPitTrap(pitTrapZone));
 
                 // the pit trap is scored after some deers have been removed
                 Area<Zone.Meadow> adjacentMeadow = newBoard.adjacentMeadow(pitTrapTile.pos(), pitTrapZone);

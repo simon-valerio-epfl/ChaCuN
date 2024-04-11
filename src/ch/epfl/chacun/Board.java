@@ -24,11 +24,11 @@ public final class Board {
     // size represents the size of the board's columns and lines:
     // there are REACH numbers at the left and REACH numbers at the right
     // of the origin, and the matrix is a square
-    private final static int SIZE = REACH * 2 + 1;
+    private final static int WIDTH = REACH * 2 + 1;
     // the empty board contains no placed tiles, no ordered tile indexes,
     // no zone partitions and no cancelled animals
     public final static Board EMPTY = new Board(
-            new PlacedTile[SIZE*SIZE],
+            new PlacedTile[WIDTH*WIDTH],
             new int[0],
             ZonePartitions.EMPTY,
             Set.of()
@@ -53,7 +53,7 @@ public final class Board {
      */
     private int getTileIndexFromPos(Pos pos) {
         // we get the index using the row-major index
-        return (pos.y() + REACH) * SIZE + (pos.x() + REACH);
+        return (pos.y() + REACH) * WIDTH + (pos.x() + REACH);
     }
 
     /**
@@ -64,7 +64,7 @@ public final class Board {
     private boolean isIndexInRange(int idx) {
         // asserts that the given index is
         // on the board
-        return idx >= 0 && idx < SIZE * SIZE;
+        return idx >= 0 && idx < WIDTH * WIDTH;
     }
 
     /**
@@ -415,18 +415,18 @@ public final class Board {
 
         for (int index: orderedTileIndexes) {
             PlacedTile placedTile = placedTiles[index];
-            if (placedTile.occupant() == null || placedTile.occupant().kind() != Occupant.Kind.PAWN) continue;
-            Occupant occupant = placedTile.occupant();
-            Zone occupiedZone = placedTile.zoneWithId(occupant.zoneId());
-            if (occupiedZone instanceof Zone.Forest forest) {
-                if (forests.contains(forestArea(forest))) newPlacedTiles[index] = placedTile.withNoOccupant();
-            } else if (occupiedZone instanceof Zone.River river) {
-                if (rivers.contains(riverArea(river))) newPlacedTiles[index] = placedTile.withNoOccupant();
+            if (placedTile.occupant() != null && placedTile.occupant().kind() == Occupant.Kind.PAWN) {
+                Occupant occupant = placedTile.occupant();
+                Zone occupiedZone = placedTile.zoneWithId(occupant.zoneId());
+                if (occupiedZone instanceof Zone.Forest forest) {
+                    if (forests.contains(forestArea(forest))) newPlacedTiles[index] = placedTile.withNoOccupant();
+                } else if (occupiedZone instanceof Zone.River river) {
+                    if (rivers.contains(riverArea(river))) newPlacedTiles[index] = placedTile.withNoOccupant();
+                }
             }
         }
-
-        for (Area<Zone.River> river: rivers) zonePartitionsBuilder.clearFishers(river);
-        for (Area<Zone.Forest> forest: forests) zonePartitionsBuilder.clearGatherers(forest);
+        rivers.forEach(zonePartitionsBuilder::clearFishers);
+        forests.forEach(zonePartitionsBuilder::clearGatherers);
 
         return new Board(newPlacedTiles, orderedTileIndexes, zonePartitionsBuilder.build(), cancelledAnimals);
     }

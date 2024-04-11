@@ -190,7 +190,8 @@ public record Area <Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, 
         //by subtracting 2 from the sum of the open connections in the two areas if they are different,
         //or by subtracting 2 from the open connections in the current area if it is the same area
         //(we compare their references to know if they are the same area)
-        int connectedOpenConnections = openConnections + (this.equals(that) ? 0 : that.openConnections()) - 2;
+        int connectedOpenConnections = openConnections - 2;
+        if (!this.equals(that)) connectedOpenConnections += that.openConnections();
         return new Area<>(connectedZones, connectedOccupants, connectedOpenConnections);
     }
 
@@ -203,7 +204,8 @@ public record Area <Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, 
     public Zone zoneWithSpecialPower (Zone.SpecialPower specialPower) {
         return zones().stream()
             .filter(zone -> zone.specialPower() != null && zone.specialPower().equals(specialPower))
-            .findAny().orElse(null);
+            .findFirst()
+            .orElse(null);
     }
 
     /**

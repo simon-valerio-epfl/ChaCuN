@@ -72,11 +72,9 @@ public record ZonePartitions (
                     // for each river containing a lake
                     // consider that there is one open connection between the lake and the river
                     // (+1 for both)
-                    if (zone instanceof Zone.River river) {
-                        if (river.hasLake()) {
-                            openConnectionsPerZone[river.lake().localId()]++;
-                            openConnectionsPerZone[localId]++;
-                        }
+                    if (zone instanceof Zone.River river && river.hasLake()) {
+                        openConnectionsPerZone[river.lake().localId()]++;
+                        openConnectionsPerZone[localId]++;
                     }
                 }
             }
@@ -106,11 +104,11 @@ public record ZonePartitions (
             // connect each river to its lake
             // from this river systems partition (id: open connection count): {{563}[2], {568}[1]}
             // to this one: {{563,568}[1]}
-            for (Zone zone: tile.zones()) {
-                if (zone instanceof Zone.River river) {
-                    if (river.hasLake()) riverSystems.union(river, river.lake());
+            tile.zones().forEach(zone -> {
+                if (zone instanceof Zone.River river && river.hasLake()) {
+                    riverSystems.union(river, river.lake());
                 }
-            }
+            });
 
         }
 

@@ -41,7 +41,8 @@ public enum Rotation {
      * @return the rotation obtained by adding the given rotation to this one
      */
     public Rotation add(Rotation that) {
-        return ALL.get((this.ordinal() + that.ordinal()) % COUNT);
+        int sum = this.ordinal() + that.ordinal();
+        return ALL.get(sum % COUNT);
     }
 
     /**
@@ -51,7 +52,8 @@ public enum Rotation {
     public Rotation negated(){
         //The mod 4 operation is used to ensure that this.ordinal being 0
         //works as expected
-        return ALL.get((COUNT - this.ordinal()) % ALL.size());
+        int negated = COUNT - this.ordinal();
+        return ALL.get(negated % ALL.size());
     }
 
     /**
