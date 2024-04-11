@@ -266,14 +266,18 @@ public record GameState (
                 // returns a new game state with retake pawn action
                 // if the player has at least a pawn on the board (to be removed)
                 if (newBoard.occupantCount(currentPlayer(), Occupant.Kind.PAWN) > 0) {
-                    return new GameState(players, tileDecks, null, newBoard, Action.RETAKE_PAWN, newMessageBoard);
+                    return new GameState(
+                        players, tileDecks, null, newBoard, Action.RETAKE_PAWN, newMessageBoard
+                    );
                 }
             }
             case Zone.Meadow meadow when meadow.specialPower() == Zone.SpecialPower.HUNTING_TRAP -> {
                 Area<Zone.Meadow> adjacentMeadow = newBoard.adjacentMeadow(tile.pos(), meadow);
                 Set<Animal> deers = deersToCancel(adjacentMeadow);
-                // todo cancel deers
-                // newMessageBoard = newMessageBoard.withScoredHuntingTrap(currentPlayer(), adjacentMeadow, cancelledDeers);
+                // todo cancel deers and score the hunting trap
+                /* newMessageBoard = newMessageBoard.withScoredHuntingTrap(
+                    currentPlayer(), adjacentMeadow, cancelledDeers
+                ); */
                 newMessageBoard = newMessageBoard.withScoredHuntingTrap(currentPlayer(), adjacentMeadow);
                 // then cancel all other animals
                 newBoard = newBoard.withMoreCancelledAnimals(Area.animals(adjacentMeadow, newBoard.cancelledAnimals()));
@@ -387,7 +391,9 @@ public record GameState (
             if (pitTrapZone != null) {
                 PlacedTile pitTrapTile = newBoard.tileWithId(pitTrapZone.tileId());
                 // removes the deers if there is no fire protecting them
-                if (!hasWildFireZone) newBoard = newBoard.withMoreCancelledAnimals(deersToCancelWithPitTrap(pitTrapZone));
+                if (!hasWildFireZone) newBoard = newBoard.withMoreCancelledAnimals(
+                    deersToCancelWithPitTrap(pitTrapZone)
+                );
 
                 // the pit trap is scored after some deers have been removed
                 Area<Zone.Meadow> adjacentMeadow = newBoard.adjacentMeadow(pitTrapTile.pos(), pitTrapZone);

@@ -39,7 +39,10 @@ public final class Board {
      * Copies the set of cancelled animals to prevent external modification
       */
 
-    private Board(PlacedTile[] placedTiles, int[] orderedTileIndexes, ZonePartitions zonePartitions, Set<Animal> cancelledAnimals) {
+    private Board(
+            PlacedTile[] placedTiles, int[] orderedTileIndexes,
+            ZonePartitions zonePartitions, Set<Animal> cancelledAnimals
+    ) {
         this.placedTiles = placedTiles;
         this.orderedTileIndexes = orderedTileIndexes;
         this.zonePartitions = zonePartitions;
@@ -209,7 +212,8 @@ public final class Board {
         Area<Zone.Meadow> area = meadowArea(meadowZone);
         return area.zones().stream()
             .filter(zone -> isTileAdjacentTo(pos, tileWithId(zone.tileId())))
-            .collect(Collectors.collectingAndThen(Collectors.toSet(), zones -> new Area<>(zones, area.occupants(), 0)));
+            .collect(Collectors.collectingAndThen(
+                    Collectors.toSet(), zones -> new Area<>(zones, area.occupants(), 0)));
     }
 
     /**
@@ -442,7 +446,9 @@ public final class Board {
     public Board withMoreCancelledAnimals(Set<Animal> newlyCancelledAnimals) {
         Set<Animal> newCancelledAnimals = new HashSet<>(cancelledAnimals);
         newCancelledAnimals.addAll(newlyCancelledAnimals);
-        return new Board(placedTiles, orderedTileIndexes, zonePartitions, Collections.unmodifiableSet(newCancelledAnimals));
+        return new Board(
+                placedTiles, orderedTileIndexes, zonePartitions, Collections.unmodifiableSet(newCancelledAnimals)
+        );
     }
 
     /**
