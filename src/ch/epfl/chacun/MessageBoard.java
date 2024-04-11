@@ -33,6 +33,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
      * @return a map linking the kinds of animals to their number
      */
     private Map<Animal.Kind, Integer> forMeadowAnimalCount(Set<Animal> animals) {
+        // this has to be an enum map because we need it be sorted
         return animals.stream()
             .collect(
                 Collectors.groupingBy(
@@ -42,7 +43,6 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
                 )
             );
     }
-
 
     /**
      * In the case of a meadow with a hunting trap,
