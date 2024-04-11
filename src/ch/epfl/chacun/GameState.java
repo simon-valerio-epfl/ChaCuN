@@ -11,6 +11,9 @@ import java.util.stream.Stream;
  * @param board the board of the game, where the tiles can be placed
  * @param nextAction the next action to be performed
  * @param messageBoard the message board of the game, containing the messages generated during the game
+ *
+ * @author Valerio De Santis (373247)
+ * @author Simon Lefort (371918)
  */
 public record GameState (
         List<PlayerColor> players,

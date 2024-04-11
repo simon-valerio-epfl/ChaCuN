@@ -8,6 +8,9 @@ import java.util.Set;
  * Represents a zone partition
  * @param areas the areas in the zone partition
  * @param <Z> the type of the areas
+ *
+ * @author Valerio De Santis (373247)
+ * @author Simon Lefort (371918)
  */
 public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
 

@@ -8,10 +8,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
+ * Represents the board of the game,
+ * containing the tiles that have already been placed
+ *
  * @author Valerio De Santis (373247)
  * @author Simon Lefort (371918)
- * represents the board of the game,
- * containing the tiles that have already been placed
  */
 public final class Board {
 
