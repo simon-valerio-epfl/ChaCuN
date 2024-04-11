@@ -67,6 +67,8 @@ public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos 
      * Gets the zone of the placed tile with the given id
      * @param id the id of the zone to recuperate
      * @return the zone of the placed tile with the given id if present, throws an exception otherwise
+     *
+     * @throws IllegalArgumentException if there is no zone with the given id
      */
     public Zone zoneWithId (int id) {
         return tile.zones().stream()
@@ -138,7 +140,6 @@ public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos 
      */
     public Set<Occupant> potentialOccupants() {
         if (placer == null) return Set.of();
-        // todo maybe rollback to for loop for better readability
         return Stream.concat(
             tile.sideZones().stream()
                 .flatMap(zone -> {

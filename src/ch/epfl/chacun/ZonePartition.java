@@ -33,6 +33,8 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
      * @param zone the zone we are looking for
      * @param areas the set of areas to search in
      * @return the area that contains the specified zone
+     *
+     * @throws IllegalArgumentException if the zone is not in any area
      */
     private static <Z extends Zone> Area<Z> areaContaining(Z zone, Set<Area<Z>> areas) {
         return areas.stream()
@@ -112,6 +114,8 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
          * Replaces the given area with a new area identical to the former,
          * but without any occupant, throws an exception if the area is not in the partition
          * @param area the area to remove all the occupants from
+         *
+         * @throws IllegalArgumentException if the area is not in the partition
          */
         public void removeAllOccupantsOf(Area<Z> area) {
             boolean areaIsFound = areas.remove(area);

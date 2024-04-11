@@ -95,6 +95,8 @@ public final class Board {
      * have already been placed
      * @param tileId the id of the tile to get
      * @return the placed tile with the given id
+     *
+     * @throws IllegalArgumentException if there is no tile with the given id
      */
     public PlacedTile tileWithId(int tileId) {
         int tileIndex = Arrays.stream(orderedTileIndexes)

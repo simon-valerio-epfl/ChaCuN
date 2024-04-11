@@ -23,6 +23,8 @@ public record Area <Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, 
      * @param zones the zones forming the area
      * @param occupants the players having put an occupant in one of the area's zones
      * @param openConnections non-negative, the number of open connections the area has
+     *
+     * @throws IllegalArgumentException if the given openConnections is negative
      */
     public Area {
         Preconditions.checkArgument(openConnections >= 0);
