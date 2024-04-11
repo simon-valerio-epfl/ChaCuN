@@ -32,7 +32,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
      * @param animals the animals in the meadow
      * @return a map linking the kinds of animals to their number
      */
-    private EnumMap<Animal.Kind, Integer> forMeadowAnimalCount(Set<Animal> animals) {
+    private Map<Animal.Kind, Integer> forMeadowAnimalCount(Set<Animal> animals) {
         return animals.stream()
             .collect(
                 Collectors.groupingBy(
