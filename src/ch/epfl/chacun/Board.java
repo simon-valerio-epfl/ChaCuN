@@ -126,8 +126,7 @@ public final class Board {
      */
     public Set<Occupant> occupants() {
         return Arrays.stream(orderedTileIndexes)
-            .mapToObj(idx -> placedTiles[idx])
-            .map(PlacedTile::occupant)
+            .mapToObj(idx -> placedTiles[idx].occupant())
             .filter(Objects::nonNull)
             .collect(Collectors.toSet());
     }
