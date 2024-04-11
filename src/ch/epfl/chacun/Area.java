@@ -118,14 +118,15 @@ public record Area <Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, 
             .stream()
             // we map every zone to the number of fishes we will add
             // because of it
-            .mapToInt((zone) ->
+            .mapToInt(zone -> {
                     // we sum the fishes in the river...
-                    zone.fishCount() +
+                    int fishCount = zone.fishCount();
                     // ...and the fishes in the neighbouring lakes (only once!)
-                    (zone.hasLake() && addedLakes.add(zone.lake())
-                            ? zone.lake().fishCount()
-                            : 0
-                    ))
+                    if (zone.hasLake() && addedLakes.add(zone.lake()))
+                        fishCount += zone.lake().fishCount();
+
+                    return fishCount;
+            })
             // we sum the number of fishes we got in every zone
             .sum();
     }
