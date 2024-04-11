@@ -35,7 +35,11 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
     private Map<Animal.Kind, Integer> forMeadowAnimalCount(Set<Animal> animals) {
         return animals.stream()
             .collect(
-                Collectors.groupingBy(Animal::kind, Collectors.collectingAndThen(Collectors.counting(), Long::intValue))
+                Collectors.groupingBy(
+                    Animal::kind,
+                    () -> new EnumMap<>(Animal.Kind.class),
+                    Collectors.collectingAndThen(Collectors.counting(), Long::intValue)
+                )
             );
     }
 

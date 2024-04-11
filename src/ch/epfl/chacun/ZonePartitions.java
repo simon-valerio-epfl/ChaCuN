@@ -22,7 +22,6 @@ public record ZonePartitions (
     /**
      * Represents the empty zone partitions
      */
-    // todo: demander au prof
     public final static ZonePartitions EMPTY = new ZonePartitions(
             new ZonePartition<>(),
             new ZonePartition<>(),
@@ -109,9 +108,7 @@ public record ZonePartitions (
             // to this one: {{563,568}[1]}
             for (Zone zone: tile.zones()) {
                 if (zone instanceof Zone.River river) {
-                    if (river.hasLake()) {
-                        riverSystems.union(river, river.lake());
-                    }
+                    if (river.hasLake()) riverSystems.union(river, river.lake());
                 }
             }
 
