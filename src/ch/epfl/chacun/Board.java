@@ -302,7 +302,7 @@ public final class Board {
                     // have corresponding kinds
                     PlacedTile neighbouringTile = tileAt(tile.pos().neighbor(direction));
                     return neighbouringTile == null ||
-                            tile.side(direction).isSameKindAs(neighbouringTile.side(direction.opposite()));
+                        tile.side(direction).isSameKindAs(neighbouringTile.side(direction.opposite()));
                 });
     }
 
@@ -315,8 +315,8 @@ public final class Board {
         return insertionPositions()
             .stream()
             .anyMatch(pos ->
-                    Rotation.ALL.stream()
-                    .anyMatch(rotation -> canAddTile(new PlacedTile(tile, null, rotation, pos)))
+                Rotation.ALL.stream()
+                .anyMatch(rotation -> canAddTile(new PlacedTile(tile, null, rotation, pos)))
             );
     }
 
@@ -447,7 +447,7 @@ public final class Board {
         Set<Animal> newCancelledAnimals = new HashSet<>(cancelledAnimals);
         newCancelledAnimals.addAll(newlyCancelledAnimals);
         return new Board(
-                placedTiles, orderedTileIndexes, zonePartitions, Collections.unmodifiableSet(newCancelledAnimals)
+            placedTiles, orderedTileIndexes, zonePartitions, Collections.unmodifiableSet(newCancelledAnimals)
         );
     }
 

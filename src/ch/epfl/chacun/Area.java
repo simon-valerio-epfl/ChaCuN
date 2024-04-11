@@ -58,10 +58,10 @@ public record Area <Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, 
     public static boolean hasMenhir(Area<Zone.Forest> forest) {
         // creates a stream containing the zones in the Forest area and checks whether one of them has a menhir
         return forest.zones()
-                .stream()
-                // we return whether in the given area
-                // there is a forest zone containing a menhir or not
-                .anyMatch(zone -> zone.kind() == Zone.Forest.Kind.WITH_MENHIR);
+            .stream()
+            // we return whether in the given area
+            // there is a forest zone containing a menhir or not
+            .anyMatch(zone -> zone.kind() == Zone.Forest.Kind.WITH_MENHIR);
     }
 
     /**
@@ -72,11 +72,11 @@ public record Area <Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, 
     public static int mushroomGroupCount(Area<Zone.Forest> forest){
         // by default, Stream.count() returns a long value
          return (int) forest.zones()
-                 .stream()
-                 //we count the number of zones containing mushroom groups
-                 //in the given area
-                 .filter(zone -> zone.kind() == Zone.Forest.Kind.WITH_MUSHROOMS)
-                 .count();
+             .stream()
+             //we count the number of zones containing mushroom groups
+             //in the given area
+             .filter(zone -> zone.kind() == Zone.Forest.Kind.WITH_MUSHROOMS)
+             .count();
     }
     /**
      * Generates a set containing the animals in a certain meadow area,
@@ -171,8 +171,8 @@ public record Area <Z extends Zone> (Set<Z> zones, List<PlayerColor> occupants, 
      */
     public Set<PlayerColor> majorityOccupants() {
         Map<PlayerColor, Long> playerPoints = occupants.stream()
-            .collect(Collectors.groupingBy(c -> c, Collectors.counting()));
-        long maxCount = playerPoints.values().stream().mapToLong(l -> l).max().orElse(0);
+            .collect(Collectors.groupingBy(color -> color, Collectors.counting()));
+        long maxCount = playerPoints.values().stream().mapToLong(points -> points).max().orElse(0);
         return playerPoints.keySet().stream().filter(c -> playerPoints.get(c) == maxCount).collect(Collectors.toSet());
     }
 
