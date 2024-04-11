@@ -22,7 +22,7 @@ final public class TextMakerFr implements TextMaker {
     }
 
     private static final Map<Animal.Kind, String> animalFrenchNames = Map.of(
-        Animal.Kind.MAMMOTH, "mammoth",
+        Animal.Kind.MAMMOTH, "mammouth",
         Animal.Kind.AUROCHS, "auroch",
         Animal.Kind.DEER, "cerf",
         Animal.Kind.TIGER, "tigre"
@@ -88,6 +88,8 @@ final public class TextMakerFr implements TextMaker {
         List<String> animalsList = animals
                 .entrySet()
                 .stream()
+                .sorted(Map.Entry.comparingByKey())
+                .filter(e -> e.getValue() > 0)
                 .map(e -> STR."\{e.getValue()} \{pluralize(animalFrenchNames.get(e.getKey()), e.getValue())}")
                 .toList();
         return itemsToString(animalsList);
@@ -169,7 +171,7 @@ final public class TextMakerFr implements TextMaker {
     public String playersScoredPitTrap(Set<PlayerColor> scorers, int points, Map<Animal.Kind, Integer> animals) {
         return STR."\{
             earnMessageMajorityOccupants(scorers, points)
-        } d'un pré contenant la grande fosse à pieux entourés de \{
+        } d'un pré contenant la grande fosse à pieux entourée de \{
             animalsToString(animals)
         }.";
     }
