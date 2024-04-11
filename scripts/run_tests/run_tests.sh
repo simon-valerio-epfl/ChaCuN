@@ -15,7 +15,7 @@ find "${ROOT_DIR}/test/ch/epfl/chacun" -name "*.java" > test_files.txt
 rm -rf ./out
 
 # Assurez-vous que cette variable pointe vers le répertoire lib de JavaFX SDK
-JAVAFX_LIB_PATH="${JAVAFX_SDK_PATH}/lib"
+JAVAFX_LIB_PATH="${JAVAFX_SDK_PATH}-22/lib"
 
 echo $JAVAFX_LIB_PATH
 
