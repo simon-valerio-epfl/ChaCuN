@@ -334,6 +334,8 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
          * the points have to be non-negative
          * the scorers and the tileIds may be empty
          * (if the event triggering the message doesn't get any point)
+         *
+         * @throws NullPointerException if the text is null
          */
         public Message {
             Objects.requireNonNull(text);

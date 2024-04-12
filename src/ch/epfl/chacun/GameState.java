@@ -43,9 +43,6 @@ public record GameState (
     /**
      * Constructs a new game state, validating the arguments.
      * It is important that there isn't a tile to place if the next action is not to place a tile.
-     * Therefore, the constructor will throw an IllegalArgumentException
-     *                        if the tileToPlace is null and the next action is to place a tile,
-     *                        or if the tileToPlace is not null and the next action is not to place a tile.
      * @param players the ordered list of the game players, must contain at least 2 players and not be null
      * @param tileDecks the tile decks of the game, containing the cards to place, must not be null
      * @param tileToPlace the tile to place on the board, may be null if no tile is to be placed
@@ -54,7 +51,9 @@ public record GameState (
      * @param messageBoard the message board of the game,
      *                     containing the messages generated during the game, must not be null
      *
-     * @throws IllegalArgumentException if some parameter is not valid according to the constraints
+     * @throws IllegalArgumentException if the tileToPlace is null and the next action is to place a tile,
+     *                                  or if the tileToPlace is not null and the next action is not to place a tile.
+     * @throws NullPointerException if any of the arguments is null
      */
     public GameState {
 
