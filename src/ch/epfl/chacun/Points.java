@@ -54,6 +54,8 @@ public final class Points {
      * @param tileCount the number of tiles in the forest, at least 2
      * @param mushroomGroupCount the number of mushroom groups in the forest (non-negative)
      * @return the number of points gained by a player when a forest is closed
+     * @throws IllegalArgumentException if the number of tiles is less than 2
+ *                                      or the number of mushroom groups is negative
      */
     public static int forClosedForest(int tileCount, int mushroomGroupCount){
         Preconditions.checkArgument(tileCount > 1);
@@ -66,6 +68,8 @@ public final class Points {
      * @param tileCount the number of tiles in the river (at least 2)
      * @param fishCount the number of fish in the river (non-negative)
      * @return the number of points gained by a player when a river is closed
+     * @throws IllegalArgumentException if the number of tiles is less than 2
+     *                                  or the number of fish is negative
      */
     public static int forClosedRiver(int tileCount, int fishCount){
         Preconditions.checkArgument(tileCount > 1);
@@ -79,6 +83,7 @@ public final class Points {
      * @param aurochsCount the number of aurochs in the meadow (non-negative)
      * @param deerCount the number of deers in the meadow (after the tiger's buffet!) (non-negative)
      * @return the number of points gained by a player per meadow at the end of the game
+     * @throws IllegalArgumentException if the number of mammoths, aurochs or deers is negative
      */
     public static int forMeadow(int mammothCount, int aurochsCount, int deerCount){
         Preconditions.checkArgument(mammothCount >= 0);
@@ -92,6 +97,7 @@ public final class Points {
      * Returns the number of points gained by a player per river system at the end of the game
      * @param fishCount the number of fish in the lake (non-negative)
      * @return the number of points gained by a player per river system at the end of the game
+     * @throws IllegalArgumentException if the number of fish is negative
      */
     public static int forRiverSystem(int fishCount) {
         Preconditions.checkArgument(fishCount >= 0);
@@ -102,6 +108,7 @@ public final class Points {
      * Returns the number of points gained by a player per logboat when he places it
      * @param lakeCount the number of lakes a positive number
      * @return the number of points gained by a player per logboat when he places it
+     * @throws IllegalArgumentException if the number of lakes is less than 1
      */
     public static int forLogboat(int lakeCount) {
         Preconditions.checkArgument(lakeCount > 0);
@@ -112,6 +119,7 @@ public final class Points {
      * Returns the number of points gained by a player per raft at the end of the game
      * @param lakeCount the number of lakes at least 1
      * @return the number of points gained by a player per raft at the end of the game
+     * @throws IllegalArgumentException if the number of lakes is less than 1
      */
     public static int forRaft(int lakeCount) {
         Preconditions.checkArgument(lakeCount > 0);

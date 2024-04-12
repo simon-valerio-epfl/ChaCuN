@@ -53,6 +53,7 @@ public record TileDecks (List<Tile> startTiles, List<Tile> normalTiles, List<Til
      * Draws a card from a deck if the latter is not empty, throws an exception otherwise
      * @param deck the deck to draw the card from
      * @return the deck without the first card
+     * @throws IllegalArgumentException if the deck is empty
      */
     private List<Tile> drawCardFromDeck (List<Tile> deck) {
         Preconditions.checkArgument(!deck.isEmpty());

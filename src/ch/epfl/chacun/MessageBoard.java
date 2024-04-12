@@ -23,6 +23,9 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         messages = List.copyOf(messages);
     }
 
+    /**
+     * The possible types of a meadow message
+     */
     private enum MeadowMessageType {
         HUNTING_TRAP, PIT_TRAP, MEADOW
     }

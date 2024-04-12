@@ -104,6 +104,9 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
          * but without an occupant of the given color
          * @param zone the zone contained by the area where we want to remove the occupant
          * @param color the color of the occupant to remove
+         *
+         * @throws IllegalArgumentException if the zone is not in any area
+         *                                  or if the area does not contain an occupant of the given color
          */
         public void removeOccupant(Z zone, PlayerColor color) {
             // throws an exception if the zone does not belong to the partition
@@ -133,6 +136,8 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
          * new bigger area resulting from their union
          * @param zone1 the first zone whose area we want to unite
          * @param zone2 the second zone whose area we want to unite
+         *
+         * @throws IllegalArgumentException if one of the zones is not in any area
          */
         public void union(Z zone1, Z zone2) {
             // throws an exception if one of the zones does not belong to the partition

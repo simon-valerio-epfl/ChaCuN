@@ -24,6 +24,9 @@ public record GameState (
         MessageBoard messageBoard
 ) {
 
+    /**
+     * The minimum number of players in a game
+     */
     private final static int MIN_PLAYER_COUNT = 2;
 
     /**
@@ -50,6 +53,8 @@ public record GameState (
      * @param nextAction the next action to be performed, must not be null
      * @param messageBoard the message board of the game,
      *                     containing the messages generated during the game, must not be null
+     *
+     * @throws IllegalArgumentException if some parameter is not valid according to the constraints
      */
     public GameState {
 
@@ -276,7 +281,7 @@ public record GameState (
             }
             case Zone.Meadow meadow when meadow.specialPower() == Zone.SpecialPower.HUNTING_TRAP -> {
                 Area<Zone.Meadow> adjacentMeadow = newBoard.adjacentMeadow(tile.pos(), meadow);
-                Set<Animal> deers = deersToCancel(adjacentMeadow);
+                Set<Animal> ignoredS = deersToCancel(adjacentMeadow);
                 // todo cancel deers and score the hunting trap
                 /* newMessageBoard = newMessageBoard.withScoredHuntingTrap(
                     currentPlayer(), adjacentMeadow, cancelledDeers
@@ -289,7 +294,7 @@ public record GameState (
         }
 
         return new GameState(players, tileDecks, null, newBoard, Action.OCCUPY_TILE, newMessageBoard)
-                .withTurnFinishedIfOccupationImpossible();
+            .withTurnFinishedIfOccupationImpossible();
     }
 
     /**

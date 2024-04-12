@@ -25,6 +25,9 @@ public record Occupant(Kind kind, int zoneId) {
      * Constructor for Occupant
      * @param kind non null
      * @param zoneId non negative
+     *
+     * @throws NullPointerException if kind is null
+     * @throws IllegalArgumentException if zoneId is negative
      */
     public Occupant {
         Objects.requireNonNull(kind);

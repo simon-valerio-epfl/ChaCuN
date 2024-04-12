@@ -1,10 +1,6 @@
 package ch.epfl.chacun;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -20,14 +16,18 @@ public final class Board {
     private final int[] orderedTileIndexes;
     private final ZonePartitions zonePartitions;
     private final Set<Animal> cancelledAnimals;
-    // REACH represents the maximum distance from the origin
+    /**
+     * The maximum distance from the origin
+     */
     public final static int REACH = 12;
     // size represents the size of the board's columns and lines:
     // there are REACH numbers at the left and REACH numbers at the right
     // of the origin, and the matrix is a square
     private final static int WIDTH = REACH * 2 + 1;
-    // the empty board contains no placed tiles, no ordered tile indexes,
-    // no zone partitions and no cancelled animals
+    /**
+     * Represents an empty board, with no placed tiles, no ordered tile indexes,
+     * no zone partitions and no cancelled animals
+     */
     public final static Board EMPTY = new Board(
             new PlacedTile[WIDTH*WIDTH],
             new int[0],
@@ -243,6 +243,7 @@ public final class Board {
             // we loop over the tiles that we have already placed
             .mapToObj(idx -> placedTiles[idx].pos())
             // loop over N, E, S, W and get the new position in the direction we want to test
+            // we use two different consecutive maps for readability and code clarity
             .flatMap(pos -> Direction.ALL.stream().map(pos::neighbor))
             // check if the position belongs to the board and nothing is placed there
             .filter(pos -> isPosInBoard(pos) && tileAt(pos) == null)

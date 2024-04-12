@@ -23,6 +23,8 @@ public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos 
 
     /**
      * Constructor for PlacedTile, validating the parameters
+     *
+     * @throws NullPointerException if any of the parameters is null
      */
     public PlacedTile {
         Objects.requireNonNull(tile);
@@ -80,7 +82,8 @@ public record PlacedTile (Tile tile, PlayerColor placer, Rotation rotation, Pos 
     }
 
     /**
-     * Gets the zone of the placed tile having a special power (there may be only one at most)
+     * Gets the zone of the placed tile having a special power (there may be only one at most),
+     * null if there is none
      * @return the zone of the placed tile having a special power if present, null otherwise
      */
     public Zone specialPowerZone(){
