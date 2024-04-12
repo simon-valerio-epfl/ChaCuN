@@ -11,6 +11,7 @@ package ch.epfl.chacun;
 public record Animal (int id, Kind kind) {
 
     /**
+     * Returns the id of the tile where the animal is
      * @return the id of the tile where the animal is
      */
     public int tileId () {
