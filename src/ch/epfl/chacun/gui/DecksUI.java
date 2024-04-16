@@ -57,6 +57,7 @@ public final class DecksUI {
     private static StackPane getStackPane(String name, ObservableValue<Integer> leftTiles) {
         StackPane stackPane = new StackPane();
         ImageView image = new ImageView();
+        // todo is that ok to do that?
         image.setId(name);
         Text text = new Text();
         text.textProperty().bind(leftTiles.map(String::valueOf));

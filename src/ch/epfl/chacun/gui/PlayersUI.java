@@ -58,6 +58,7 @@ public final class PlayersUI {
 
                 textFlow.getChildren().addAll(circle, pointsText);
 
+                // todo should we add a separator here?
                 textFlow.getChildren().addAll(getOccupants(playerColor, Occupant.Kind.PAWN, occupantsO));
                 textFlow.getChildren().add(new Text("   "));
                 textFlow.getChildren().addAll(getOccupants(playerColor, Occupant.Kind.HUT, occupantsO));
