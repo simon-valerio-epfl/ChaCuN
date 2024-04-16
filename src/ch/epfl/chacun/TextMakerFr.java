@@ -44,6 +44,7 @@ final public class TextMakerFr implements TextMaker {
      * @return
      */
     private String itemsToString (List<String> items) {
+        Preconditions.checkArgument(!items.isEmpty());
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < items.size(); i++) { // 0, 1
             sb.append(items.get(i));
@@ -97,7 +98,7 @@ final public class TextMakerFr implements TextMaker {
 
     @Override
     public String playerName(PlayerColor playerColor) {
-        return names.get(playerColor);
+        return names.getOrDefault(playerColor, null);
     }
 
     @Override
