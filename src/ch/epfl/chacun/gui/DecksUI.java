@@ -30,7 +30,7 @@ public final class DecksUI {
 
         StackPane tileToPlacePane = new StackPane();
 
-        tileO.addListener((observable, oldValue, newValue) -> {
+        tileO.addListener((_, _, newValue) -> {
 
             if (newValue != null) {
                 tileToPlacePane.getChildren().setAll(new ImageView(ImageLoader.largeImageForTile(tileO.getValue().id())));
@@ -38,7 +38,7 @@ public final class DecksUI {
                 Text text = new Text();
                 text.textProperty().bind(textToDisplay);
                 tileToPlacePane.getChildren().setAll(text);
-                text.setOnMouseClicked(e -> onOccupantClick.accept(null));
+                text.setOnMouseClicked(_ -> onOccupantClick.accept(null));
             }
 
         });

@@ -14,7 +14,7 @@ public final class ImageLoader {
     private ImageLoader() {}
 
     private static Image imageForTile(int tileId, int pixelSize) {
-        return new Image(STR."\{pixelSize}/\{tileId}.jpg");
+        return new Image(STR."\{pixelSize}/\{tileId < 10 ? STR."0\{tileId}" : tileId}.jpg");
     }
 
     public static Image normalImageForTile(int tileId) {

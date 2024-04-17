@@ -27,7 +27,7 @@ public final class MessageBoardUI {
         ScrollPane scrollPane = new ScrollPane();
         scrollPane.setContent(vBox);
 
-
+        // todo should we initialize before the addListener?
         messagesO.addListener((_, oldValue, newValue) -> {
 
             // append new messages to the message board
