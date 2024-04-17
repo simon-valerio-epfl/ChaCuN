@@ -27,9 +27,8 @@ public final class MessageBoardUI {
         ScrollPane scrollPane = new ScrollPane();
         scrollPane.setContent(vBox);
 
-        Platform.runLater(() -> scrollPane.setVvalue(1));
 
-        messagesO.addListener((observable, oldValue, newValue) -> {
+        messagesO.addListener((_, oldValue, newValue) -> {
 
             // append new messages to the message board
             newValue.stream()
@@ -38,12 +37,15 @@ public final class MessageBoardUI {
 
                     Text text = new Text(message.text());
                     text.setWrappingWidth(ImageLoader.LARGE_TILE_FIT_SIZE);
-                    text.setOnMouseEntered(e -> tileIds.setValue(message.tileIds()));
-                    text.setOnMouseExited(e -> tileIds.setValue(Set.of()));
+                    text.setOnMouseEntered(_ -> tileIds.setValue(message.tileIds()));
+                    text.setOnMouseExited(_ -> tileIds.setValue(Set.of()));
 
                     vBox.getChildren().add(text);
 
                 });
+
+            Platform.runLater(() -> scrollPane.setVvalue(1));
+
         });
 
         return scrollPane;
