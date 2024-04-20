@@ -12,10 +12,8 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 public final class PlayersUI {
 
@@ -25,7 +23,7 @@ public final class PlayersUI {
 
         // create a new vbox that will be used to align elements (like players)
         VBox vBox = new VBox();
-        vBox.getStyleClass().add("players");
+        vBox.getStylesheets().add("players.css");
         vBox.setId("players");
 
         // for each player color, create a text flow
@@ -45,7 +43,7 @@ public final class PlayersUI {
                 Circle circle = new Circle(5);
                 circle.setFill(ColorMap.fillColor(playerColor));
 
-                ObservableValue<String> pointsTextO = pointsO.map(points -> STR."\{name} : \{points.getOrDefault(playerColor, 0)} points");
+                ObservableValue<String> pointsTextO = pointsO.map(points -> STR." \{name} : \{textMaker.points(points.getOrDefault(playerColor, 0))}\n");
                 ObservableValue<Map<Occupant.Kind, Integer>> occupantsO = gameStateO
                     .map(gState -> Map.of(
                         Occupant.Kind.PAWN, gState.freeOccupantsCount(playerColor, Occupant.Kind.PAWN),
@@ -57,9 +55,9 @@ public final class PlayersUI {
 
                 textFlow.getChildren().addAll(circle, pointsText);
 
-                textFlow.getChildren().addAll(getOccupants(playerColor, Occupant.Kind.PAWN, occupantsO));
-                textFlow.getChildren().add(new Text("   "));
                 textFlow.getChildren().addAll(getOccupants(playerColor, Occupant.Kind.HUT, occupantsO));
+                textFlow.getChildren().add(new Text("   "));
+                textFlow.getChildren().addAll(getOccupants(playerColor, Occupant.Kind.PAWN, occupantsO));
 
                 vBox.getChildren().add(textFlow);
 

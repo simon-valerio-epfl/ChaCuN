@@ -13,6 +13,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 public final class MessageBoardUI {
 
@@ -27,26 +29,26 @@ public final class MessageBoardUI {
         ScrollPane scrollPane = new ScrollPane();
         scrollPane.setContent(vBox);
 
-        // todo should we initialize before the addListener?
-        messagesO.addListener((_, oldValue, newValue) -> {
+        BiConsumer<Integer, List<MessageBoard.Message>> addMessages = (previousMessageCount, messages) -> {
+            messages.stream()
+                    .skip(previousMessageCount)
+                    .forEach(message -> {
 
-            // append new messages to the message board
-            newValue.stream()
-                .skip(oldValue.size())
-                .forEach(message -> {
+                        Text text = new Text(message.text());
+                        text.setWrappingWidth(ImageLoader.LARGE_TILE_FIT_SIZE);
+                        text.setOnMouseEntered(_ -> tileIds.setValue(message.tileIds()));
+                        text.setOnMouseExited(_ -> tileIds.setValue(Set.of()));
 
-                    Text text = new Text(message.text());
-                    text.setWrappingWidth(ImageLoader.LARGE_TILE_FIT_SIZE);
-                    text.setOnMouseEntered(_ -> tileIds.setValue(message.tileIds()));
-                    text.setOnMouseExited(_ -> tileIds.setValue(Set.of()));
+                        vBox.getChildren().add(text);
 
-                    vBox.getChildren().add(text);
-
-                });
+                    });
 
             Platform.runLater(() -> scrollPane.setVvalue(1));
+        };
 
-        });
+        // todo should we initialize before the addListener?
+        messagesO.addListener((_, oldValue, newValue) -> addMessages.accept(vBox.getChildren().size(), newValue));
+        addMessages.accept(0, messagesO.getValue());
 
         return scrollPane;
     }

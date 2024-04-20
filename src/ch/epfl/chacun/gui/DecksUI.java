@@ -26,9 +26,8 @@ public final class DecksUI {
 
         StackPane tileToPlacePane = new StackPane();
 
-        tileO.addListener((_, _, newValue) -> {
-
-            if (newValue != null) {
+        Consumer<Tile> onTileClick = tile -> {
+            if (tile != null) {
                 tileToPlacePane.getChildren().setAll(new ImageView(ImageLoader.largeImageForTile(tileO.getValue().id())));
             } else {
                 Text text = new Text();
@@ -36,18 +35,20 @@ public final class DecksUI {
                 tileToPlacePane.getChildren().setAll(text);
                 text.setOnMouseClicked(_ -> onOccupantClick.accept(null));
             }
+        };
 
-        });
+        tileO.addListener((_, _, newValue) -> onTileClick.accept(newValue));
+        onTileClick.accept(tileO.getValue());
 
         Node menhirNode = getDeckNode("MENHIR", leftMenhirTilesO);
         Node normalNode = getDeckNode("NORMAL", leftNormalTilesO);
         HBox hBox = new HBox(menhirNode, normalNode);
 
         VBox vBox = new VBox(hBox, tileToPlacePane);
-        vBox.getStyleClass().add("decks");
+        vBox.getStylesheets().add("decks.css");
         vBox.setId("decks");
 
-        return null;
+        return vBox;
     }
 
     private static Node getDeckNode(String name, ObservableValue<Integer> leftTiles) {
