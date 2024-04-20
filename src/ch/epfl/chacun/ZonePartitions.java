@@ -1,5 +1,7 @@
 package ch.epfl.chacun;
 
+import java.util.Comparator;
+
 /**
  * Represents the different partitions of the zones
  * belonging to the tiles that have already been placed on the board

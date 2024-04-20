@@ -2,6 +2,9 @@ package ch.epfl.chacun.gui;
 
 import javafx.scene.image.Image;
 
+import java.util.FormatProcessor;
+import java.util.Map;
+
 public final class ImageLoader {
 
     public static final int LARGE_TILE_PIXEL_SIZE = 512;
@@ -13,8 +16,9 @@ public final class ImageLoader {
 
     private ImageLoader() {}
 
+    // todo what is fmt
     private static Image imageForTile(int tileId, int pixelSize) {
-        return new Image(STR."\{pixelSize}/\{tileId < 10 ? STR."0\{tileId}" : tileId}.jpg");
+        return new Image(FormatProcessor.FMT."\{pixelSize}/\{tileId < 10 ? STR."0\{tileId}" : tileId}.jpg");
     }
 
     public static Image normalImageForTile(int tileId) {

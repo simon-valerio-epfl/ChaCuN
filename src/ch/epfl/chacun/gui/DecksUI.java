@@ -24,10 +24,6 @@ public final class DecksUI {
             Consumer<Occupant> onOccupantClick
     ) {
 
-        VBox vBox = new VBox();
-        vBox.getStyleClass().add("decks");
-        vBox.setId("decks");
-
         StackPane tileToPlacePane = new StackPane();
 
         tileO.addListener((_, _, newValue) -> {
@@ -43,26 +39,23 @@ public final class DecksUI {
 
         });
 
-        HBox hBox = new HBox();
+        Node menhirNode = getDeckNode("MENHIR", leftMenhirTilesO);
+        Node normalNode = getDeckNode("NORMAL", leftNormalTilesO);
+        HBox hBox = new HBox(menhirNode, normalNode);
 
-        StackPane menhirStackPane = getStackPane("MENHIR", leftMenhirTilesO);
-        StackPane normalStackPane = getStackPane("NORMAL", leftNormalTilesO);
-
-        hBox.getChildren().addAll(menhirStackPane, normalStackPane);
-        vBox.getChildren().addAll(hBox, tileToPlacePane);
+        VBox vBox = new VBox(hBox, tileToPlacePane);
+        vBox.getStyleClass().add("decks");
+        vBox.setId("decks");
 
         return null;
     }
 
-    private static StackPane getStackPane(String name, ObservableValue<Integer> leftTiles) {
-        StackPane stackPane = new StackPane();
+    private static Node getDeckNode(String name, ObservableValue<Integer> leftTiles) {
         ImageView image = new ImageView();
-        // todo is that ok to do that?
         image.setId(name);
         Text text = new Text();
         text.textProperty().bind(leftTiles.map(String::valueOf));
-        stackPane.getChildren().addAll(image, text);
-        return stackPane;
+        return new StackPane(image, text);
     }
 
 }

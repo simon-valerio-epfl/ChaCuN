@@ -12,11 +12,9 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public final class PlayersUI {
@@ -35,10 +33,11 @@ public final class PlayersUI {
             String name = textMaker.playerName(playerColor);
 
             if (name != null) {
+
                 TextFlow textFlow = new TextFlow();
                 textFlow.getStyleClass().add("player");
                 ObservableValue<Boolean> isCurrentPlayer = gameStateO.map(gState -> gState.currentPlayer() == playerColor);
-                isCurrentPlayer.addListener((observable, oldValue, newValue) -> {
+                isCurrentPlayer.addListener((_, _, newValue) -> {
                     if (newValue) textFlow.getStyleClass().add("current");
                     else textFlow.getStyleClass().remove("current");
                 });
@@ -58,7 +57,6 @@ public final class PlayersUI {
 
                 textFlow.getChildren().addAll(circle, pointsText);
 
-                // todo should we add a separator here?
                 textFlow.getChildren().addAll(getOccupants(playerColor, Occupant.Kind.PAWN, occupantsO));
                 textFlow.getChildren().add(new Text("   "));
                 textFlow.getChildren().addAll(getOccupants(playerColor, Occupant.Kind.HUT, occupantsO));
