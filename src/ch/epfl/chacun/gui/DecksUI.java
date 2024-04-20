@@ -10,6 +10,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public final class DecksUI {
@@ -24,27 +25,28 @@ public final class DecksUI {
             Consumer<Occupant> onOccupantClick
     ) {
 
-        StackPane tileToPlacePane = new StackPane();
+        StackPane stackPane = new StackPane();
+        stackPane.setId("next-tile");
 
-        Consumer<Tile> onTileClick = tile -> {
-            if (tile != null) {
-                tileToPlacePane.getChildren().setAll(new ImageView(ImageLoader.largeImageForTile(tileO.getValue().id())));
-            } else {
-                Text text = new Text();
-                text.textProperty().bind(textToDisplay);
-                tileToPlacePane.getChildren().setAll(text);
-                text.setOnMouseClicked(_ -> onOccupantClick.accept(null));
-            }
-        };
+        // ImageView, tile to place
+        ImageView view = new ImageView();
+        view.setImage(ImageLoader.largeImageForTile(tileO.getValue().id()));
+        view.setFitHeight(ImageLoader.LARGE_TILE_FIT_SIZE);
+        view.setFitWidth(ImageLoader.LARGE_TILE_FIT_SIZE);
+        // Text, occupy tile (only visible if textToDisplay is not empty)
+        Text text = new Text();
+        text.setOnMouseClicked(_ -> onOccupantClick.accept(null));
+        text.textProperty().bind(textToDisplay);
+        text.visibleProperty().bind(text.textProperty().isNotEmpty());
+        stackPane.getChildren().setAll(view, text);
 
-        tileO.addListener((_, _, newValue) -> onTileClick.accept(newValue));
-        onTileClick.accept(tileO.getValue());
+        tileO.addListener((_, _, newValue) -> view.setImage(ImageLoader.largeImageForTile(newValue.id())));
 
         Node menhirNode = getDeckNode("MENHIR", leftMenhirTilesO);
         Node normalNode = getDeckNode("NORMAL", leftNormalTilesO);
         HBox hBox = new HBox(menhirNode, normalNode);
 
-        VBox vBox = new VBox(hBox, tileToPlacePane);
+        VBox vBox = new VBox(hBox, stackPane);
         vBox.getStylesheets().add("decks.css");
         vBox.setId("decks");
 
@@ -54,6 +56,8 @@ public final class DecksUI {
     private static Node getDeckNode(String name, ObservableValue<Integer> leftTiles) {
         ImageView image = new ImageView();
         image.setId(name);
+        image.setFitHeight(ImageLoader.NORMAL_TILE_FIT_SIZE);
+        image.setFitWidth(ImageLoader.NORMAL_TILE_FIT_SIZE);
         Text text = new Text();
         text.textProperty().bind(leftTiles.map(String::valueOf));
         return new StackPane(image, text);

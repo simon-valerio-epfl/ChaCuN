@@ -12,6 +12,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
@@ -60,9 +61,21 @@ public final class GameDecksUI extends Application {
         var decksUINode = DecksUI.create(tileToPlace, leftNormalTiles, leftMenhirTiles, textToDisplay, con);
         VBox vBox = new VBox();
         vBox.getChildren().addAll(playersNode, messageBoardNode, decksUINode);
-        var rootNode = new BorderPane(vBox);
-        primaryStage.setScene(new Scene(rootNode));
+//        var rootNode = new BorderPane(vBox);
+//        primaryStage.setScene(new Scene(rootNode));
+//
+//        primaryStage.setTitle("ChaCuN test");
+//        primaryStage.show()
+        BorderPane borderPane = new BorderPane();
 
+        StackPane rootPane = new StackPane();
+        rootPane.getChildren().add(borderPane);
+
+        // Binding pour définir la largeur du BorderPane à 30% de la largeur du StackPane
+        borderPane.maxWidthProperty().bind(rootPane.widthProperty().multiply(0.3));
+        borderPane.setRight(vBox); // Place le contenu à droite dans le BorderPane
+
+        primaryStage.setScene(new Scene(rootPane));
         primaryStage.setTitle("ChaCuN test");
         primaryStage.show();
     }

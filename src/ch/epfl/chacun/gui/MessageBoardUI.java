@@ -9,12 +9,9 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 public final class MessageBoardUI {
 
@@ -23,8 +20,8 @@ public final class MessageBoardUI {
     public static Node create(ObservableValue<List<MessageBoard.Message>> messagesO, ObjectProperty<Set<Integer>> tileIds) {
 
         VBox vBox = new VBox();
+        vBox.getStylesheets().add("message-board.css");
         vBox.setId("message-board");
-        vBox.getStyleClass().add("message-board");
 
         ScrollPane scrollPane = new ScrollPane();
         scrollPane.setContent(vBox);
