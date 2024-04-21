@@ -23,8 +23,7 @@ public final class MessageBoardUI {
         vBox.getStylesheets().add("message-board.css");
         vBox.setId("message-board");
 
-        ScrollPane scrollPane = new ScrollPane();
-        scrollPane.setContent(vBox);
+        ScrollPane scrollPane = new ScrollPane(vBox);
 
         BiConsumer<Integer, List<MessageBoard.Message>> addMessages = (previousMessageCount, messages) -> {
             messages.stream()
