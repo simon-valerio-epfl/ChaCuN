@@ -28,23 +28,20 @@ public final class MessageBoardUI {
 
         BiConsumer<Integer, List<MessageBoard.Message>> addMessages = (previousMessageCount, messages) -> {
             messages.stream()
-                    .skip(previousMessageCount)
-                    .forEach(message -> {
+                .skip(previousMessageCount)
+                .forEach(message -> {
+                    Text text = new Text(message.text());
+                    text.setWrappingWidth(ImageLoader.LARGE_TILE_FIT_SIZE);
+                    text.setOnMouseEntered(_ -> tileIds.setValue(message.tileIds()));
+                    text.setOnMouseExited(_ -> tileIds.setValue(Set.of()));
 
-                        Text text = new Text(message.text());
-                        text.setWrappingWidth(ImageLoader.LARGE_TILE_FIT_SIZE);
-                        text.setOnMouseEntered(_ -> tileIds.setValue(message.tileIds()));
-                        text.setOnMouseExited(_ -> tileIds.setValue(Set.of()));
-
-                        vBox.getChildren().add(text);
-
-                    });
+                    vBox.getChildren().add(text);
+                });
 
             Platform.runLater(() -> scrollPane.setVvalue(1));
         };
 
-        // todo should we initialize before the addListener?
-        messagesO.addListener((_, oldValue, newValue) -> addMessages.accept(vBox.getChildren().size(), newValue));
+        messagesO.addListener((_, _, newValue) -> addMessages.accept(vBox.getChildren().size(), newValue));
         addMessages.accept(0, messagesO.getValue());
 
         return scrollPane;

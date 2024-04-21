@@ -38,6 +38,7 @@ public final class DecksUI {
         text.setOnMouseClicked(_ -> onOccupantClick.accept(null));
         text.textProperty().bind(textToDisplay);
         text.visibleProperty().bind(text.textProperty().isNotEmpty());
+        text.setWrappingWidth(0.8 * ImageLoader.LARGE_TILE_FIT_SIZE);
         stackPane.getChildren().setAll(view, text);
 
         tileO.addListener((_, _, newValue) -> view.setImage(ImageLoader.largeImageForTile(newValue.id())));
@@ -47,8 +48,8 @@ public final class DecksUI {
         HBox hBox = new HBox(menhirNode, normalNode);
 
         VBox vBox = new VBox(hBox, stackPane);
-        vBox.getStylesheets().add("decks.css");
-        vBox.setId("decks");
+        vBox.getStylesheets().add("/decks.css");
+        hBox.setId("decks");
 
         return vBox;
     }
