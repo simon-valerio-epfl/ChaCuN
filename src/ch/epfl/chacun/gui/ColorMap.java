@@ -6,7 +6,7 @@ import javafx.scene.paint.Color;
 import java.util.Map;
 
 final public class ColorMap {
-
+    private final static double STROKE_BRIGHTNESS_FACTOR = 0.6;
     private ColorMap () {}
 
     private final static Map<PlayerColor, Color> fillColorMap = Map.of(
@@ -19,8 +19,12 @@ final public class ColorMap {
     private final static Map<PlayerColor, Color> strokeColorMap = Map.of(
         PlayerColor.RED, Color.WHITE,
         PlayerColor.BLUE, Color.WHITE,
-        PlayerColor.GREEN, fillColor(PlayerColor.GREEN).deriveColor(0, 1, 0.6, 1),
-        PlayerColor.YELLOW, fillColor(PlayerColor.YELLOW).deriveColor(0, 1, 0.6, 1)
+        PlayerColor.GREEN, fillColor(PlayerColor.GREEN).deriveColor(
+                0, 1, STROKE_BRIGHTNESS_FACTOR, 1
+            ),
+        PlayerColor.YELLOW, fillColor(PlayerColor.YELLOW).deriveColor(
+                0, 1, STROKE_BRIGHTNESS_FACTOR, 1
+            )
     );
 
     public static Color fillColor(PlayerColor playerColor) {
