@@ -50,10 +50,9 @@ public record GameState (
      * @param nextAction the next action to be performed, must not be null
      * @param messageBoard the message board of the game,
      *                     containing the messages generated during the game, must not be null
-     *
-     * @throws IllegalArgumentException if the tileToPlace is null and the next action is to place a tile,
-     *                                  or if the tileToPlace is not null and the next action is not to place a tile.
-     * @throws NullPointerException if any of the arguments is null
+     * @throws NullPointerException if any of the arguments is null, except tileToPlace
+     * @throws IllegalArgumentException if there are not enough players or if the tileToPlace is null and
+     * the next action is to place a tile, or if the tileToPlace is not null and the next action is not to place a tile.
      */
     public GameState {
 
