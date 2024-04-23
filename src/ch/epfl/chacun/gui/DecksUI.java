@@ -14,9 +14,21 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public final class DecksUI {
-
+    private final static double WRAPPING_WIDTH = 0.8;
+    /**
+     * This is a utilitarian class, therefore it is not instantiable
+     */
     private DecksUI() {}
 
+    /**
+     *
+     * @param tileO the updating tile to place
+     * @param leftNormalTilesO the updating number of normal tiles left in the deck
+     * @param leftMenhirTilesO the updating number of menhir tiles left in the deck
+     * @param textToDisplay the text to display
+     * @param onOccupantClick
+     * @return
+     */
     public static Node create(
             ObservableValue<Tile> tileO,
             ObservableValue<Integer> leftNormalTilesO,
@@ -31,18 +43,20 @@ public final class DecksUI {
         // ImageView, tile to place
         ImageView view = new ImageView();
         view.setImage(ImageLoader.largeImageForTile(tileO.getValue().id()));
+        // the tiles displayed in the decks are large-sized
         view.setFitHeight(ImageLoader.LARGE_TILE_FIT_SIZE);
         view.setFitWidth(ImageLoader.LARGE_TILE_FIT_SIZE);
-        // Text, occupy tile (only visible if textToDisplay is not empty)
+        // Text, occupy tile (only visible if textToDisplay is not empty,
+        // meaning that the player does not want to do some action) ..todo?
         Text text = new Text();
         text.setOnMouseClicked(_ -> onOccupantClick.accept(null));
         text.textProperty().bind(textToDisplay);
+        // we make the text visible only when the message it contains is not empty
         text.visibleProperty().bind(text.textProperty().isNotEmpty());
-        text.setWrappingWidth(0.8 * ImageLoader.LARGE_TILE_FIT_SIZE);
+        text.setWrappingWidth(WRAPPING_WIDTH * ImageLoader.LARGE_TILE_FIT_SIZE);
         stackPane.getChildren().setAll(view, text);
-
-        tileO.addListener((_, _, newValue) -> view.setImage(ImageLoader.largeImageForTile(newValue.id())));
-
+        // we bind the graphical view of the tile to place to the tile itself
+        view.imageProperty().bind(tileO.map(t -> t == null ? ImageLoader.EMPTY_IMAGE : ImageLoader.largeImageForTile(t.id())));
         Node menhirNode = getDeckNode("MENHIR", leftMenhirTilesO);
         Node normalNode = getDeckNode("NORMAL", leftNormalTilesO);
         HBox hBox = new HBox(menhirNode, normalNode);

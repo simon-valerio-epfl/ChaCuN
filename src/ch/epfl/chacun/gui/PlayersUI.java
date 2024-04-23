@@ -16,7 +16,10 @@ import java.util.List;
 import java.util.Map;
 
 public final class PlayersUI {
-
+    /**
+     * This class is not instantiable
+     */
+    private PlayersUI() {}
     public static Node create(ObservableValue<GameState> gameStateO, TextMaker textMaker) {
 
         ObservableValue<Map<PlayerColor, Integer>> pointsO = gameStateO.map(gState -> gState.messageBoard().points());
@@ -34,6 +37,8 @@ public final class PlayersUI {
 
                 TextFlow textFlow = new TextFlow();
                 textFlow.getStyleClass().add("player");
+
+                // we update here the current player
                 ObservableValue<Boolean> isCurrentPlayer = gameStateO.map(gState -> gState.currentPlayer() == playerColor);
                 isCurrentPlayer.addListener((_, _, newValue) -> {
                     if (newValue) textFlow.getStyleClass().add("current");

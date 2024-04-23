@@ -18,7 +18,10 @@ public final class ImageLoader {
 
     // todo what is fmt
     private static Image imageForTile(int tileId, int pixelSize) {
-        return new Image(FormatProcessor.FMT."\{pixelSize}/\{tileId < 10 ? STR."0\{tileId}" : tileId}.jpg");
+        // todo il n'existe pas un %2d en java ?
+        // the ids of the tiles to charge have 2 digits
+        return new Image(FormatProcessor.FMT."%02d\{tileId}");
+        // todo check if the line above works , else return new Image(FormatProcessor.FMT."\{pixelSize}/\{tileId < 10 ? STR."0\{tileId}" : tileId}.jpg");
     }
 
     public static Image normalImageForTile(int tileId) {
