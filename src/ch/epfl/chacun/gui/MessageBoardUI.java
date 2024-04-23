@@ -25,23 +25,20 @@ public final class MessageBoardUI {
 
         ScrollPane scrollPane = new ScrollPane(vBox);
 
-        BiConsumer<Integer, List<MessageBoard.Message>> addMessages = (previousMessageCount, messages) -> {
-            messages.stream()
-                .skip(previousMessageCount)
-                .forEach(message -> {
-                    Text text = new Text(message.text());
-                    text.setWrappingWidth(ImageLoader.LARGE_TILE_FIT_SIZE);
-                    text.setOnMouseEntered(_ -> tileIds.setValue(message.tileIds()));
-                    text.setOnMouseExited(_ -> tileIds.setValue(Set.of()));
+        messagesO.addListener((_, oldValue, newValue) -> {
+            newValue.stream()
+                    .skip(oldValue.size())
+                    .forEach(message -> {
+                        Text text = new Text(message.text());
+                        text.setWrappingWidth(ImageLoader.LARGE_TILE_FIT_SIZE);
+                        text.setOnMouseEntered(_ -> tileIds.setValue(message.tileIds()));
+                        text.setOnMouseExited(_ -> tileIds.setValue(Set.of()));
 
-                    vBox.getChildren().add(text);
-                });
+                        vBox.getChildren().add(text);
+                    });
 
             Platform.runLater(() -> scrollPane.setVvalue(1));
-        };
-
-        messagesO.addListener((_, _, newValue) -> addMessages.accept(vBox.getChildren().size(), newValue));
-        addMessages.accept(0, messagesO.getValue());
+        });
 
         return scrollPane;
     }

@@ -29,7 +29,13 @@ public final class GameDecksUI extends Application {
     public void start(Stage primaryStage) {
 
         var state = initialGameState(List.of(1, 37, 0), List.of());
-
+        var gameStateO = new SimpleObjectProperty<>(state);
+        ObservableValue<List<MessageBoard.Message>> observableMessages = gameStateO.map(s -> FXCollections.observableArrayList(s.messageBoard().messages()));
+        // create an array of tielIds that the ui will fill
+        // it should be an ObjectProperty<Set<Integer>>
+        var tileIds = new SimpleObjectProperty<Set<Integer>>();
+        // create an observable list of messages
+        var messageBoardNode = MessageBoardUI.create(observableMessages, tileIds);
         assert state.tileToPlace().id() == 1;
         var placedTile1 = new PlacedTile(state.tileToPlace(), PlayerColor.RED, Rotation.NONE, new Pos(-1, 0));
         state = state
@@ -42,16 +48,8 @@ public final class GameDecksUI extends Application {
                 .withPlacedTile(placedTile37)
                 .withNewOccupant(null);
 
-        var gameStateO = new SimpleObjectProperty<>(state);
 
         var playersNode = PlayersUI.create(gameStateO, textMakerFr);
-        // create an array of tielIds that the ui will fill
-        // it should be an ObjectProperty<Set<Integer>>
-        var tileIds = new SimpleObjectProperty<Set<Integer>>();
-        // create an observable list of messages
-        ObservableList<MessageBoard.Message> observableList = FXCollections.observableArrayList(state.messageBoard().messages());
-        ObjectProperty<List<MessageBoard.Message>> observableValue = new SimpleObjectProperty<>(observableList);
-        var messageBoardNode = MessageBoardUI.create(observableValue, tileIds);
         ObjectProperty<Tile> tileToPlace = new SimpleObjectProperty<>(state.tileToPlace());
         ObjectProperty<Integer> leftNormalTiles = new SimpleObjectProperty<>(state.tileDecks().normalTiles().size());
         ObjectProperty<Integer> leftMenhirTiles = new SimpleObjectProperty<>(state.tileDecks().menhirTiles().size());
