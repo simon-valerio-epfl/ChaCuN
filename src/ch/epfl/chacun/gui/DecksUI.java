@@ -16,7 +16,7 @@ import java.util.function.Consumer;
 public final class DecksUI {
     private final static double WRAPPING_WIDTH = 0.8;
     /**
-     * This is a utilitarian class, therefore it is not instantiable
+     * This is a utility class, therefore it is not instantiable
      */
     private DecksUI() {}
 

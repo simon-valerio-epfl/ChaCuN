@@ -15,7 +15,7 @@ import java.util.function.BiConsumer;
 
 public final class MessageBoardUI {
     /**
-     * This is a utilitarian class, therefore it is not instantiable
+     * This is a utility class, therefore it is not instantiable
      */
     private MessageBoardUI() {}
 
