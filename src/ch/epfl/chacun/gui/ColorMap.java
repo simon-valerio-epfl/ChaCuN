@@ -13,12 +13,14 @@ final public class ColorMap {
         PlayerColor.RED, Color.RED,
         PlayerColor.BLUE, Color.BLUE,
         PlayerColor.GREEN, Color.LIME,
-        PlayerColor.YELLOW, Color.YELLOW
+        PlayerColor.YELLOW, Color.YELLOW,
+        PlayerColor.PURPLE, Color.PURPLE
     );
 
     private final static Map<PlayerColor, Color> strokeColorMap = Map.of(
         PlayerColor.RED, Color.WHITE,
         PlayerColor.BLUE, Color.WHITE,
+        PlayerColor.PURPLE, Color.WHITE,
         PlayerColor.GREEN, fillColor(PlayerColor.GREEN).deriveColor(
                 0, 1, STROKE_BRIGHTNESS_FACTOR, 1
             ),

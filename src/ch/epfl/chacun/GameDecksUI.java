@@ -36,24 +36,30 @@ public final class GameDecksUI extends Application {
                 Map.entry(34, new Pos(-3, -1)),
                 Map.entry(67, new Pos(-2, -1)),
                 Map.entry(31, new Pos(-1, -1)),
-                Map.entry(85, new Pos(0, -1)), // WILD_FIRE
+                Map.entry(61, new Pos(0, -1)),
                 Map.entry(62, new Pos(-3, 0)),
                 Map.entry(18, new Pos(-2, 0)),
                 Map.entry(51, new Pos(-1, 0)),
                 Map.entry(1, new Pos(-3, 1)),
                 Map.entry(3, new Pos(-2, 1)),
                 Map.entry(49, new Pos(-1, 1)),
-                Map.entry(55, new Pos(0, 1)),
-                Map.entry(36, new Pos(-1, -2)));
+                Map.entry(55, new Pos(0, 1)));
 
         var occupants = Map.of(
-                51, new Occupant(Occupant.Kind.PAWN, 51_0) // hunter (BLUE)
+                61, new Occupant(Occupant.Kind.PAWN, 61_0), // hunter (RED)
+                55, new Occupant(Occupant.Kind.PAWN, 55_3), // fisher (BLUE)
+                51, new Occupant(Occupant.Kind.PAWN, 51_1), // fisher (GREEN)
+                18, new Occupant(Occupant.Kind.PAWN, 18_2), // hunter (YELLOW)
+                1, new Occupant(Occupant.Kind.HUT, 1_8), // fisher's hut (RED)
+                34, new Occupant(Occupant.Kind.PAWN, 34_1), // hunter (BLUE)
+                3, new Occupant(Occupant.Kind.PAWN, 3_5), // fisher (PURPLE)
+                49, new Occupant(Occupant.Kind.PAWN, 49_2) // hunter (RED)
         );
 
-        var unoccupyableTiles = Set.of(62, 85);
+        var unoccupyableTiles = Set.of(62);
 
-        var normalTilesIds = List.of(55, 51, 18, 62, 1, 34, 67, 31, 36, 3, 49);
-        var state = initialGameState(playerNames, normalTilesIds, List.of(85));
+        var normalTilesIds = List.of(61, 55, 51, 18, 62, 1, 34, 67, 31, 3, 49);
+        var state = initialGameState(playerNames, normalTilesIds, List.of());
         var gameStateO = new SimpleObjectProperty<>(state);
 
         gameStateO.setValue(truncateDeck(gameStateO.getValue(), Tile.Kind.NORMAL, normalTilesIds.size() - 1));
@@ -1302,8 +1308,9 @@ public final class GameDecksUI extends Application {
     private static Map<PlayerColor, String> playerNames = Map.of(
             PlayerColor.RED, "Alice",
             PlayerColor.GREEN, "Bob",
-            PlayerColor.BLUE, "Cecil",
-            PlayerColor.YELLOW, "David"
+            PlayerColor.BLUE, "Cecile",
+            PlayerColor.YELLOW, "David",
+            PlayerColor.PURPLE, "Eve"
     );
     private static TextMaker textMakerFr = new TextMakerFr(playerNames);
 
