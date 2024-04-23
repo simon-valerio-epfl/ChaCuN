@@ -1,6 +1,8 @@
 package ch.epfl.chacun.gui;
 
 import javafx.scene.image.Image;
+import javafx.scene.image.WritableImage;
+import javafx.scene.paint.Color;
 
 import java.util.FormatProcessor;
 import java.util.Map;
@@ -13,6 +15,13 @@ public final class ImageLoader {
     public static final int NORMAL_TILE_FIT_SIZE = 128;
     public static final int MARKER_PIXEL_SIZE = 96;
     public static final int MARKER_FIT_SIZE = 48;
+
+    public static final Image EMPTY_IMAGE;
+    static {
+        WritableImage writableImage = new WritableImage(1, 1);
+        writableImage.getPixelWriter().setColor(0, 0, Color.gray(0.98));
+        EMPTY_IMAGE = writableImage;
+    }
 
     private ImageLoader() {}
 

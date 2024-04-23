@@ -22,7 +22,7 @@ import java.util.stream.Stream;
 
 public final class BoardUI {
 
-    Map<Integer, Image> cachedImages = new HashMap<>();
+    private final Map<Integer, Image> cachedImages = new HashMap<>();
 
     private BoardUI() {}
 
@@ -69,37 +69,37 @@ public final class BoardUI {
 
                     boolean isInFringe = fringeTilesO.getValue().contains(pos);
                     PlacedTile placedTile = placedTileO.getValue();
+                    boolean isAlreadyPlaced = placedTile != null;
 
-                    Rotation rotation;
-                    Image image;
-                    if (placedTileO.getValue() != null) {
+                    Image image = ImageLoader.EMPTY_IMAGE;
+                    Rotation rotation = Rotation.NONE;
+                    Color veilColor = null;
+
+                    // si la tuile est déjà placée OU qu'on est en hover, juste on l'affiche normalement
+                    if (isAlreadyPlaced) {
                         image = cachedImages.computeIfAbsent(placedTile.id(), ImageLoader::normalImageForTile);
-                        rotation = placedTileO.getValue().rotation();
-                    } else {
-                        WritableImage emptyTileImage = new WritableImage(1, 1);
-                        emptyTileImage.getPixelWriter().setColor(0, 0, Color.gray(0.98));
-                        image = emptyTileImage;
-                        rotation = rotationO.getValue();
+                        rotation = placedTile.rotation();
                     }
 
-                    // todo handle veil
-                    Color veilColor = isInFringe ? gameStateO.getValue().currentPlayer();
-
-                    return new CellData(image, veilColor);
-                }, fringeTilesO, group.hoverProperty());
-
-                group.rotateProperty().bind(cellDataO.map(e -> e.tileRotation().degreesCW()));
-
-                ObservableValue<Boolean> isInFringe = fringeTilesO.map(fringeTiles -> fringeTiles.contains(pos));
-                isInFringe.addListener((_, _, isInFringeValue) -> {
-                    if (isInFringeValue) {
+                    if (isInFringe) {
                         group.onMouseClickedProperty().setValue(e -> {
                             if (e.getButton() == MouseButton.SECONDARY) {
                                 rotationConsumer.accept(e.isAltDown() ? Rotation.RIGHT : Rotation.LEFT);
                             }
                         });
+                        if (group.isHover()) {
+                            image = cachedImages.computeIfAbsent(gameStateO.getValue().tileToPlace().id(), ImageLoader::normalImageForTile);
+                            rotation = rotationO.getValue();
+                        } else {
+                            veilColor = ColorMap.fillColor(gameStateO.getValue().currentPlayer());
+                        }
                     }
-                });
+
+                    return new CellData(image, rotation, veilColor);
+                }, fringeTilesO, group.hoverProperty(), rotationO);
+
+                group.rotateProperty().bind(cellDataO.map(e -> e.tileRotation().degreesCW()));
+                imageView.imageProperty().bind(cellDataO.map(CellData::tileImage));
 
                 placedTileO.addListener((_, oldPlacedTile, placedTile) -> {
                     if (oldPlacedTile != null || placedTile == null) return;
