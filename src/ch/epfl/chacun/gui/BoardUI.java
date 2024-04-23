@@ -22,11 +22,10 @@ import java.util.stream.Stream;
 
 public final class BoardUI {
 
-    private final Map<Integer, Image> cachedImages = new HashMap<>();
-
     private BoardUI() {}
 
-    public Node create(
+    // todo change that later to "Node"
+    public static ScrollPane create(
             int range,
             ObservableValue<GameState> gameStateO,
             ObservableValue<Rotation> rotationO,
@@ -37,6 +36,9 @@ public final class BoardUI {
             Consumer<Pos> posConsumer,
             Consumer<Occupant> occupantConsumer
     ) {
+
+        Map<Integer, Image> cachedImages = new HashMap<>();
+
         Preconditions.checkArgument(range > 0);
 
         ScrollPane scrollPane = new ScrollPane();
@@ -100,11 +102,11 @@ public final class BoardUI {
 
                 group.rotateProperty().bind(cellDataO.map(e -> e.tileRotation().degreesCW()));
                 imageView.imageProperty().bind(cellDataO.map(CellData::tileImage));
-
+/*
                 placedTileO.addListener((_, oldPlacedTile, placedTile) -> {
                     if (oldPlacedTile != null || placedTile == null) return;
                     // todo ça va de faire comme ça ?
-                    group.rotateProperty().set(placedTile.rotation().degreesCW());
+                    group.rotateProperty().bind(placedTileO.map(e -> e.rotation().degreesCW()));
                     // change (and cache) the image
                     cachedImages.computeIfAbsent(placedTile.id(), ImageLoader::normalImageForTile);
                     Image image = cachedImages.get(placedTile.id());
@@ -121,15 +123,15 @@ public final class BoardUI {
                         });
                     // todo, this should be a getValue right?
                     // or placedTile.potentialOccupants-)
-                    gameStateO.getValue()
-                        .lastTilePotentialOccupants()
+                    placedTile.potentialOccupants()
                         .forEach(occupant -> {
                             Node occupantSvg = Icon.newFor(placedTile.placer(), occupant.kind());
                             occupantSvg.setId(STR."\{occupant.kind()}_\{occupant.zoneId()}");
                             occupantSvg.setOnMouseClicked((_) -> occupantConsumer.accept(occupant));
+                            // visible only if occupants
                             group.getChildren().add(occupantSvg);
                         });
-                });
+                });*/
             }
         }
 

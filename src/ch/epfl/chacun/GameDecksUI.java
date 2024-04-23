@@ -1,10 +1,14 @@
 package ch.epfl.chacun;
 
+import ch.epfl.chacun.gui.BoardUI;
 import ch.epfl.chacun.gui.DecksUI;
 import ch.epfl.chacun.gui.MessageBoardUI;
 import ch.epfl.chacun.gui.PlayersUI;
 import ch.epfl.chacun.tile.Tiles;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
@@ -12,14 +16,14 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
 import javafx.scene.control.SplitPane;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public final class GameDecksUI extends Application {
 
@@ -28,43 +32,111 @@ public final class GameDecksUI extends Application {
     @Override
     public void start(Stage primaryStage) {
 
-        var state = initialGameState(List.of(1, 37, 0), List.of());
+        var positions = Map.ofEntries(
+                Map.entry(34, new Pos(-3, -1)),
+                Map.entry(67, new Pos(-2, -1)),
+                Map.entry(31, new Pos(-1, -1)),
+                Map.entry(85, new Pos(0, -1)), // WILD_FIRE
+                Map.entry(62, new Pos(-3, 0)),
+                Map.entry(18, new Pos(-2, 0)),
+                Map.entry(51, new Pos(-1, 0)),
+                Map.entry(1, new Pos(-3, 1)),
+                Map.entry(3, new Pos(-2, 1)),
+                Map.entry(49, new Pos(-1, 1)),
+                Map.entry(55, new Pos(0, 1)),
+                Map.entry(36, new Pos(-1, -2)));
+
+        var occupants = Map.of(
+                51, new Occupant(Occupant.Kind.PAWN, 51_0) // hunter (BLUE)
+        );
+
+        var unoccupyableTiles = Set.of(62, 85);
+
+        var normalTilesIds = List.of(55, 51, 18, 62, 1, 34, 67, 31, 36, 3, 49);
+        var state = initialGameState(playerNames, normalTilesIds, List.of(85));
         var gameStateO = new SimpleObjectProperty<>(state);
-        ObservableValue<List<MessageBoard.Message>> observableMessages = gameStateO.map(s -> FXCollections.observableArrayList(s.messageBoard().messages()));
-        // create an array of tielIds that the ui will fill
-        // it should be an ObjectProperty<Set<Integer>>
-        var tileIds = new SimpleObjectProperty<Set<Integer>>();
-        // create an observable list of messages
-        var messageBoardNode = MessageBoardUI.create(observableMessages, tileIds);
-        assert state.tileToPlace().id() == 1;
-        var placedTile1 = new PlacedTile(state.tileToPlace(), PlayerColor.RED, Rotation.NONE, new Pos(-1, 0));
-        state = state
-                .withPlacedTile(placedTile1)
-                .withNewOccupant(new Occupant(Occupant.Kind.PAWN, 1_3)); // occupy forest
 
-        assert state.tileToPlace().id() == 37;
-        var placedTile37 = new PlacedTile(state.tileToPlace(), PlayerColor.BLUE, Rotation.NONE, new Pos(-1, 1));
-        state = state
-                .withPlacedTile(placedTile37)
-                .withNewOccupant(null);
+        gameStateO.setValue(truncateDeck(gameStateO.getValue(), Tile.Kind.NORMAL, normalTilesIds.size() - 1));
 
+        var players = gameStateO.getValue().players();
+        var playersIt = Stream.generate(() -> players)
+                .flatMap(Collection::stream)
+                .iterator();
 
-        var playersNode = PlayersUI.create(gameStateO, textMakerFr);
-        ObjectProperty<Tile> tileToPlace = new SimpleObjectProperty<>(state.tileToPlace());
-        ObjectProperty<Integer> leftNormalTiles = new SimpleObjectProperty<>(state.tileDecks().normalTiles().size());
-        ObjectProperty<Integer> leftMenhirTiles = new SimpleObjectProperty<>(state.tileDecks().menhirTiles().size());
-        ObservableValue<String> textToDisplay = gameStateO.map(gState -> gState.nextAction() == GameState.Action.OCCUPY_TILE ? "Placez un pion" : null);
-        Consumer<Occupant> con = (Occupant o) -> {
-            System.out.println("Occupant: " + o);
+        var nextPlacedTile = (Function<GameState, PlacedTile>) s -> {
+            var t = s.tileToPlace();
+            var placer = switch (t.kind()) {
+                case NORMAL -> playersIt.next();
+                case MENHIR -> s.board().lastPlacedTile().placer();
+                default -> throw new Error();
+            };
+            return new PlacedTile(t, placer, Rotation.NONE, positions.get(t.id()));
         };
-        var decksUINode = DecksUI.create(tileToPlace, leftNormalTiles, leftMenhirTiles, textToDisplay, con);
-        VBox vBox = new VBox();
-        vBox.getChildren().addAll(playersNode, messageBoardNode, decksUINode);
-        SplitPane splitPane = new SplitPane();
-        splitPane.getItems().addAll(vBox, new StackPane());
-        primaryStage.setScene(new Scene(vBox));
+
+
+        var playersNode = PlayersUI.create(gameStateO, new TextMakerFr(playerNames));
+        var observableMessages = gameStateO.map(g -> g.messageBoard().messages());
+        var messagesNode = MessageBoardUI.create(observableMessages, new SimpleObjectProperty<>(Set.of()));
+
+        var tileToPlace = gameStateO.map(GameState::tileToPlace);
+        var leftNormalTiles = gameStateO.map(g -> g.tileDecks().normalTiles().size());
+        var leftMenhirTiles = gameStateO.map(g -> g.tileDecks().menhirTiles().size());
+        var textToDisplay = gameStateO.map(g -> g.nextAction() == GameState.Action.OCCUPY_TILE ? textMakerFr.clickToOccupy() : null);
+        Consumer<Occupant> onOccupantClick = (Occupant a) -> { };
+        var decksNode = DecksUI.create(tileToPlace, leftNormalTiles, leftMenhirTiles, textToDisplay, onOccupantClick);
+
+        var boardNode = BoardUI.create(12, gameStateO, new SimpleObjectProperty<>(Rotation.NONE), new SimpleObjectProperty<>(Set.of()), new SimpleObjectProperty<>(Set.of()), r -> {}, p -> {}, o -> {});
+
+        var sideBar = new VBox(playersNode, messagesNode, decksNode);
+        VBox.setVgrow(messagesNode, Priority.ALWAYS);
+
+        boardNode.setFitToHeight(true);
+        boardNode.setFitToWidth(true);
+        boardNode.setMinWidth(720);
+        boardNode.maxHeightProperty().bind(primaryStage.heightProperty());
+        boardNode.maxWidthProperty().bind(primaryStage.widthProperty().map(w -> w.doubleValue() - sideBar.getWidth()));
+        boardNode.setHvalue(.5);
+        boardNode.setVvalue(.5);
+
+        var rootNode = new HBox(boardNode, sideBar);
+        HBox.setHgrow(boardNode, Priority.ALWAYS);
+        primaryStage.setScene(new Scene(rootNode));
         primaryStage.setTitle("ChaCuN test");
         primaryStage.show();
+
+        var tlS = 1;
+        var tl = new Timeline();
+
+        for (int i = 0; i < positions.size(); i++) {
+            // create keyframe
+            var keyFrame = new KeyFrame(javafx.util.Duration.seconds(tlS * (i + 1)), e -> {
+                var placedTile = nextPlacedTile.apply(gameStateO.getValue());
+                gameStateO.setValue(gameStateO.getValue().withPlacedTile(placedTile));
+                if (!unoccupyableTiles.contains(placedTile.id()))
+                    gameStateO.setValue(gameStateO.getValue().withNewOccupant(occupants.get(placedTile.id())));
+            });
+
+            tl.getKeyFrames().add(keyFrame);
+        }
+
+        Platform.runLater(tl::play);
+    }
+
+    private static GameState truncateDeck(GameState state, Tile.Kind deckKind, int deckSize) {
+        var decks1 = switch (state.tileDecks()) {
+            case TileDecks(List<Tile> s, List<Tile> n, List<Tile> m) when deckKind == Tile.Kind.NORMAL ->
+                    new TileDecks(s, n.subList(0, deckSize), m);
+            case TileDecks(List<Tile> s, List<Tile> n, List<Tile> m) when deckKind == Tile.Kind.MENHIR ->
+                    new TileDecks(s, n, m.subList(0, deckSize));
+            default -> throw new Error("cannot truncate that deck");
+        };
+        return new GameState(
+                state.players(),
+                decks1,
+                state.tileToPlace(),
+                state.board(),
+                state.nextAction(),
+                state.messageBoard());
     }
 
     private static List<Tile> allTiles() {
@@ -1227,7 +1299,13 @@ public final class GameDecksUI extends Application {
         return List.copyOf(reorderedTiles);
     }
 
-    private static TextMaker textMakerFr =new TextMakerFr(Map.of(PlayerColor.RED, "Valerio", PlayerColor.BLUE, "Simon"));
+    private static Map<PlayerColor, String> playerNames = Map.of(
+            PlayerColor.RED, "Alice",
+            PlayerColor.GREEN, "Bob",
+            PlayerColor.BLUE, "Cecil",
+            PlayerColor.YELLOW, "David"
+    );
+    private static TextMaker textMakerFr = new TextMakerFr(playerNames);
 
     private static TileDecks tileDecks(List<Integer> firstNormalTiles, List<Integer> firstMenhirTiles) {
         var partitionedTiles = allTiles().stream()
@@ -1242,13 +1320,15 @@ public final class GameDecksUI extends Application {
                 List.copyOf(menhirTiles));
     }
 
-    private static GameState initialGameState(List<Integer> firstNormalTiles, List<Integer> firstMenhirTiles) {
-        return initialGameState(List.of(PlayerColor.values()), firstNormalTiles, firstMenhirTiles);
+    private static GameState initialGameState(Map<PlayerColor, String> playerNames, List<Integer> firstNormalTiles, List<Integer> firstMenhirTiles) {
+        return initialGameState(playerNames, List.of(PlayerColor.values()), firstNormalTiles, firstMenhirTiles);
     }
 
-    private static GameState initialGameState(List<PlayerColor> players,
-                                              List<Integer> firstNormalTiles,
-                                              List<Integer> firstMenhirTiles) {
+    private static GameState initialGameState(
+                                            Map<PlayerColor, String> playerNames,
+                                            List<PlayerColor> players,
+                                          List<Integer> firstNormalTiles,
+                                          List<Integer> firstMenhirTiles) {
         var tileDecks = tileDecks(firstNormalTiles, firstMenhirTiles);
 
         var startingTile = tileDecks.topTile(Tile.Kind.START);

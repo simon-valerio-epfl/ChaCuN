@@ -41,7 +41,9 @@ public final class DecksUI {
         text.setWrappingWidth(0.8 * ImageLoader.LARGE_TILE_FIT_SIZE);
         stackPane.getChildren().setAll(view, text);
 
-        tileO.addListener((_, _, newValue) -> view.setImage(ImageLoader.largeImageForTile(newValue.id())));
+        tileO.addListener((_, _, newValue) -> {
+            if (newValue != null) view.setImage(ImageLoader.largeImageForTile(newValue.id()));
+        });
 
         Node menhirNode = getDeckNode("MENHIR", leftMenhirTilesO);
         Node normalNode = getDeckNode("NORMAL", leftNormalTilesO);
