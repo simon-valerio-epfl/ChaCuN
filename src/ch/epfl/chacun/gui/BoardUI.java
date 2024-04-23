@@ -45,8 +45,8 @@ public final class BoardUI {
         scrollPane.setId("board-scroll-pane");
         scrollPane.getStylesheets().add("board.css");
 
-        GridPane pane = new GridPane();
-        pane.setId("board-grid");
+        GridPane grid = new GridPane();
+        grid.setId("board-grid");
 
         ObservableValue<Board> boardO = gameStateO.map(GameState::board);
         ObservableValue<Set<Animal>> cancelledAnimalsO = boardO.map(Board::cancelledAnimals);
@@ -100,8 +100,11 @@ public final class BoardUI {
                     return new CellData(image, rotation, veilColor);
                 }, fringeTilesO, group.hoverProperty(), rotationO);
 
-                group.rotateProperty().bind(cellDataO.map(e -> e.tileRotation().degreesCW()));
+                group.rotateProperty().bind(cellDataO.map(cellData -> cellData.tileRotation().degreesCW()));
                 imageView.imageProperty().bind(cellDataO.map(CellData::tileImage));
+
+
+                grid.add(group, x + range, y + range);
 /*
                 placedTileO.addListener((_, oldPlacedTile, placedTile) -> {
                     if (oldPlacedTile != null || placedTile == null) return;
@@ -135,6 +138,7 @@ public final class BoardUI {
             }
         }
 
+        scrollPane.setContent(grid);
         return scrollPane;
     }
 
