@@ -44,6 +44,8 @@ public final class PlayersUI {
                     if (newValue) textFlow.getStyleClass().add("current");
                     else textFlow.getStyleClass().remove("current");
                 });
+                // todo fabrice doit-on ajouter ça ?
+                if (gameStateO.getValue().currentPlayer() == playerColor) textFlow.getStyleClass().add("current");
 
                 Circle circle = new Circle(5);
                 circle.setFill(ColorMap.fillColor(playerColor));

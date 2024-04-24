@@ -62,13 +62,14 @@ public final class BoardUI {
         for (int x = -range; x <= range; x++) {
             for (int y = -range; y <= range; y++) {
                 ImageView imageView = new ImageView();
+                imageView.setFitWidth(ImageLoader.NORMAL_TILE_PIXEL_SIZE);
+                imageView.setFitHeight(ImageLoader.NORMAL_TILE_PIXEL_SIZE);
                 Group group = new Group(imageView);
                 Pos pos = new Pos(x, y);
 
                 ObservableValue<PlacedTile> placedTileO = boardO.map(b -> b.tileAt(pos));
 
                 ObservableValue<CellData> cellDataO = Bindings.createObjectBinding(() -> {
-                    System.out.println("compute");
                     // trigger quand :
                     // - la souris passe sur la tuile
                     // - la frange change
@@ -76,10 +77,13 @@ public final class BoardUI {
                     boolean isInFringe = fringeTilesO.getValue().contains(pos);
                     PlacedTile placedTile = placedTileO.getValue();
                     boolean isAlreadyPlaced = placedTile != null;
+                    Set<Integer> highlitedTiles = highlightedTilesO.getValue();
+                    boolean isNotHighlighted = !highlitedTiles.isEmpty()
+                            && !highlitedTiles.contains(placedTileO.getValue().id());
 
                     Image image = ImageLoader.EMPTY_IMAGE;
                     Rotation rotation = Rotation.NONE;
-                    Color veilColor = null;
+                    Color veilColor = Color.TRANSPARENT;
 
                     // si la tuile est déjà placée OU qu'on est en hover, juste on l'affiche normalement
                     if (isAlreadyPlaced) {
@@ -94,22 +98,30 @@ public final class BoardUI {
                             }
                         });
                         if (group.isHover()) {
-                            image = cachedImages.computeIfAbsent(gameStateO.getValue().tileToPlace().id(), ImageLoader::normalImageForTile);
+                            image = cachedImages.computeIfAbsent(
+                                gameStateO.getValue().tileToPlace().id(),
+                                ImageLoader::normalImageForTile
+                            );
                             rotation = rotationO.getValue();
                         } else {
                             veilColor = ColorMap.fillColor(gameStateO.getValue().currentPlayer());
                         }
                     }
+ch                    if (isNotHighlighted) veilColor = veilColor.darker();
 
                     return new CellData(image, rotation, veilColor);
-                }, fringeTilesO, group.hoverProperty(), rotationO);
+                }, fringeTilesO, group.hoverProperty(), rotationO, highlightedTilesO);
 
                 group.rotateProperty().bind(cellDataO.map(cellData -> cellData.tileRotation().degreesCW()));
                 imageView.imageProperty().bind(cellDataO.map(CellData::tileImage));
                 group.effectProperty().bind(cellDataO.map(cellData -> {
                     Blend blend = new Blend();
                     blend.setMode(BlendMode.SRC_OVER);
-                    blend.setTopInput(new ColorInput(0, 0, 100, 100, cellData.veilColor));
+                    blend.setTopInput(cellData.veilColor == null ? null : new ColorInput(
+                        0, 0,
+                        ImageLoader.NORMAL_TILE_PIXEL_SIZE, ImageLoader.NORMAL_TILE_PIXEL_SIZE,
+                        cellData.veilColor
+                    ));
                     blend.setOpacity(0.5);
                     blend.setBottomInput(null);
                     return blend;

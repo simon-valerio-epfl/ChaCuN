@@ -91,7 +91,10 @@ public final class GameDecksUI extends Application {
         Consumer<Occupant> onOccupantClick = (Occupant a) -> { };
         var decksNode = DecksUI.create(tileToPlace, leftNormalTiles, leftMenhirTiles, textToDisplay, onOccupantClick);
 
-        var boardNode = BoardUI.create(12, gameStateO, new SimpleObjectProperty<>(Rotation.NONE), new SimpleObjectProperty<>(Set.of()), new SimpleObjectProperty<>(Set.of()), r -> {}, p -> {}, o -> {});
+        SimpleObjectProperty<Rotation> nextRotation = new SimpleObjectProperty<>(Rotation.NONE);
+        var boardNode = BoardUI.create(12, gameStateO, nextRotation, new SimpleObjectProperty<>(Set.of()), new SimpleObjectProperty<>(Set.of()), r -> {
+            nextRotation.setValue(nextRotation.getValue().add(r));
+        }, p -> {}, o -> {});
 
         var sideBar = new VBox(playersNode, messagesNode, decksNode);
         VBox.setVgrow(messagesNode, Priority.ALWAYS);
@@ -110,7 +113,7 @@ public final class GameDecksUI extends Application {
         primaryStage.setTitle("ChaCuN test");
         primaryStage.show();
 
-        var tlS = 100;
+        var tlS = 0.5;
         var tl = new Timeline();
 
         for (int i = 0; i < positions.size(); i++) {
