@@ -137,10 +137,13 @@ public final class BoardUI {
                     placedTile.meadowZones().stream()
                         .flatMap(z -> z.animals().stream())
                         .forEach(animal -> {
-                            SVGPath animalSvg = new SVGPath();
-                            animalSvg.visibleProperty().bind(cancelledAnimalsO.map(animals -> !animals.contains(animal)));
-                            animalSvg.setId(STR."marker_\{animal.id()}");
-                            group.getChildren().add(animalSvg);
+                            ImageView cancelledAnimalView = new ImageView();
+                            //cancelledAnimalView.visibleProperty().bind(cancelledAnimalsO.map(animals -> !animals.contains(animal)));
+                            cancelledAnimalView.setId(STR."marker_\{animal.id()}");
+                            cancelledAnimalView.getStyleClass().add("marker");
+                            cancelledAnimalView.setFitHeight(ImageLoader.MARKER_FIT_SIZE);
+                            cancelledAnimalView.setFitWidth(ImageLoader.MARKER_FIT_SIZE);
+                            group.getChildren().add(cancelledAnimalView);
                         });
                     // todo, this should be a getValue right?
                     placedTile.potentialOccupants()
