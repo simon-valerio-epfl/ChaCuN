@@ -107,7 +107,7 @@ public final class BoardUI {
                             veilColor = ColorMap.fillColor(gameStateO.getValue().currentPlayer());
                         }
                     }
-ch                    if (isNotHighlighted) veilColor = veilColor.darker();
+                    if (isNotHighlighted) veilColor = veilColor.darker();
 
                     return new CellData(image, rotation, veilColor);
                 }, fringeTilesO, group.hoverProperty(), rotationO, highlightedTilesO);
