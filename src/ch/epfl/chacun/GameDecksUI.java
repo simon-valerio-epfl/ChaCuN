@@ -110,7 +110,7 @@ public final class GameDecksUI extends Application {
         primaryStage.setTitle("ChaCuN test");
         primaryStage.show();
 
-        var tlS = 1;
+        var tlS = 100;
         var tl = new Timeline();
 
         for (int i = 0; i < positions.size(); i++) {

@@ -6,6 +6,9 @@ import javafx.beans.value.ObservableValue;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.effect.Blend;
+import javafx.scene.effect.BlendMode;
+import javafx.scene.effect.ColorInput;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
@@ -65,6 +68,7 @@ public final class BoardUI {
                 ObservableValue<PlacedTile> placedTileO = boardO.map(b -> b.tileAt(pos));
 
                 ObservableValue<CellData> cellDataO = Bindings.createObjectBinding(() -> {
+                    System.out.println("compute");
                     // trigger quand :
                     // - la souris passe sur la tuile
                     // - la frange change
@@ -102,7 +106,14 @@ public final class BoardUI {
 
                 group.rotateProperty().bind(cellDataO.map(cellData -> cellData.tileRotation().degreesCW()));
                 imageView.imageProperty().bind(cellDataO.map(CellData::tileImage));
-
+                group.effectProperty().bind(cellDataO.map(cellData -> {
+                    Blend blend = new Blend();
+                    blend.setMode(BlendMode.SRC_OVER);
+                    blend.setTopInput(new ColorInput(0, 0, 100, 100, cellData.veilColor));
+                    blend.setOpacity(0.5);
+                    blend.setBottomInput(null);
+                    return blend;
+                }));
 
                 grid.add(group, x + range, y + range);
 /*
