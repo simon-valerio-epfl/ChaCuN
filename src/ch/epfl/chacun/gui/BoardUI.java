@@ -24,7 +24,9 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 public final class BoardUI {
-
+    /**
+     * This is a utility class and therefore is not instantiable
+     */
     private BoardUI() {}
 
     // todo change that later to "Node"
@@ -62,8 +64,8 @@ public final class BoardUI {
         for (int x = -range; x <= range; x++) {
             for (int y = -range; y <= range; y++) {
                 ImageView imageView = new ImageView();
-                imageView.setFitWidth(ImageLoader.NORMAL_TILE_PIXEL_SIZE);
-                imageView.setFitHeight(ImageLoader.NORMAL_TILE_PIXEL_SIZE);
+                imageView.setFitWidth(ImageLoader.NORMAL_TILE_FIT_SIZE);
+                imageView.setFitHeight(ImageLoader.NORMAL_TILE_FIT_SIZE);
                 Group group = new Group(imageView);
                 Pos pos = new Pos(x, y);
 
@@ -119,7 +121,7 @@ public final class BoardUI {
                     blend.setMode(BlendMode.SRC_OVER);
                     blend.setTopInput(cellData.veilColor == null ? null : new ColorInput(
                         0, 0,
-                        ImageLoader.NORMAL_TILE_PIXEL_SIZE, ImageLoader.NORMAL_TILE_PIXEL_SIZE,
+                        ImageLoader.NORMAL_TILE_FIT_SIZE, ImageLoader.NORMAL_TILE_FIT_SIZE,
                         cellData.veilColor
                     ));
                     blend.setOpacity(0.5);
@@ -128,16 +130,9 @@ public final class BoardUI {
                 }));
 
                 grid.add(group, x + range, y + range);
-/*
+
                 placedTileO.addListener((_, oldPlacedTile, placedTile) -> {
                     if (oldPlacedTile != null || placedTile == null) return;
-                    // todo ça va de faire comme ça ?
-                    group.rotateProperty().bind(placedTileO.map(e -> e.rotation().degreesCW()));
-                    // change (and cache) the image
-                    cachedImages.computeIfAbsent(placedTile.id(), ImageLoader::normalImageForTile);
-                    Image image = cachedImages.get(placedTile.id());
-                    // todo on peut faire ça au lieu de imageProperty?
-                    imageView.setImage(image);
                     // add occupants
                     placedTile.meadowZones().stream()
                         .flatMap(z -> z.animals().stream())
@@ -148,16 +143,17 @@ public final class BoardUI {
                             group.getChildren().add(animalSvg);
                         });
                     // todo, this should be a getValue right?
-                    // or placedTile.potentialOccupants-)
                     placedTile.potentialOccupants()
                         .forEach(occupant -> {
                             Node occupantSvg = Icon.newFor(placedTile.placer(), occupant.kind());
-                            occupantSvg.setId(STR."\{occupant.kind()}_\{occupant.zoneId()}");
+                            occupantSvg.setId(STR."\{occupant.kind().toString().toLowerCase()}_\{occupant.zoneId()}");
                             occupantSvg.setOnMouseClicked((_) -> occupantConsumer.accept(occupant));
-                            // visible only if occupants
+                            // visible only if there are occupants
+                            occupantSvg.visibleProperty().bind(occupantO.map(occupants -> occupants.contains(occupant)));
+                            // create an image view from the svg
                             group.getChildren().add(occupantSvg);
                         });
-                });*/
+                });
             }
         }
 
