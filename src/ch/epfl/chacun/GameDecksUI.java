@@ -82,7 +82,8 @@ public final class GameDecksUI extends Application {
 
         var playersNode = PlayersUI.create(gameStateO, new TextMakerFr(playerNames));
         var observableMessages = gameStateO.map(g -> g.messageBoard().messages());
-        var messagesNode = MessageBoardUI.create(observableMessages, new SimpleObjectProperty<>(Set.of()));
+        SimpleObjectProperty<Set<Integer>> highlightedTiles = new SimpleObjectProperty<>(Set.of());
+        var messagesNode = MessageBoardUI.create(observableMessages, highlightedTiles);
 
         var tileToPlace = gameStateO.map(GameState::tileToPlace);
         var leftNormalTiles = gameStateO.map(g -> g.tileDecks().normalTiles().size());
@@ -92,7 +93,7 @@ public final class GameDecksUI extends Application {
         var decksNode = DecksUI.create(tileToPlace, leftNormalTiles, leftMenhirTiles, textToDisplay, onOccupantClick);
 
         SimpleObjectProperty<Rotation> nextRotation = new SimpleObjectProperty<>(Rotation.NONE);
-        var boardNode = BoardUI.create(12, gameStateO, nextRotation, new SimpleObjectProperty<>(Set.of()), new SimpleObjectProperty<>(Set.of()), r -> {
+        var boardNode = BoardUI.create(12, gameStateO, nextRotation, new SimpleObjectProperty<>(Set.of()), highlightedTiles, r -> {
             nextRotation.setValue(nextRotation.getValue().add(r));
         }, p -> {}, o -> {});
 

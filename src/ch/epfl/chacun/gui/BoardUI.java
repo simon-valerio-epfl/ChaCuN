@@ -78,8 +78,8 @@ public final class BoardUI {
                     PlacedTile placedTile = placedTileO.getValue();
                     boolean isAlreadyPlaced = placedTile != null;
                     Set<Integer> highlitedTiles = highlightedTilesO.getValue();
-                    boolean isNotHighlighted = !highlitedTiles.isEmpty()
-                            && !highlitedTiles.contains(placedTileO.getValue().id());
+                    boolean isNotHighlighted = !highlitedTiles.isEmpty() && (placedTile == null
+                            || !highlitedTiles.contains(placedTileO.getValue().id()));
 
                     Image image = ImageLoader.EMPTY_IMAGE;
                     Rotation rotation = Rotation.NONE;
@@ -107,7 +107,7 @@ public final class BoardUI {
                             veilColor = ColorMap.fillColor(gameStateO.getValue().currentPlayer());
                         }
                     }
-                    if (isNotHighlighted) veilColor = veilColor.darker();
+                    if (isNotHighlighted) veilColor = Color.BLACK;
 
                     return new CellData(image, rotation, veilColor);
                 }, fringeTilesO, group.hoverProperty(), rotationO, highlightedTilesO);
