@@ -79,20 +79,21 @@ public final class BoardUI {
                     // - la frange change
 
                     boolean isInFringe = fringeTilesO.getValue().contains(pos);
-
                     PlacedTile placedTile = placedTileO.getValue();
                     boolean isAlreadyPlaced = placedTile != null;
-
                     Set<Integer> highlightedTiles = highlightedTilesO.getValue();
-                    boolean isNotHighlighted = !highlightedTiles.isEmpty()
-                            && (placedTile == null || !highlightedTiles.contains(placedTileO.getValue().id()));
+                    boolean isNotHighlighted = !highlightedTiles.isEmpty() && (placedTile == null
+                            || !highlightedTiles.contains(placedTileO.getValue().id()));
+
+                    Image image = ImageLoader.EMPTY_IMAGE;
+                    Rotation rotation = Rotation.NONE;
+                    Color veilColor = Color.TRANSPARENT;
 
                     // si la tuile est déjà placée OU qu'on est en hover, juste on l'affiche normalement
-                    Image image = isAlreadyPlaced
-                            ? cachedImages.computeIfAbsent(placedTile.id(), ImageLoader::normalImageForTile)
-                            : ImageLoader.EMPTY_IMAGE;
-                    Rotation rotation = isAlreadyPlaced ? placedTile.rotation() : rotationO.getValue();
-                    Color veilColor = Color.TRANSPARENT;
+                    if (isAlreadyPlaced) {
+                        image = cachedImages.computeIfAbsent(placedTile.id(), ImageLoader::normalImageForTile);
+                        rotation = placedTile.rotation();
+                    }
 
                     if (isInFringe) {
                         group.onMouseClickedProperty().setValue(e -> {
@@ -100,12 +101,17 @@ public final class BoardUI {
                                 rotationConsumer.accept(e.isAltDown() ? Rotation.RIGHT : Rotation.LEFT);
                             }
                         });
-                        if (!group.isHover()) {
-                            image = ImageLoader.EMPTY_IMAGE;
+                        // if the mouse is currently on this tile
+                        if (group.isHover()) {
+                            image = cachedImages.computeIfAbsent(
+                                    gameStateO.getValue().tileToPlace().id(),
+                                    ImageLoader::normalImageForTile
+                            );
+                            rotation = rotationO.getValue();
+                        } else {
                             veilColor = ColorMap.fillColor(gameStateO.getValue().currentPlayer());
                         }
                     }
-
                     if (isNotHighlighted) veilColor = Color.BLACK;
 
                     return new CellData(image, rotation, veilColor);
