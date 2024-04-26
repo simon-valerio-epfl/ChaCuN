@@ -70,7 +70,8 @@ public final class BoardUI {
                 Pos pos = new Pos(x, y);
 
                 ObservableValue<PlacedTile> placedTileO = boardO.map(b -> b.tileAt(pos));
-
+                // cell data non mostra nulla allo schermo, calcola e prende alcuni valori della tile,
+                // che possono così essere osservati nel resto del programma
                 ObservableValue<CellData> cellDataO = Bindings.createObjectBinding(() -> {
                     // trigger quand :
                     // - la souris passe sur la tuile
@@ -99,6 +100,7 @@ public final class BoardUI {
                                 rotationConsumer.accept(e.isAltDown() ? Rotation.RIGHT : Rotation.LEFT);
                             }
                         });
+                        // if the mouse is currently on this tile
                         if (group.isHover()) {
                             image = cachedImages.computeIfAbsent(
                                 gameStateO.getValue().tileToPlace().id(),
@@ -112,6 +114,8 @@ public final class BoardUI {
                     if (isNotHighlighted) veilColor = Color.BLACK;
 
                     return new CellData(image, rotation, veilColor);
+                    // questi argomenti sono la sensibility del codice,
+                    // ogni volta che uno di loro cambia, il codice viene reeseguito
                 }, fringeTilesO, group.hoverProperty(), rotationO, highlightedTilesO);
 
                 group.rotateProperty().bind(cellDataO.map(cellData -> cellData.tileRotation().degreesCW()));
@@ -128,7 +132,7 @@ public final class BoardUI {
                     blend.setBottomInput(null);
                     return blend;
                 }));
-
+                // we add range in order to translate our tile to the left corner
                 grid.add(group, x + range, y + range);
 
                 placedTileO.addListener((_, oldPlacedTile, placedTile) -> {
@@ -138,7 +142,7 @@ public final class BoardUI {
                         .flatMap(z -> z.animals().stream())
                         .forEach(animal -> {
                             ImageView cancelledAnimalView = new ImageView();
-                            //cancelledAnimalView.visibleProperty().bind(cancelledAnimalsO.map(animals -> !animals.contains(animal)));
+                            cancelledAnimalView.visibleProperty().bind(cancelledAnimalsO.map(animals -> !animals.contains(animal)));
                             cancelledAnimalView.setId(STR."marker_\{animal.id()}");
                             cancelledAnimalView.getStyleClass().add("marker");
                             cancelledAnimalView.setFitHeight(ImageLoader.MARKER_FIT_SIZE);
