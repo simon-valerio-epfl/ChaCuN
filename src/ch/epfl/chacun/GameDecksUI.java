@@ -15,6 +15,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SplitPane;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
@@ -93,7 +94,7 @@ public final class GameDecksUI extends Application {
         var decksNode = DecksUI.create(tileToPlace, leftNormalTiles, leftMenhirTiles, textToDisplay, onOccupantClick);
 
         SimpleObjectProperty<Rotation> nextRotation = new SimpleObjectProperty<>(Rotation.NONE);
-        var boardNode = BoardUI.create(12, gameStateO, nextRotation, new SimpleObjectProperty<>(Set.of()), highlightedTiles, r -> {
+        var boardNode = (ScrollPane) BoardUI.create(12, gameStateO, nextRotation, new SimpleObjectProperty<>(Set.of()), highlightedTiles, r -> {
             nextRotation.setValue(nextRotation.getValue().add(r));
         }, p -> {}, o -> {});
 
@@ -114,7 +115,7 @@ public final class GameDecksUI extends Application {
         primaryStage.setTitle("ChaCuN test");
         primaryStage.show();
 
-        var tlS = 0.5;
+        var tlS = 3;
         var tl = new Timeline();
 
         for (int i = 0; i < positions.size(); i++) {

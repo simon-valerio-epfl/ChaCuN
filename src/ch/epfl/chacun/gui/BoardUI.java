@@ -30,8 +30,7 @@ public final class BoardUI {
      */
     private BoardUI() {}
 
-    // todo change that later to "Node"
-    public static ScrollPane create(
+    public static Node create(
             int range,
             ObservableValue<GameState> gameStateO,
             ObservableValue<Rotation> rotationO,
@@ -57,7 +56,6 @@ public final class BoardUI {
         ObservableValue<Board> boardO = gameStateO.map(GameState::board);
         ObservableValue<Set<Animal>> cancelledAnimalsO = boardO.map(Board::cancelledAnimals);
         ObservableValue<Boolean> isFringeO = gameStateO.map(gState -> gState.nextAction() == GameState.Action.PLACE_TILE);
-        // todo ask antoine
         ObservableValue<Set<Pos>> fringeTilesO = isFringeO.map(
             isFringe -> isFringe ? boardO.getValue().insertionPositions() : Set.of()
         );
@@ -101,15 +99,22 @@ public final class BoardUI {
                                 rotationConsumer.accept(e.isAltDown() ? Rotation.RIGHT : Rotation.LEFT);
                             }
                         });
+                        PlayerColor currentPlayer = gameStateO.getValue().currentPlayer();
                         // if the mouse is currently on this tile
                         if (group.isHover()) {
+                            Rotation willBeRotated = rotationO.getValue();
+                            PlacedTile willBePlacedTile = new PlacedTile(
+                                gameStateO.getValue().tileToPlace(),
+                                currentPlayer, willBeRotated, pos
+                            );
                             image = cachedImages.computeIfAbsent(
-                                    gameStateO.getValue().tileToPlace().id(),
+                                    willBePlacedTile.id(),
                                     ImageLoader::normalImageForTile
                             );
                             rotation = rotationO.getValue();
+                            if (!boardO.getValue().canAddTile(willBePlacedTile)) veilColor = Color.WHITE;
                         } else {
-                            veilColor = ColorMap.fillColor(gameStateO.getValue().currentPlayer());
+                            veilColor = ColorMap.fillColor(currentPlayer);
                         }
                     }
                     if (isNotHighlighted) veilColor = Color.BLACK;
@@ -126,7 +131,6 @@ public final class BoardUI {
                 // we add range in order to translate our tile to the left corner
                 grid.add(group, x + range, y + range);
 
-                // todo la bonne façon de détecter un placement ?
                 placedTileO.addListener((_, oldPlacedTile, placedTile) -> {
                     if (oldPlacedTile != null || placedTile == null) return;
                     // handle "jeton d'annulation"
