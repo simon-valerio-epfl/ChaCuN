@@ -18,6 +18,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.SVGPath;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -34,7 +35,7 @@ public final class BoardUI {
             int range,
             ObservableValue<GameState> gameStateO,
             ObservableValue<Rotation> rotationO,
-            ObservableValue<Set<Occupant>> occupantO,
+            ObservableValue<Set<Occupant>> occupantsO,
             ObservableValue<Set<Integer>> highlightedTilesO,
 
             Consumer<Rotation> rotationConsumer,
@@ -78,21 +79,20 @@ public final class BoardUI {
                     // - la frange change
 
                     boolean isInFringe = fringeTilesO.getValue().contains(pos);
+
                     PlacedTile placedTile = placedTileO.getValue();
                     boolean isAlreadyPlaced = placedTile != null;
-                    Set<Integer> highlightedTiles = highlightedTilesO.getValue();
-                    boolean isNotHighlighted = !highlightedTiles.isEmpty() && (placedTile == null
-                            || !highlightedTiles.contains(placedTileO.getValue().id()));
 
-                    Image image = ImageLoader.EMPTY_IMAGE;
-                    Rotation rotation = Rotation.NONE;
-                    Color veilColor = Color.TRANSPARENT;
+                    Set<Integer> highlightedTiles = highlightedTilesO.getValue();
+                    boolean isNotHighlighted = !highlightedTiles.isEmpty()
+                            && (placedTile == null || !highlightedTiles.contains(placedTileO.getValue().id()));
 
                     // si la tuile est déjà placée OU qu'on est en hover, juste on l'affiche normalement
-                    if (isAlreadyPlaced) {
-                        image = cachedImages.computeIfAbsent(placedTile.id(), ImageLoader::normalImageForTile);
-                        rotation = placedTile.rotation();
-                    }
+                    Image image = isAlreadyPlaced
+                            ? cachedImages.computeIfAbsent(placedTile.id(), ImageLoader::normalImageForTile)
+                            : ImageLoader.EMPTY_IMAGE;
+                    Rotation rotation = isAlreadyPlaced ? placedTile.rotation() : rotationO.getValue();
+                    Color veilColor = Color.TRANSPARENT;
 
                     if (isInFringe) {
                         group.onMouseClickedProperty().setValue(e -> {
@@ -100,17 +100,12 @@ public final class BoardUI {
                                 rotationConsumer.accept(e.isAltDown() ? Rotation.RIGHT : Rotation.LEFT);
                             }
                         });
-                        // if the mouse is currently on this tile
-                        if (group.isHover()) {
-                            image = cachedImages.computeIfAbsent(
-                                gameStateO.getValue().tileToPlace().id(),
-                                ImageLoader::normalImageForTile
-                            );
-                            rotation = rotationO.getValue();
-                        } else {
+                        if (!group.isHover()) {
+                            image = ImageLoader.EMPTY_IMAGE;
                             veilColor = ColorMap.fillColor(gameStateO.getValue().currentPlayer());
                         }
                     }
+
                     if (isNotHighlighted) veilColor = Color.BLACK;
 
                     return new CellData(image, rotation, veilColor);
@@ -120,46 +115,26 @@ public final class BoardUI {
 
                 group.rotateProperty().bind(cellDataO.map(cellData -> cellData.tileRotation().degreesCW()));
                 imageView.imageProperty().bind(cellDataO.map(CellData::tileImage));
-                group.effectProperty().bind(cellDataO.map(cellData -> {
-                    Blend blend = new Blend();
-                    blend.setMode(BlendMode.SRC_OVER);
-                    blend.setTopInput(cellData.veilColor == null ? null : new ColorInput(
-                        0, 0,
-                        ImageLoader.NORMAL_TILE_FIT_SIZE, ImageLoader.NORMAL_TILE_FIT_SIZE,
-                        cellData.veilColor
-                    ));
-                    blend.setOpacity(0.5);
-                    blend.setBottomInput(null);
-                    return blend;
-                }));
+                group.effectProperty().bind(cellDataO.map(BoardUI::getBlendVeilEffect));
+
                 // we add range in order to translate our tile to the left corner
                 grid.add(group, x + range, y + range);
 
+                // todo la bonne façon de détecter un placement ?
                 placedTileO.addListener((_, oldPlacedTile, placedTile) -> {
                     if (oldPlacedTile != null || placedTile == null) return;
-                    // add occupants
-                    placedTile.meadowZones().stream()
+                    // handle "jeton d'annulation"
+                    List<Node> cancelledAnimalsNodes = placedTile.meadowZones().stream()
                         .flatMap(z -> z.animals().stream())
-                        .forEach(animal -> {
-                            ImageView cancelledAnimalView = new ImageView();
-                            cancelledAnimalView.visibleProperty().bind(cancelledAnimalsO.map(animals -> !animals.contains(animal)));
-                            cancelledAnimalView.setId(STR."marker_\{animal.id()}");
-                            cancelledAnimalView.getStyleClass().add("marker");
-                            cancelledAnimalView.setFitHeight(ImageLoader.MARKER_FIT_SIZE);
-                            cancelledAnimalView.setFitWidth(ImageLoader.MARKER_FIT_SIZE);
-                            group.getChildren().add(cancelledAnimalView);
-                        });
-                    // todo, this should be a getValue right?
-                    placedTile.potentialOccupants()
-                        .forEach(occupant -> {
-                            Node occupantSvg = Icon.newFor(placedTile.placer(), occupant.kind());
-                            occupantSvg.setId(STR."\{occupant.kind().toString().toLowerCase()}_\{occupant.zoneId()}");
-                            occupantSvg.setOnMouseClicked((_) -> occupantConsumer.accept(occupant));
-                            // visible only if there are occupants
-                            occupantSvg.visibleProperty().bind(occupantO.map(occupants -> occupants.contains(occupant)));
-                            // create an image view from the svg
-                            group.getChildren().add(occupantSvg);
-                        });
+                        .map(animal -> getCancelledAnimalNode(animal, cancelledAnimalsO))
+                        .toList();
+                    group.getChildren().addAll(cancelledAnimalsNodes);
+                    // handle occupants
+                    List<Node> occupantsNodes = placedTile.potentialOccupants()
+                        .stream()
+                        .map(occupant -> getOccupantNode(placedTile.placer(), occupant, occupantsO, occupantConsumer))
+                        .toList();
+                    group.getChildren().addAll(occupantsNodes);
                 });
             }
         }
@@ -170,9 +145,35 @@ public final class BoardUI {
 
     private record CellData (Image tileImage, Rotation tileRotation, Color veilColor) {}
 
-    // todo comment créer une méthode privée
-    private SVGPath getEntitySVG () {
-        return null;
+    private static Node getCancelledAnimalNode(Animal animal, ObservableValue<Set<Animal>> cancelledAnimalsO) {
+        ImageView cancelledAnimalView = new ImageView();
+        cancelledAnimalView.visibleProperty().bind(cancelledAnimalsO.map(animals -> !animals.contains(animal)));
+        cancelledAnimalView.setId(STR."marker_\{animal.id()}");
+        cancelledAnimalView.getStyleClass().add("marker");
+        cancelledAnimalView.setFitHeight(ImageLoader.MARKER_FIT_SIZE);
+        cancelledAnimalView.setFitWidth(ImageLoader.MARKER_FIT_SIZE);
+        return cancelledAnimalView;
     }
 
+    private static Node getOccupantNode(
+            PlayerColor playerColor, Occupant occupant,
+            ObservableValue<Set<Occupant>> occupantsO, Consumer<Occupant> occupantConsumer
+    ) {
+        Node occupantSvg = Icon.newFor(playerColor, occupant.kind());
+        occupantSvg.setId(STR."\{occupant.kind().toString().toLowerCase()}_\{occupant.zoneId()}");
+        occupantSvg.setOnMouseClicked((_) -> occupantConsumer.accept(occupant));
+        occupantSvg.visibleProperty().bind(occupantsO.map(occupants -> occupants.contains(occupant)));
+        return occupantSvg;
+    }
+
+    private static Blend getBlendVeilEffect(CellData cellData) {
+        Blend blend = new Blend();
+        blend.setMode(BlendMode.SRC_OVER);
+        blend.setTopInput(cellData.veilColor == null ? null : new ColorInput(
+            0, 0, ImageLoader.NORMAL_TILE_FIT_SIZE, ImageLoader.NORMAL_TILE_FIT_SIZE, cellData.veilColor
+        ));
+        blend.setOpacity(0.5);
+        blend.setBottomInput(null);
+        return blend;
+    }
 }

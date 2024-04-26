@@ -31,7 +31,7 @@ final public class TextMakerFr implements TextMaker {
     private final Map<PlayerColor, String> names;
 
     public TextMakerFr(Map<PlayerColor, String> names) {
-        this.names = names;
+        this.names = Map.copyOf(names);
     }
 
     private String pluralizeGameItems(GameItem item, int count) {
