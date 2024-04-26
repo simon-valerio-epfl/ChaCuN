@@ -79,9 +79,9 @@ public final class BoardUI {
                     boolean isInFringe = fringeTilesO.getValue().contains(pos);
                     PlacedTile placedTile = placedTileO.getValue();
                     boolean isAlreadyPlaced = placedTile != null;
-                    Set<Integer> highlitedTiles = highlightedTilesO.getValue();
-                    boolean isNotHighlighted = !highlitedTiles.isEmpty() && (placedTile == null
-                            || !highlitedTiles.contains(placedTileO.getValue().id()));
+                    Set<Integer> highlightedTiles = highlightedTilesO.getValue();
+                    boolean isNotHighlighted = !highlightedTiles.isEmpty() && (placedTile == null
+                            || !highlightedTiles.contains(placedTileO.getValue().id()));
 
                     Image image = ImageLoader.EMPTY_IMAGE;
                     Rotation rotation = Rotation.NONE;
