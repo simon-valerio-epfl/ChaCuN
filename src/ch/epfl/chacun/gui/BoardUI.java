@@ -11,19 +11,16 @@ import javafx.scene.effect.BlendMode;
 import javafx.scene.effect.ColorInput;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.image.WritableImage;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.SVGPath;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
-
+g
 public final class BoardUI {
     /**
      * This is a utility class and therefore is not instantiable
@@ -98,6 +95,7 @@ public final class BoardUI {
                             if (e.getButton() == MouseButton.SECONDARY) {
                                 rotationConsumer.accept(e.isAltDown() ? Rotation.RIGHT : Rotation.LEFT);
                             }
+                            if (e.getButton() == MouseButton.PRIMARY) posConsumer.accept(pos);
                         });
                         PlayerColor currentPlayer = gameStateO.getValue().currentPlayer();
                         // if the mouse is currently on this tile
@@ -107,15 +105,10 @@ public final class BoardUI {
                                 gameStateO.getValue().tileToPlace(),
                                 currentPlayer, willBeRotated, pos
                             );
-                            image = cachedImages.computeIfAbsent(
-                                    willBePlacedTile.id(),
-                                    ImageLoader::normalImageForTile
-                            );
+                            image = cachedImages.computeIfAbsent(willBePlacedTile.id(), ImageLoader::normalImageForTile);
                             rotation = rotationO.getValue();
                             if (!boardO.getValue().canAddTile(willBePlacedTile)) veilColor = Color.WHITE;
-                        } else {
-                            veilColor = ColorMap.fillColor(currentPlayer);
-                        }
+                        } else veilColor = ColorMap.fillColor(currentPlayer);
                     }
                     if (isNotHighlighted) veilColor = Color.BLACK;
 
