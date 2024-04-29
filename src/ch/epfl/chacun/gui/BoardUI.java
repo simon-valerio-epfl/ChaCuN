@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
-g
+
 public final class BoardUI {
     /**
      * This is a utility class and therefore is not instantiable
