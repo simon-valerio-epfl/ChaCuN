@@ -89,13 +89,12 @@ public final class GameDecksUI extends Application {
         var textToDisplay = gameStateO.map(g -> g.nextAction() == GameState.Action.OCCUPY_TILE ? textMakerFr.clickToOccupy() : null);
         Consumer<Occupant> onOccupantClick = (Occupant a) -> { };
         var decksNode = DecksUI.create(tileToPlace, leftNormalTiles, leftMenhirTiles, textToDisplay, onOccupantClick);
-        ObservableValue<List<String>> actions = new SimpleObjectProperty<>(List.of());
+        SimpleObjectProperty<List<String>> actions = new SimpleObjectProperty<>(new ArrayList<>());
         var actionsNode = ActionsUI.create(actions, (String action) -> {
             ActionEncoder.StateAction newSt = ActionEncoder.decodeAndApply(gameStateO.getValue(), action);
-            if (newSt == null) {
-
+            if (newSt != null) {
+                gameStateO.setValue(newSt.gameState());
             }
-            gameStateO.setValue(newSt.gameState());
         });
 
         SimpleObjectProperty<Rotation> nextRotation = new SimpleObjectProperty<>(Rotation.NONE);
@@ -127,9 +126,19 @@ public final class GameDecksUI extends Application {
             // create keyframe
             var keyFrame = new KeyFrame(javafx.util.Duration.seconds(tlS * (i + 1)), e -> {
                 var placedTile = nextPlacedTile.apply(gameStateO.getValue());
-                gameStateO.setValue(gameStateO.getValue().withPlacedTile(placedTile));
-                if (!unoccupyableTiles.contains(placedTile.id()))
-                    gameStateO.setValue(gameStateO.getValue().withNewOccupant(occupants.get(placedTile.id())));
+                ActionEncoder.StateAction newSt = ActionEncoder.withPlacedTile(gameStateO.getValue(), placedTile);
+                gameStateO.setValue(newSt.gameState());
+                List<String> newActions = new ArrayList<>(actions.getValue());
+                newActions.add(newSt.action());
+                actions.setValue(newActions);
+                if (!unoccupyableTiles.contains(placedTile.id())) {
+                    ActionEncoder.StateAction newStO = ActionEncoder.withNewOccupant(newSt.gameState(),
+                            occupants.get(placedTile.id()));
+                    gameStateO.setValue(newStO.gameState());
+                    List<String> newActionsO = new ArrayList<>(actions.getValue());
+                    newActionsO.add(newStO.action());
+                    actions.setValue(newActionsO);
+                }
             });
 
             tl.getKeyFrames().add(keyFrame);
