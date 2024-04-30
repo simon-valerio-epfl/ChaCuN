@@ -1,5 +1,6 @@
 package ch.epfl.chacun;
 
+import java.util.List;
 import java.util.Objects;
 
 
@@ -53,7 +54,12 @@ public record Occupant(Kind kind, int zoneId) {
      * @author Simon Lefort (371918)
      */
     public enum Kind {
-        PAWN, HUT
+        PAWN, HUT;
+
+        /**
+         * A list containing all the possible kinds
+         */
+        public static final List<Kind> ALL = List.of(Kind.values());
     }
 
 }
