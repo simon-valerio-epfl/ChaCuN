@@ -15,6 +15,10 @@ public final class ActionEncoder {
     private static final int WITH_NEW_OCCUPANT_KIND_SHIFT = 4;
     private static final int WITH_PLACED_TILE_IDX_SHIFT = 2;
 
+    private static final int WITH_PLACED_TILE_ACTION_LENGTH = 2;
+    private static final int WITH_NEW_OCCUPANT_ACTION_LENGTH = 1;
+    private static final int WITH_OCCUPANT_REMOVED_ACTION_LENGTH = 1;
+
     private ActionEncoder() {}
 
     private static List<Pos> fringeIndexes(GameState gameState) {
@@ -58,6 +62,7 @@ public final class ActionEncoder {
         if (!Base32.isValid(action)) throw new InvalidActionException();
         return switch (gameState.nextAction()) {
             case PLACE_TILE -> {
+                if (action.length() != WITH_PLACED_TILE_ACTION_LENGTH) throw new InvalidActionException();
                 int decoded = Base32.decode(action);
                 int tileInFringeIdx = decoded >> WITH_PLACED_TILE_IDX_SHIFT;
                 int rotationIdx = decoded & WITH_NEW_OCCUPANT_KIND_SHIFT;
@@ -72,10 +77,9 @@ public final class ActionEncoder {
                 yield new StateAction(gameState.withPlacedTile(placedTile), action);
             }
             case OCCUPY_TILE -> {
-                if (action.equals(Base32.encodeBits5(WITH_NO_OCCUPANT))) {
-                    yield new StateAction(gameState.withOccupantRemoved(null), action);
-                }
+                if (action.length() != WITH_NEW_OCCUPANT_ACTION_LENGTH) throw new InvalidActionException();
                 int decoded = Base32.decode(action);
+                if (decoded == WITH_NO_OCCUPANT) yield new StateAction(gameState.withNewOccupant(null), action);
                 int kindIdx = decoded >> WITH_NEW_OCCUPANT_KIND_SHIFT;
                 int localId = decoded & WITH_NO_OCCUPANT;
                 Occupant.Kind kind = Occupant.Kind.ALL.get(kindIdx);
@@ -86,7 +90,9 @@ public final class ActionEncoder {
                 yield new StateAction(gameState.withNewOccupant(occupant), action);
             }
             case RETAKE_PAWN -> {
+                if (action.length() != WITH_OCCUPANT_REMOVED_ACTION_LENGTH) throw new InvalidActionException();
                 int decoded = Base32.decode(action);
+                if (decoded == WITH_NO_OCCUPANT) yield new StateAction(gameState.withOccupantRemoved(null), action);
                 List<Occupant> occupants = gameState.board().occupants()
                         .stream()
                         .sorted(Comparator.comparingInt(Occupant::zoneId))
