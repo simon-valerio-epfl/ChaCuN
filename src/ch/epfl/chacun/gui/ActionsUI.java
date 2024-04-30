@@ -73,9 +73,9 @@ public final class ActionsUI {
     }
 
     /**
-     * Associates the last actions to show to their index
+     * Associates the last actions to show to their index from the beginning of the list
      * @param actions the list of actions, whose last elements have to be shown
-     * @return the textual representation of 
+     * @return the textual representation of the last indexed actions
      */
     private static String textRepresentation(List<String> actions) {
         StringJoiner sj = new StringJoiner(", ");
