@@ -9,6 +9,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
 
@@ -29,7 +30,12 @@ public class ActionsUI {
             change.setText(cleanupInput(change.getText()));
             return change;
         }));
-
+        textField.onKeyPressedProperty().setValue(event -> {
+            if (Objects.equals(event.getCharacter(), "ENTER")) {
+                handler.accept(textField.getText());
+                textField.setText("");
+            }
+        });
         return hbox;
     }
 
