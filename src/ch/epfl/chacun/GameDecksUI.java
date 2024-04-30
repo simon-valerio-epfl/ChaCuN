@@ -1,9 +1,6 @@
 package ch.epfl.chacun;
 
-import ch.epfl.chacun.gui.BoardUI;
-import ch.epfl.chacun.gui.DecksUI;
-import ch.epfl.chacun.gui.MessageBoardUI;
-import ch.epfl.chacun.gui.PlayersUI;
+import ch.epfl.chacun.gui.*;
 import ch.epfl.chacun.tile.Tiles;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -92,13 +89,21 @@ public final class GameDecksUI extends Application {
         var textToDisplay = gameStateO.map(g -> g.nextAction() == GameState.Action.OCCUPY_TILE ? textMakerFr.clickToOccupy() : null);
         Consumer<Occupant> onOccupantClick = (Occupant a) -> { };
         var decksNode = DecksUI.create(tileToPlace, leftNormalTiles, leftMenhirTiles, textToDisplay, onOccupantClick);
+        ObservableValue<List<String>> actions = new SimpleObjectProperty<>(List.of());
+        var actionsNode = ActionsUI.create(actions, (String action) -> {
+            ActionEncoder.StateAction newSt = ActionEncoder.decodeAndApply(gameStateO.getValue(), action);
+            if (newSt == null) {
+
+            }
+            gameStateO.setValue(newSt.gameState());
+        });
 
         SimpleObjectProperty<Rotation> nextRotation = new SimpleObjectProperty<>(Rotation.NONE);
         var boardNode = (ScrollPane) BoardUI.create(12, gameStateO, nextRotation, new SimpleObjectProperty<>(Set.of()), highlightedTiles, r -> {
             nextRotation.setValue(nextRotation.getValue().add(r));
         }, p -> {}, o -> {});
 
-        var sideBar = new VBox(playersNode, messagesNode, decksNode);
+        var sideBar = new VBox(playersNode, actionsNode, messagesNode, decksNode);
         VBox.setVgrow(messagesNode, Priority.ALWAYS);
 
         boardNode.setFitToHeight(true);

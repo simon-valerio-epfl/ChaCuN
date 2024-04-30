@@ -32,7 +32,7 @@ public final class ActionEncoder {
         return new StateAction(gameState, Base32.encodeBits5(WITH_NO_OCCUPANT));
     }
 
-    public StateAction withPlacedTile(GameState gameState, PlacedTile tile){
+    public static StateAction withPlacedTile(GameState gameState, PlacedTile tile){
         List<Pos> fringeIndexes = fringeIndexes(gameState);
         int indexToEncode = fringeIndexes.indexOf(tile.pos()); // a number between 0 and 189
         int rotationToEncode = tile.rotation().ordinal(); // a number between 0 and 3
@@ -41,7 +41,7 @@ public final class ActionEncoder {
         return new StateAction(gameState.withPlacedTile(tile), Base32.encodeBits10(toEncode));
     }
 
-    public StateAction withNewOccupant(GameState gameState, Occupant occupant) {
+    public static StateAction withNewOccupant(GameState gameState, Occupant occupant) {
         if (occupant == null) return withNoOccupant(gameState);
         int kindToEncode = occupant.kind().ordinal(); // a number between 0 and 1
         int zoneToEncode = Zone.localId(occupant.zoneId());
@@ -49,7 +49,7 @@ public final class ActionEncoder {
         return new StateAction(gameState.withNewOccupant(occupant), Base32.encodeBits5(toEncode));
     }
 
-    public StateAction withOccupantRemoved(GameState gameState, Occupant occupant) {
+    public static StateAction withOccupantRemoved(GameState gameState, Occupant occupant) {
         if (occupant == null) return withNoOccupant(gameState);
         List<Occupant> occupants = gameState.board().occupants().stream()
             .sorted(Comparator.comparingInt(Occupant::zoneId)).toList();
@@ -106,7 +106,7 @@ public final class ActionEncoder {
         };
     }
 
-    public StateAction decodeAndApply(GameState gameState, String action) {
+    public static StateAction decodeAndApply(GameState gameState, String action) {
         try {
             return decodeAndApplyWithException(gameState, action);
         } catch (InvalidActionException e) {

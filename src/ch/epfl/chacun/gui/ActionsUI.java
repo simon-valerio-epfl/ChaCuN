@@ -29,6 +29,12 @@ public class ActionsUI {
             change.setText(cleanupInput(change.getText()));
             return change;
         }));
+        textField.setOnAction(e -> {
+            handler.accept(textField.getText());
+            textField.clear();
+        });
+
+        hbox.getChildren().addAll(text, textField);
 
         return hbox;
     }
@@ -36,7 +42,8 @@ public class ActionsUI {
     private static String cleanupInput(String input) {
         return input.toUpperCase()
             .chars()
-            .filter(c -> Base32.isValid(String.valueOf(c)))
+            .filter(c -> Base32.isValid(Character.toString(c)))
+            .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
             .toString();
     }
 
