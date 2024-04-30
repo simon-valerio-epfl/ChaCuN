@@ -52,9 +52,9 @@ public final class BoardUI {
 
         ObservableValue<Board> boardO = gameStateO.map(GameState::board);
         ObservableValue<Set<Animal>> cancelledAnimalsO = boardO.map(Board::cancelledAnimals);
-        ObservableValue<Boolean> isFringeO = gameStateO.map(gState -> gState.nextAction() == GameState.Action.PLACE_TILE);
-        ObservableValue<Set<Pos>> fringeTilesO = isFringeO.map(
-            isFringe -> isFringe ? boardO.getValue().insertionPositions() : Set.of()
+        ObservableValue<Set<Pos>> fringeTilesO = gameStateO.map(
+            gState -> gState.nextAction() == GameState.Action.PLACE_TILE
+                    ? boardO.getValue().insertionPositions() : Set.of()
         );
 
         for (int x = -range; x <= range; x++) {
@@ -66,25 +66,25 @@ public final class BoardUI {
                 Pos pos = new Pos(x, y);
 
                 ObservableValue<PlacedTile> placedTileO = boardO.map(b -> b.tileAt(pos));
-                // cell data non mostra nulla allo schermo, calcola e prende alcuni valori della tile,
-                // che possono così essere osservati nel resto del programma
+                // cell data does not show anything to the screen, it calculates and takes some values from the tile,
+                // which can thus be observed in the rest of the program
                 ObservableValue<CellData> cellDataO = Bindings.createObjectBinding(() -> {
-                    // trigger quand :
-                    // - la souris passe sur la tuile
-                    // - la frange change
+                    // trigger when :
+                    // - mouse moves over tile
+                    // - fringe changes
 
                     boolean isInFringe = fringeTilesO.getValue().contains(pos);
                     PlacedTile placedTile = placedTileO.getValue();
                     boolean isAlreadyPlaced = placedTile != null;
                     Set<Integer> highlightedTiles = highlightedTilesO.getValue();
-                    boolean isNotHighlighted = !highlightedTiles.isEmpty() && (placedTile == null
-                            || !highlightedTiles.contains(placedTileO.getValue().id()));
+                    boolean isNotHighlighted = !highlightedTiles.isEmpty()
+                            && (placedTile == null || !highlightedTiles.contains(placedTile.id()));
 
                     Image image = ImageLoader.EMPTY_IMAGE;
                     Rotation rotation = Rotation.NONE;
                     Color veilColor = Color.TRANSPARENT;
 
-                    // si la tuile est déjà placée OU qu'on est en hover, juste on l'affiche normalement
+                    // if the tile is already placed OR you're hovering, just display it normally
                     if (isAlreadyPlaced) {
                         image = cachedImages.computeIfAbsent(placedTile.id(), ImageLoader::normalImageForTile);
                         rotation = placedTile.rotation();
@@ -100,21 +100,20 @@ public final class BoardUI {
                         PlayerColor currentPlayer = gameStateO.getValue().currentPlayer();
                         // if the mouse is currently on this tile
                         if (group.isHover()) {
-                            Rotation willBeRotated = rotationO.getValue();
+                            rotation = rotationO.getValue();
                             PlacedTile willBePlacedTile = new PlacedTile(
                                 gameStateO.getValue().tileToPlace(),
-                                currentPlayer, willBeRotated, pos
+                                currentPlayer, rotation, pos
                             );
                             image = cachedImages.computeIfAbsent(willBePlacedTile.id(), ImageLoader::normalImageForTile);
-                            rotation = rotationO.getValue();
                             if (!boardO.getValue().canAddTile(willBePlacedTile)) veilColor = Color.WHITE;
                         } else veilColor = ColorMap.fillColor(currentPlayer);
                     }
                     if (isNotHighlighted) veilColor = Color.BLACK;
 
                     return new CellData(image, rotation, veilColor);
-                    // questi argomenti sono la sensibility del codice,
-                    // ogni volta che uno di loro cambia, il codice viene reeseguito
+                    // these arguments are the sensibility of the code,
+                    // every time one of them changes, the code is re-executed
                 }, fringeTilesO, group.hoverProperty(), rotationO, highlightedTilesO);
 
                 group.rotateProperty().bind(cellDataO.map(cellData -> cellData.tileRotation().degreesCW()));
