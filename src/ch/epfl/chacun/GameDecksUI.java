@@ -1,9 +1,6 @@
 package ch.epfl.chacun;
 
-import ch.epfl.chacun.gui.BoardUI;
-import ch.epfl.chacun.gui.DecksUI;
-import ch.epfl.chacun.gui.MessageBoardUI;
-import ch.epfl.chacun.gui.PlayersUI;
+import ch.epfl.chacun.gui.*;
 import ch.epfl.chacun.tile.Tiles;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -92,13 +89,20 @@ public final class GameDecksUI extends Application {
         var textToDisplay = gameStateO.map(g -> g.nextAction() == GameState.Action.OCCUPY_TILE ? textMakerFr.clickToOccupy() : null);
         Consumer<Occupant> onOccupantClick = (Occupant a) -> { };
         var decksNode = DecksUI.create(tileToPlace, leftNormalTiles, leftMenhirTiles, textToDisplay, onOccupantClick);
+        SimpleObjectProperty<List<String>> actions = new SimpleObjectProperty<>(new ArrayList<>());
+        var actionsNode = ActionsUI.create(actions, (String action) -> {
+            ActionEncoder.StateAction newSt = ActionEncoder.decodeAndApply(gameStateO.getValue(), action);
+            if (newSt != null) {
+                gameStateO.setValue(newSt.gameState());
+            }
+        });
 
         SimpleObjectProperty<Rotation> nextRotation = new SimpleObjectProperty<>(Rotation.NONE);
         var boardNode = (ScrollPane) BoardUI.create(12, gameStateO, nextRotation, new SimpleObjectProperty<>(Set.of()), highlightedTiles, r -> {
             nextRotation.setValue(nextRotation.getValue().add(r));
         }, p -> {}, o -> {});
 
-        var sideBar = new VBox(playersNode, messagesNode, decksNode);
+        var sideBar = new VBox(playersNode, actionsNode, messagesNode, decksNode);
         VBox.setVgrow(messagesNode, Priority.ALWAYS);
 
         boardNode.setFitToHeight(true);
@@ -122,9 +126,19 @@ public final class GameDecksUI extends Application {
             // create keyframe
             var keyFrame = new KeyFrame(javafx.util.Duration.seconds(tlS * (i + 1)), e -> {
                 var placedTile = nextPlacedTile.apply(gameStateO.getValue());
-                gameStateO.setValue(gameStateO.getValue().withPlacedTile(placedTile));
-                if (!unoccupyableTiles.contains(placedTile.id()))
-                    gameStateO.setValue(gameStateO.getValue().withNewOccupant(occupants.get(placedTile.id())));
+                ActionEncoder.StateAction newSt = ActionEncoder.withPlacedTile(gameStateO.getValue(), placedTile);
+                gameStateO.setValue(newSt.gameState());
+                List<String> newActions = new ArrayList<>(actions.getValue());
+                newActions.add(newSt.action());
+                actions.setValue(newActions);
+                if (!unoccupyableTiles.contains(placedTile.id())) {
+                    ActionEncoder.StateAction newStO = ActionEncoder.withNewOccupant(newSt.gameState(),
+                            occupants.get(placedTile.id()));
+                    gameStateO.setValue(newStO.gameState());
+                    List<String> newActionsO = new ArrayList<>(actions.getValue());
+                    newActionsO.add(newStO.action());
+                    actions.setValue(newActionsO);
+                }
             });
 
             tl.getKeyFrames().add(keyFrame);

@@ -9,7 +9,7 @@ public final class Base32 {
     private final static int BASE_32_BIT_SIZE = 5;
 
     public static boolean isValid(String encoded) {
-        return encoded.chars().allMatch(c -> ALPHABET.contains(String.valueOf(c)));
+        return encoded.chars().allMatch(c -> ALPHABET.indexOf(c) != -1);
     }
 
     public static String encodeBits5(int toEncode) {
