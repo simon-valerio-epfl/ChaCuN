@@ -31,6 +31,7 @@ public class ActionsUI {
             return change;
         }));
         textField.onKeyPressedProperty().setValue(event -> {
+            // todo "ENTER" is not ciafa
             if (Objects.equals(event.getCharacter(), "ENTER")) {
                 handler.accept(textField.getText());
                 textField.setText("");
