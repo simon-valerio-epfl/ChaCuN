@@ -13,6 +13,9 @@ import javafx.scene.text.Text;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+/**
+ * This class represents the graphical representation of the updating tile decks of a ChaCuN game
+ */
 public final class DecksUI {
     private final static double WRAPPING_WIDTH = 0.8;
     /**
@@ -25,9 +28,12 @@ public final class DecksUI {
      * @param tileO the updating tile to place
      * @param leftNormalTilesO the updating number of normal tiles left in the deck
      * @param leftMenhirTilesO the updating number of menhir tiles left in the deck
-     * @param textToDisplay the text to display
-     * @param onOccupantClick
-     * @return
+     * @param textToDisplay the text to display when the player can place or retake an occupant,
+     *                     to let him pass on this action
+     * @param onOccupantClick the action to do when the player does not want to place or retake an occupant,
+     *                        clicking on the text
+     * @return a node representing the decks of the game, with the next tile to place and
+*    *                        the number of tiles left for each kind
      */
     public static Node create(
             ObservableValue<Tile> tileO,
@@ -36,14 +42,13 @@ public final class DecksUI {
             ObservableValue<String> textToDisplay,
             Consumer<Occupant> onOccupantClick
     ) {
-
+        // Here we handle the next tile to place
         StackPane stackPane = new StackPane();
         stackPane.setId("next-tile");
 
-        // ImageView, tile to place
+        // ImageView of the next tile to place, which has to be shown in large size
         ImageView view = new ImageView();
         view.setImage(ImageLoader.largeImageForTile(tileO.getValue().id()));
-        // the tiles displayed in the decks are large-sized
         view.setFitHeight(ImageLoader.LARGE_TILE_FIT_SIZE);
         view.setFitWidth(ImageLoader.LARGE_TILE_FIT_SIZE);
         // Text, occupy tile (only visible if textToDisplay is not empty,
@@ -57,6 +62,7 @@ public final class DecksUI {
         stackPane.getChildren().setAll(view, text);
         // we bind the graphical view of the tile to place to the tile itself
         view.imageProperty().bind(tileO.map(t -> t == null ? ImageLoader.EMPTY_IMAGE : ImageLoader.largeImageForTile(t.id())));
+        // here we handle the decks containing the remaining cards
         Node menhirNode = getDeckNode("MENHIR", leftMenhirTilesO);
         Node normalNode = getDeckNode("NORMAL", leftNormalTilesO);
         HBox hBox = new HBox(menhirNode, normalNode);
@@ -68,6 +74,12 @@ public final class DecksUI {
         return vBox;
     }
 
+    /**
+     * This method creates a node representing a deck containing the remaining tiles
+     * @param name the name of the deck, which represents the kind of tiles it contains
+     * @param leftTiles the updating number of tiles left in the deck
+     * @return a node representing the deck
+     */
     private static Node getDeckNode(String name, ObservableValue<Integer> leftTiles) {
         ImageView image = new ImageView();
         image.setId(name);
