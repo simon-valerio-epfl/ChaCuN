@@ -119,7 +119,7 @@ public final class GameDecksUI extends Application {
         primaryStage.setTitle("ChaCuN test");
         primaryStage.show();
 
-        var tlS = 3;
+        var tlS = 1;
         var tl = new Timeline();
 
         for (int i = 0; i < positions.size(); i++) {
@@ -132,7 +132,7 @@ public final class GameDecksUI extends Application {
                 newActions.add(newSt.action());
                 actions.setValue(newActions);
                 if (!unoccupyableTiles.contains(placedTile.id())) {
-                    ActionEncoder.StateAction newStO = ActionEncoder.withNewOccupant(newSt.gameState(),
+                    ActionEncoder.StateAction newStO = ActionEncoder.withNewOccupant(gameStateO.getValue(),
                             occupants.get(placedTile.id()));
                     gameStateO.setValue(newStO.gameState());
                     List<String> newActionsO = new ArrayList<>(actions.getValue());

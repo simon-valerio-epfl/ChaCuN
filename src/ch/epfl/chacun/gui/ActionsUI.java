@@ -42,7 +42,7 @@ public final class ActionsUI {
         hbox.getStylesheets().add("actions.css");
 
         Text text = new Text();
-        text.textProperty().bind(actionsO.map(actions -> textRepresentation(actions)));
+        text.textProperty().bind(actionsO.map(ActionsUI::textRepresentation));
 
         TextField textField = new TextField();
         textField.setTextFormatter(new TextFormatter<>(change -> {
@@ -79,8 +79,11 @@ public final class ActionsUI {
      */
     private static String textRepresentation(List<String> actions) {
         StringJoiner sj = new StringJoiner(", ");
-        List<String> lastActions = actions.subList(Math.max(0, actions.size() - NUMBER_OF_ACTIONS), actions.size());
-        lastActions.forEach(a -> sj.add(STR."\{actions.indexOf(a)}:\{a}"));
+        int startingIdx = Math.max(0, actions.size() - NUMBER_OF_ACTIONS);
+        List<String> lastActions = actions.subList(startingIdx, actions.size());
+        for (int i = 0; i < lastActions.size(); i++) {
+            sj.add(STR."\{startingIdx + i}:\{lastActions.get(i)}");
+        }
         return sj.toString();
     }
 
