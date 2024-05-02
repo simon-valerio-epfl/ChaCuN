@@ -48,6 +48,8 @@ public final class ActionEncoder {
     }
 
     public static StateAction withOccupantRemoved(GameState gameState, Occupant occupant) {
+        // todo doit-on vérifier ici que l'occupant appartient bien au gameState current player ?
+        // comme dans le decodeAndApply?
         if (occupant == null) return new StateAction(gameState.withOccupantRemoved(null), Base32.encodeBits5(WITH_NO_OCCUPANT));
         List<Occupant> occupants = gameState.board().occupants().stream()
             .sorted(Comparator.comparingInt(Occupant::zoneId)).toList();
@@ -100,6 +102,9 @@ public final class ActionEncoder {
                     .toList();
                 if (occupants.size() <= decoded) throw new InvalidActionException();
                 Occupant occupant = occupants.get(decoded);
+                PlayerColor currentPlayer = gameState.currentPlayer();
+                PlayerColor occupantPlacer = gameState.board().tileWithId(Zone.tileId(occupant.zoneId())).placer();
+                if (currentPlayer != occupantPlacer) throw new InvalidActionException();
                 yield new StateAction(gameState.withOccupantRemoved(occupant), action);
             }
             // todo on renvoie null ?

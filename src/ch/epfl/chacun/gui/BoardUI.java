@@ -22,6 +22,9 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 public final class BoardUI {
+
+    private static final Map<Integer, Image> cachedImages = new HashMap<>();
+
     /**
      * This is a utility class and therefore is not instantiable
      */
@@ -38,8 +41,6 @@ public final class BoardUI {
             Consumer<Pos> posConsumer,
             Consumer<Occupant> occupantConsumer
     ) {
-
-        Map<Integer, Image> cachedImages = new HashMap<>();
 
         Preconditions.checkArgument(range > 0);
 
@@ -68,6 +69,8 @@ public final class BoardUI {
                 ObservableValue<PlacedTile> placedTileO = boardO.map(b -> b.tileAt(pos));
                 // cell data does not show anything to the screen, it calculates and takes some values from the tile,
                 // which can thus be observed in the rest of the program
+
+                // todo, should we make constructors in CellData to make early returns?
                 ObservableValue<CellData> cellDataO = Bindings.createObjectBinding(() -> {
                     // trigger when :
                     // - mouse moves over tile
