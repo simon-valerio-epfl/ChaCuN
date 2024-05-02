@@ -114,7 +114,7 @@ public final class BoardUI {
                     return new CellData(image, rotation, veilColor);
                     // these arguments are the sensibility of the code,
                     // every time one of them changes, the code is re-executed
-                }, fringeTilesO, group.hoverProperty(), rotationO, highlightedTilesO);
+                }, fringeTilesO, group.hoverProperty(), rotationO, highlightedTilesO, placedTileO);
 
                 group.rotateProperty().bind(cellDataO.map(cellData -> cellData.tileRotation().degreesCW()));
                 imageView.imageProperty().bind(cellDataO.map(CellData::tileImage));
@@ -149,7 +149,7 @@ public final class BoardUI {
 
     private static Node getCancelledAnimalNode(Animal animal, ObservableValue<Set<Animal>> cancelledAnimalsO) {
         ImageView cancelledAnimalView = new ImageView();
-        cancelledAnimalView.visibleProperty().bind(cancelledAnimalsO.map(animals -> !animals.contains(animal)));
+        cancelledAnimalView.visibleProperty().bind(cancelledAnimalsO.map(animals -> animals.contains(animal)));
         cancelledAnimalView.setId(STR."marker_\{animal.id()}");
         cancelledAnimalView.getStyleClass().add("marker");
         cancelledAnimalView.setFitHeight(ImageLoader.MARKER_FIT_SIZE);

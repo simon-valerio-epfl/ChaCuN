@@ -26,7 +26,7 @@ public final class ActionEncoder {
     private static List<Pos> fringeIndexes(GameState gameState) {
         Board board = gameState.board();
         return board.insertionPositions().stream()
-            .sorted(Comparator.comparing(Pos::y).thenComparing(Pos::x))
+            .sorted(Comparator.comparing(Pos::x).thenComparing(Pos::y))
             .toList();
     }
 
@@ -67,10 +67,13 @@ public final class ActionEncoder {
                 List<Pos> fringeIndexes = fringeIndexes(gameState);
                 if (fringeIndexes.size() <= tileInFringeIdx) throw new InvalidActionException();
                 Pos pos = fringeIndexes.get(tileInFringeIdx);
+                System.out.println(tileInFringeIdx);
+                System.out.println(pos);
+                System.out.println(Rotation.ALL.get(rotationIdx));
                 Tile tile = gameState.tileToPlace();
                 PlacedTile placedTile = new PlacedTile(
                     tile, gameState.currentPlayer(),
-                    Rotation.ALL.get(rotationIdx),  pos
+                    Rotation.ALL.get(rotationIdx), pos
                 );
                 yield new StateAction(gameState.withPlacedTile(placedTile), action);
             }
