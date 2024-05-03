@@ -71,7 +71,7 @@ public final class BoardUI {
                 // cell data does not show anything to the screen, it calculates and takes some values from the tile,
                 // which can thus be observed in the rest of the program
 
-                ObservableValue<Boolean> shouldApplyDarkVeilO = highlightedTilesO.map(h ->
+                ObservableValue<Boolean> darkVeilEnabledO = highlightedTilesO.map(h ->
                     !h.isEmpty() && (placedTileO.getValue() == null || !h.contains(placedTileO.getValue().id()))
                 );
 
@@ -81,10 +81,9 @@ public final class BoardUI {
                     // - mouse moves over tile
                     // - fringe changes
 
-                    // todo devrait-on déplacer ça en haut ?
                     PlacedTile placedTile = placedTileO.getValue();
                     boolean isAlreadyPlaced = placedTile != null;
-                    Color veilColor = shouldApplyDarkVeilO.getValue() ? Color.BLACK : Color.TRANSPARENT;
+                    Color veilColor = darkVeilEnabledO.getValue() ? Color.BLACK : Color.TRANSPARENT;
 
                     // if the tile is already placed OR you're hovering, just display it normally
                     if (isAlreadyPlaced) return new CellData(placedTile, veilColor);
@@ -109,10 +108,10 @@ public final class BoardUI {
                         );
                     }
 
-                    return new CellData(shouldApplyDarkVeilO.getValue() ? Color.BLACK : ColorMap.fillColor(currentPlayer));
+                    return new CellData(darkVeilEnabledO.getValue() ? Color.BLACK : ColorMap.fillColor(currentPlayer));
                     // these arguments are the sensibility of the code,
                     // every time one of them changes, the code is re-executed
-                }, isInFringeO, group.hoverProperty(), rotationO, highlightedTilesO, placedTileO);
+                }, isInFringeO, group.hoverProperty(), rotationO, darkVeilEnabledO, placedTileO);
 
                 group.rotateProperty().bind(cellDataO.map(cellData -> cellData.tileRotation().degreesCW()));
                 imageView.imageProperty().bind(cellDataO.map(CellData::tileImage));
