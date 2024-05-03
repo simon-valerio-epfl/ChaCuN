@@ -9,15 +9,15 @@ public final class ActionEncoder {
         public InvalidActionException() {}
     }
 
-    private static final int WITH_NO_OCCUPANT = 0b11111;
+    private static final int WITH_NO_OCCUPANTc = 0b11111;
     // format: K-O-O-O
     private static final int WITH_NEW_OCCUPANT_ACTION_LENGTH = 1;
     private static final int WITH_NEW_OCCUPANT_KIND_SHIFT = 4;
-    private static final int WITH_NEW_OCCUPANT_ZONE_MASK = 0b111;
+    private static final int WITH_NEW_OCCUPANT_ZONE_MASK = (1 << WITH_NEW_OCCUPANT_KIND_SHIFT) - 1;
     // format: P-P-P-P-P-P-P-P-R-R
     private static final int WITH_PLACED_TILE_ACTION_LENGTH = 2;
     private static final int WITH_PLACED_TILE_IDX_SHIFT = 2;
-    private static final int WITH_PLACED_TILE_ROTATION_MASK = 0b11;
+    private static final int WITH_PLACED_TILE_ROTATION_MASK = (1 << WITH_PLACED_TILE_ACTION_LENGTH) - 1;
     // format: O-O-O-O
     private static final int WITH_OCCUPANT_REMOVED_ACTION_LENGTH = 1;
 
@@ -48,8 +48,6 @@ public final class ActionEncoder {
     }
 
     public static StateAction withOccupantRemoved(GameState gameState, Occupant occupant) {
-        // todo doit-on vérifier ici que l'occupant appartient bien au gameState current player ?
-        // comme dans le decodeAndApply?
         if (occupant == null) return new StateAction(gameState.withOccupantRemoved(null), Base32.encodeBits5(WITH_NO_OCCUPANT));
         List<Occupant> occupants = gameState.board().occupants().stream()
             .sorted(Comparator.comparingInt(Occupant::zoneId)).toList();
@@ -61,7 +59,7 @@ public final class ActionEncoder {
             throws InvalidActionException {
         if (!Base32.isValid(action)) throw new InvalidActionException();
         return switch (gameState.nextAction()) {
-            case PLACE_TILE -> {
+            case PLACE_TILE -> { //
                 if (action.length() != WITH_PLACED_TILE_ACTION_LENGTH) throw new InvalidActionException();
                 int decoded = Base32.decode(action);
                 int tileInFringeIdx = decoded >> WITH_PLACED_TILE_IDX_SHIFT;
@@ -69,14 +67,11 @@ public final class ActionEncoder {
                 List<Pos> fringeIndexes = fringeIndexes(gameState);
                 if (fringeIndexes.size() <= tileInFringeIdx) throw new InvalidActionException();
                 Pos pos = fringeIndexes.get(tileInFringeIdx);
-                System.out.println(tileInFringeIdx);
-                System.out.println(pos);
-                System.out.println(Rotation.ALL.get(rotationIdx));
                 Tile tile = gameState.tileToPlace();
                 PlacedTile placedTile = new PlacedTile(
-                    tile, gameState.currentPlayer(),
-                    Rotation.ALL.get(rotationIdx), pos
+                    tile, gameState.currentPlayer(), Rotation.ALL.get(rotationIdx), pos
                 );
+                if (!gameState.board().canAddTile(placedTile)) throw new InvalidActionException();
                 yield new StateAction(gameState.withPlacedTile(placedTile), action);
             }
             case OCCUPY_TILE -> {
@@ -102,13 +97,13 @@ public final class ActionEncoder {
                     .toList();
                 if (occupants.size() <= decoded) throw new InvalidActionException();
                 Occupant occupant = occupants.get(decoded);
+                if (occupant.kind() != Occupant.Kind.PAWN) throw new InvalidActionException();
                 PlayerColor currentPlayer = gameState.currentPlayer();
                 PlayerColor occupantPlacer = gameState.board().tileWithId(Zone.tileId(occupant.zoneId())).placer();
                 if (currentPlayer != occupantPlacer) throw new InvalidActionException();
                 yield new StateAction(gameState.withOccupantRemoved(occupant), action);
             }
-            // todo on renvoie null ?
-            default -> throw new IllegalStateException();
+            default -> throw new InvalidActionException();
         };
     }
 

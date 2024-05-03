@@ -95,6 +95,8 @@ public final class Game extends Application {
             ActionEncoder.StateAction newSt = ActionEncoder.decodeAndApply(gameStateO.getValue(), action);
             if (newSt != null) {
                 gameStateO.setValue(newSt.gameState());
+            } else {
+                System.out.println("invalid action = " + action);
             }
         });
 
