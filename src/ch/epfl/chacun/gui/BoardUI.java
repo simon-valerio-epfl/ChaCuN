@@ -144,20 +144,15 @@ public final class BoardUI {
     }
 
     private record CellData (Image tileImage, Rotation tileRotation, Color veilColor) {
-
-        // create constructor placed tile
-        public CellData (PlacedTile placedTile, Color veilColor) {
+        public CellData(PlacedTile placedTile, Color veilColor) {
             this(
-                cachedImages.computeIfAbsent(placedTile.id(), ImageLoader::normalImageForTile),
-                placedTile.rotation(),
-                veilColor
+                    cachedImages.computeIfAbsent(placedTile.id(), ImageLoader::normalImageForTile),
+                    placedTile.rotation(), veilColor
             );
         }
-
-        public CellData (Color veilColor) {
+        public CellData(Color veilColor) {
             this(ImageLoader.EMPTY_IMAGE, Rotation.NONE, veilColor);
         }
-
     }
 
     private static Node getCancelledAnimalNode(Animal animal, ObservableValue<Set<Animal>> cancelledAnimalsO) {

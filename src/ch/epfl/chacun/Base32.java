@@ -1,7 +1,9 @@
 package ch.epfl.chacun;
 
 public final class Base32 {
-
+    /**
+     * This is a utility class. It is not instantiable
+     */
     private Base32() {}
 
     private final static String ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
