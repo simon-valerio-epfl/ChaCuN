@@ -72,11 +72,10 @@ public final class BoardUI {
                     }
                 });
 
-                ObservableValue<PlacedTile> placedTileO = boardO.map(b -> b.tileAt(pos));
-                ObservableValue<Boolean> isInFringeO = fringeTilesO.map(fringe -> fringe.contains(pos));
                 // cell data does not show anything to the screen, it calculates and takes some values from the tile,
                 // which can thus be observed in the rest of the program
-
+                ObservableValue<PlacedTile> placedTileO = boardO.map(b -> b.tileAt(pos));
+                ObservableValue<Boolean> isInFringeO = fringeTilesO.map(fringe -> fringe.contains(pos));
                 ObservableValue<Boolean> darkVeilEnabledO = highlightedTilesO.map(h ->
                     !h.isEmpty() && (placedTileO.getValue() == null || !h.contains(placedTileO.getValue().id()))
                 );
@@ -86,11 +85,11 @@ public final class BoardUI {
 
                     PlacedTile placedTile = placedTileO.getValue();
                     boolean isAlreadyPlaced = placedTile != null;
-                    Color veilColor = darkVeilEnabledO.getValue() ? Color.BLACK : Color.TRANSPARENT;
 
                     // if the tile is already placed OR you're hovering, just display it normally
-                    if (isAlreadyPlaced) return new CellData(placedTile, veilColor);
-                    if (!isInFringeO.getValue()) return new CellData(veilColor);
+                    if (isAlreadyPlaced) return new CellData(placedTile,
+                            darkVeilEnabledO.getValue() ? Color.BLACK : Color.TRANSPARENT);
+                    if (!isInFringeO.getValue()) return new CellData(Color.TRANSPARENT);
 
                     PlayerColor currentPlayer = gameStateO.getValue().currentPlayer();
 
@@ -104,14 +103,14 @@ public final class BoardUI {
                         );
                     }
 
-                    return new CellData(darkVeilEnabledO.getValue() ? Color.BLACK : ColorMap.fillColor(currentPlayer));
+                    return new CellData(ColorMap.fillColor(currentPlayer));
                     // these arguments are the sensibility of the code,
                     // every time one of them changes, the code is re-executed
                 }, isInFringeO, group.hoverProperty(), rotationO, darkVeilEnabledO, placedTileO);
 
                 group.rotateProperty().bind(cellDataO.map(cellData -> cellData.tileRotation().degreesCW()));
                 imageView.imageProperty().bind(cellDataO.map(CellData::tileImage));
-                group.effectProperty().bind(cellDataO.map(BoardUI::getBlendVeilEffect));
+                group.effectProperty().bind(cellDataO.map(CellData::getBlendEffect));
 
                 // we add range in order to translate our tile to the left corner
                 grid.add(group, x + range, y + range);
@@ -119,17 +118,26 @@ public final class BoardUI {
                 placedTileO.addListener((_, oldPlacedTile, placedTile) -> {
                     if (oldPlacedTile != null || placedTile == null) return;
                     // handle "jeton d'annulation"
-                    List<Node> cancelledAnimalsNodes = placedTile.meadowZones().stream()
+                    placedTile.meadowZones().stream()
                         .flatMap(z -> z.animals().stream())
-                        .map(animal -> getCancelledAnimalNode(animal, cancelledAnimalsO))
-                        .toList();
-                    group.getChildren().addAll(cancelledAnimalsNodes);
+                        .forEach(animal -> {
+                            ImageView cancelledAnimalView = new ImageView();
+                            cancelledAnimalView.visibleProperty().bind(cancelledAnimalsO.map(animals -> animals.contains(animal)));
+                            cancelledAnimalView.setId(STR."marker_\{animal.id()}");
+                            cancelledAnimalView.getStyleClass().add("marker");
+                            cancelledAnimalView.setFitHeight(ImageLoader.MARKER_FIT_SIZE);
+                            cancelledAnimalView.setFitWidth(ImageLoader.MARKER_FIT_SIZE);
+                            group.getChildren().add(cancelledAnimalView);
+                        });
                     // handle occupants
-                    List<Node> occupantsNodes = placedTile.potentialOccupants()
-                        .stream()
-                        .map(occupant -> getOccupantNode(placedTile.placer(), occupant, occupantsO, occupantConsumer))
-                        .toList();
-                    group.getChildren().addAll(occupantsNodes);
+                    placedTile.potentialOccupants()
+                        .forEach(occupant -> {
+                            Node occupantSvg = Icon.newFor(placedTile.placer(), occupant.kind());
+                            occupantSvg.setId(STR."\{occupant.kind().toString().toLowerCase()}_\{occupant.zoneId()}");
+                            occupantSvg.setOnMouseClicked((_) -> occupantConsumer.accept(occupant));
+                            occupantSvg.visibleProperty().bind(occupantsO.map(occupants -> occupants.contains(occupant)));
+                            group.getChildren().add(occupantSvg);
+                        });
                 });
             }
         }
@@ -148,37 +156,15 @@ public final class BoardUI {
         public CellData(Color veilColor) {
             this(ImageLoader.EMPTY_IMAGE, Rotation.NONE, veilColor);
         }
-    }
-
-    private static Node getCancelledAnimalNode(Animal animal, ObservableValue<Set<Animal>> cancelledAnimalsO) {
-        ImageView cancelledAnimalView = new ImageView();
-        cancelledAnimalView.visibleProperty().bind(cancelledAnimalsO.map(animals -> animals.contains(animal)));
-        cancelledAnimalView.setId(STR."marker_\{animal.id()}");
-        cancelledAnimalView.getStyleClass().add("marker");
-        cancelledAnimalView.setFitHeight(ImageLoader.MARKER_FIT_SIZE);
-        cancelledAnimalView.setFitWidth(ImageLoader.MARKER_FIT_SIZE);
-        return cancelledAnimalView;
-    }
-
-    private static Node getOccupantNode(
-            PlayerColor playerColor, Occupant occupant,
-            ObservableValue<Set<Occupant>> occupantsO, Consumer<Occupant> occupantConsumer
-    ) {
-        Node occupantSvg = Icon.newFor(playerColor, occupant.kind());
-        occupantSvg.setId(STR."\{occupant.kind().toString().toLowerCase()}_\{occupant.zoneId()}");
-        occupantSvg.setOnMouseClicked((_) -> occupantConsumer.accept(occupant));
-        occupantSvg.visibleProperty().bind(occupantsO.map(occupants -> occupants.contains(occupant)));
-        return occupantSvg;
-    }
-
-    private static Blend getBlendVeilEffect(CellData cellData) {
-        Blend blend = new Blend();
-        blend.setMode(BlendMode.SRC_OVER);
-        blend.setTopInput(cellData.veilColor == null ? null : new ColorInput(
-            0, 0, ImageLoader.NORMAL_TILE_FIT_SIZE, ImageLoader.NORMAL_TILE_FIT_SIZE, cellData.veilColor
-        ));
-        blend.setOpacity(0.5);
-        blend.setBottomInput(null);
-        return blend;
+        public Blend getBlendEffect() {
+            Blend blend = new Blend();
+            blend.setMode(BlendMode.SRC_OVER);
+            blend.setTopInput(this.veilColor == null ? null : new ColorInput(
+                    0, 0, ImageLoader.NORMAL_TILE_FIT_SIZE, ImageLoader.NORMAL_TILE_FIT_SIZE, this.veilColor
+            ));
+            blend.setOpacity(0.5);
+            blend.setBottomInput(null);
+            return blend;
+        }
     }
 }
