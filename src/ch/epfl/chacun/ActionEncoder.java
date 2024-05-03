@@ -9,7 +9,7 @@ public final class ActionEncoder {
         public InvalidActionException() {}
     }
 
-    private static final int WITH_NO_OCCUPANTc = 0b11111;
+    private static final int WITH_NO_OCCUPANT = 0b11111;
     // format: K-O-O-O
     private static final int WITH_NEW_OCCUPANT_ACTION_LENGTH = 1;
     private static final int WITH_NEW_OCCUPANT_KIND_SHIFT = 4;
