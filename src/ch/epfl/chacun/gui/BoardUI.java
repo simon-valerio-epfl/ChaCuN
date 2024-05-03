@@ -67,8 +67,13 @@ public final class BoardUI {
                 Pos pos = new Pos(x, y);
 
                 ObservableValue<PlacedTile> placedTileO = boardO.map(b -> b.tileAt(pos));
+                ObservableValue<Boolean> isInFringeO = fringeTilesO.map(fringe -> fringe.contains(pos));
                 // cell data does not show anything to the screen, it calculates and takes some values from the tile,
                 // which can thus be observed in the rest of the program
+
+                ObservableValue<Boolean> shouldApplyDarkVeilO = highlightedTilesO.map(h ->
+                    !h.isEmpty() && (placedTileO.getValue() == null || !h.contains(placedTileO.getValue().id()))
+                );
 
                 // todo, should we make constructors in CellData to make early returns?
                 ObservableValue<CellData> cellDataO = Bindings.createObjectBinding(() -> {
@@ -76,48 +81,38 @@ public final class BoardUI {
                     // - mouse moves over tile
                     // - fringe changes
 
-                    boolean isInFringe = fringeTilesO.getValue().contains(pos);
+                    // todo devrait-on déplacer ça en haut ?
                     PlacedTile placedTile = placedTileO.getValue();
                     boolean isAlreadyPlaced = placedTile != null;
-                    Set<Integer> highlightedTiles = highlightedTilesO.getValue();
-                    boolean isNotHighlighted = !highlightedTiles.isEmpty()
-                            && (placedTile == null || !highlightedTiles.contains(placedTile.id()));
-
-                    Image image = ImageLoader.EMPTY_IMAGE;
-                    Rotation rotation = Rotation.NONE;
-                    Color veilColor = Color.TRANSPARENT;
+                    Color veilColor = shouldApplyDarkVeilO.getValue() ? Color.BLACK : Color.TRANSPARENT;
 
                     // if the tile is already placed OR you're hovering, just display it normally
-                    if (isAlreadyPlaced) {
-                        image = cachedImages.computeIfAbsent(placedTile.id(), ImageLoader::normalImageForTile);
-                        rotation = placedTile.rotation();
+                    if (isAlreadyPlaced) return new CellData(placedTile, veilColor);
+                    if (!isInFringeO.getValue()) return new CellData(veilColor);
+
+                    PlayerColor currentPlayer = gameStateO.getValue().currentPlayer();
+
+                    group.onMouseClickedProperty().setValue(e -> {
+                        if (e.getButton() == MouseButton.SECONDARY) {
+                            rotationConsumer.accept(e.isAltDown() ? Rotation.RIGHT : Rotation.LEFT);
+                        }
+                        if (e.getButton() == MouseButton.PRIMARY) posConsumer.accept(pos);
+                    });
+
+                    // if the mouse is currently on this tile
+                    if (group.isHover()) {
+                        PlacedTile willBePlacedTile = new PlacedTile(
+                            gameStateO.getValue().tileToPlace(), currentPlayer, rotationO.getValue(), pos
+                        );
+                        return new CellData(willBePlacedTile,
+                                boardO.getValue().canAddTile(willBePlacedTile) ? Color.TRANSPARENT : Color.WHITE
+                        );
                     }
 
-                    if (isInFringe) {
-                        group.onMouseClickedProperty().setValue(e -> {
-                            if (e.getButton() == MouseButton.SECONDARY) {
-                                rotationConsumer.accept(e.isAltDown() ? Rotation.RIGHT : Rotation.LEFT);
-                            }
-                            if (e.getButton() == MouseButton.PRIMARY) posConsumer.accept(pos);
-                        });
-                        PlayerColor currentPlayer = gameStateO.getValue().currentPlayer();
-                        // if the mouse is currently on this tile
-                        if (group.isHover()) {
-                            rotation = rotationO.getValue();
-                            PlacedTile willBePlacedTile = new PlacedTile(
-                                gameStateO.getValue().tileToPlace(),
-                                currentPlayer, rotation, pos
-                            );
-                            image = cachedImages.computeIfAbsent(willBePlacedTile.id(), ImageLoader::normalImageForTile);
-                            if (!boardO.getValue().canAddTile(willBePlacedTile)) veilColor = Color.WHITE;
-                        } else veilColor = ColorMap.fillColor(currentPlayer);
-                    }
-                    if (isNotHighlighted) veilColor = Color.BLACK;
-
-                    return new CellData(image, rotation, veilColor);
+                    return new CellData(shouldApplyDarkVeilO.getValue() ? Color.BLACK : ColorMap.fillColor(currentPlayer));
                     // these arguments are the sensibility of the code,
                     // every time one of them changes, the code is re-executed
-                }, fringeTilesO, group.hoverProperty(), rotationO, highlightedTilesO, placedTileO);
+                }, isInFringeO, group.hoverProperty(), rotationO, highlightedTilesO, placedTileO);
 
                 group.rotateProperty().bind(cellDataO.map(cellData -> cellData.tileRotation().degreesCW()));
                 imageView.imageProperty().bind(cellDataO.map(CellData::tileImage));
@@ -148,7 +143,22 @@ public final class BoardUI {
         return scrollPane;
     }
 
-    private record CellData (Image tileImage, Rotation tileRotation, Color veilColor) {}
+    private record CellData (Image tileImage, Rotation tileRotation, Color veilColor) {
+
+        // create constructor placed tile
+        public CellData (PlacedTile placedTile, Color veilColor) {
+            this(
+                cachedImages.computeIfAbsent(placedTile.id(), ImageLoader::normalImageForTile),
+                placedTile.rotation(),
+                veilColor
+            );
+        }
+
+        public CellData (Color veilColor) {
+            this(ImageLoader.EMPTY_IMAGE, Rotation.NONE, veilColor);
+        }
+
+    }
 
     private static Node getCancelledAnimalNode(Animal animal, ObservableValue<Set<Animal>> cancelledAnimalsO) {
         ImageView cancelledAnimalView = new ImageView();
