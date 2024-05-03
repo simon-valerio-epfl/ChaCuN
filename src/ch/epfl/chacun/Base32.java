@@ -1,5 +1,8 @@
 package ch.epfl.chacun;
 
+/**
+ * This is a utility class containing useful methods to work with Base32
+ */
 public final class Base32 {
     /**
      * This is a utility class. It is not instantiable
@@ -10,6 +13,11 @@ public final class Base32 {
     private final static int MASK_5_BITS = 0b11111;
     private final static int BASE_32_BIT_SIZE = 5;
 
+    /**
+     * Checks if all the characters of the given string belong to the charset of Base32
+     * @param encoded the string to verify
+     * @return if all the characters of the given string belong to the charset of Base32
+     */
     public static boolean isValid(String encoded) {
         return encoded.chars().allMatch(c -> ALPHABET.indexOf(c) != -1);
     }

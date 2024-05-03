@@ -54,8 +54,7 @@ public final class BoardUI {
         ObservableValue<Board> boardO = gameStateO.map(GameState::board);
         ObservableValue<Set<Animal>> cancelledAnimalsO = boardO.map(Board::cancelledAnimals);
         ObservableValue<Set<Pos>> fringeTilesO = gameStateO.map(
-            gState -> gState.nextAction() == GameState.Action.PLACE_TILE
-                    ? boardO.getValue().insertionPositions() : Set.of()
+            state -> state.nextAction() == GameState.Action.PLACE_TILE ? boardO.getValue().insertionPositions() : Set.of()
         );
 
         for (int x = -range; x <= range; x++) {
@@ -66,6 +65,13 @@ public final class BoardUI {
                 Group group = new Group(imageView);
                 Pos pos = new Pos(x, y);
 
+                group.setOnMouseClicked(e -> {
+                    switch (e.getButton()) {
+                        case SECONDARY -> rotationConsumer.accept(e.isAltDown() ? Rotation.RIGHT : Rotation.LEFT);
+                        case PRIMARY -> posConsumer.accept(pos);
+                    }
+                });
+
                 ObservableValue<PlacedTile> placedTileO = boardO.map(b -> b.tileAt(pos));
                 ObservableValue<Boolean> isInFringeO = fringeTilesO.map(fringe -> fringe.contains(pos));
                 // cell data does not show anything to the screen, it calculates and takes some values from the tile,
@@ -75,11 +81,8 @@ public final class BoardUI {
                     !h.isEmpty() && (placedTileO.getValue() == null || !h.contains(placedTileO.getValue().id()))
                 );
 
-                // todo, should we make constructors in CellData to make early returns?
+                // triggered when the fringe changes or when the mouse is hover the group
                 ObservableValue<CellData> cellDataO = Bindings.createObjectBinding(() -> {
-                    // trigger when :
-                    // - mouse moves over tile
-                    // - fringe changes
 
                     PlacedTile placedTile = placedTileO.getValue();
                     boolean isAlreadyPlaced = placedTile != null;
@@ -91,20 +94,13 @@ public final class BoardUI {
 
                     PlayerColor currentPlayer = gameStateO.getValue().currentPlayer();
 
-                    group.onMouseClickedProperty().setValue(e -> {
-                        if (e.getButton() == MouseButton.SECONDARY) {
-                            rotationConsumer.accept(e.isAltDown() ? Rotation.RIGHT : Rotation.LEFT);
-                        }
-                        if (e.getButton() == MouseButton.PRIMARY) posConsumer.accept(pos);
-                    });
-
                     // if the mouse is currently on this tile
                     if (group.isHover()) {
                         PlacedTile willBePlacedTile = new PlacedTile(
                             gameStateO.getValue().tileToPlace(), currentPlayer, rotationO.getValue(), pos
                         );
                         return new CellData(willBePlacedTile,
-                                boardO.getValue().canAddTile(willBePlacedTile) ? Color.TRANSPARENT : Color.WHITE
+                            boardO.getValue().canAddTile(willBePlacedTile) ? Color.TRANSPARENT : Color.WHITE
                         );
                     }
 
@@ -145,8 +141,8 @@ public final class BoardUI {
     private record CellData (Image tileImage, Rotation tileRotation, Color veilColor) {
         public CellData(PlacedTile placedTile, Color veilColor) {
             this(
-                    cachedImages.computeIfAbsent(placedTile.id(), ImageLoader::normalImageForTile),
-                    placedTile.rotation(), veilColor
+                cachedImages.computeIfAbsent(placedTile.id(), ImageLoader::normalImageForTile),
+                placedTile.rotation(), veilColor
             );
         }
         public CellData(Color veilColor) {
