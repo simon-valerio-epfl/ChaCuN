@@ -54,15 +54,22 @@ public final class BoardUI {
         ObservableValue<Board> boardO = gameStateO.map(GameState::board);
         ObservableValue<Set<Animal>> cancelledAnimalsO = boardO.map(Board::cancelledAnimals);
         ObservableValue<Set<Pos>> fringeTilesO = gameStateO.map(
-            state -> state.nextAction() == GameState.Action.PLACE_TILE ? boardO.getValue().insertionPositions() : Set.of()
+                state -> state.nextAction() == GameState.Action.PLACE_TILE ? boardO.getValue().insertionPositions() : Set.of()
         );
 
         for (int x = -range; x <= range; x++) {
             for (int y = -range; y <= range; y++) {
+
                 ImageView imageView = new ImageView();
                 imageView.setFitWidth(ImageLoader.NORMAL_TILE_FIT_SIZE);
                 imageView.setFitHeight(ImageLoader.NORMAL_TILE_FIT_SIZE);
+                Blend blend = new Blend();
+                blend.setMode(BlendMode.SRC_OVER);
+                blend.setOpacity(0.5);
+                blend.setBottomInput(null);
+
                 Group group = new Group(imageView);
+                group.setEffect(blend);
                 Pos pos = new Pos(x, y);
 
                 group.setOnMouseClicked(e -> {
@@ -77,7 +84,7 @@ public final class BoardUI {
                 ObservableValue<PlacedTile> placedTileO = boardO.map(b -> b.tileAt(pos));
                 ObservableValue<Boolean> isInFringeO = fringeTilesO.map(fringe -> fringe.contains(pos));
                 ObservableValue<Boolean> darkVeilEnabledO = highlightedTilesO.map(h ->
-                    !h.isEmpty() && (placedTileO.getValue() == null || !h.contains(placedTileO.getValue().id()))
+                        !h.isEmpty() && (placedTileO.getValue() == null || !h.contains(placedTileO.getValue().id()))
                 );
 
                 // triggered when the fringe changes or when the mouse is hover the group
@@ -96,10 +103,10 @@ public final class BoardUI {
                     // if the mouse is currently on this tile
                     if (group.isHover()) {
                         PlacedTile willBePlacedTile = new PlacedTile(
-                            gameStateO.getValue().tileToPlace(), currentPlayer, rotationO.getValue(), pos
+                                gameStateO.getValue().tileToPlace(), currentPlayer, rotationO.getValue(), pos
                         );
                         return new CellData(willBePlacedTile,
-                            boardO.getValue().canAddTile(willBePlacedTile) ? Color.TRANSPARENT : Color.WHITE
+                                boardO.getValue().canAddTile(willBePlacedTile) ? Color.TRANSPARENT : Color.WHITE
                         );
                     }
 
@@ -110,7 +117,7 @@ public final class BoardUI {
 
                 group.rotateProperty().bind(cellDataO.map(cellData -> cellData.tileRotation().degreesCW()));
                 imageView.imageProperty().bind(cellDataO.map(CellData::tileImage));
-                group.effectProperty().bind(cellDataO.map(CellData::getBlendEffect));
+                blend.topInputProperty().bind(cellDataO.map(CellData::blendTopInput));
 
                 // we add range in order to translate our tile to the left corner
                 grid.add(group, x + range, y + range);
@@ -119,25 +126,25 @@ public final class BoardUI {
                     if (oldPlacedTile != null || placedTile == null) return;
                     // handle "jeton d'annulation"
                     placedTile.meadowZones().stream()
-                        .flatMap(z -> z.animals().stream())
-                        .forEach(animal -> {
-                            ImageView cancelledAnimalView = new ImageView();
-                            cancelledAnimalView.visibleProperty().bind(cancelledAnimalsO.map(animals -> animals.contains(animal)));
-                            cancelledAnimalView.setId(STR."marker_\{animal.id()}");
-                            cancelledAnimalView.getStyleClass().add("marker");
-                            cancelledAnimalView.setFitHeight(ImageLoader.MARKER_FIT_SIZE);
-                            cancelledAnimalView.setFitWidth(ImageLoader.MARKER_FIT_SIZE);
-                            group.getChildren().add(cancelledAnimalView);
-                        });
+                            .flatMap(z -> z.animals().stream())
+                            .forEach(animal -> {
+                                ImageView cancelledAnimalView = new ImageView();
+                                cancelledAnimalView.visibleProperty().bind(cancelledAnimalsO.map(animals -> animals.contains(animal)));
+                                cancelledAnimalView.setId(STR."marker_\{animal.id()}");
+                                cancelledAnimalView.getStyleClass().add("marker");
+                                cancelledAnimalView.setFitHeight(ImageLoader.MARKER_FIT_SIZE);
+                                cancelledAnimalView.setFitWidth(ImageLoader.MARKER_FIT_SIZE);
+                                group.getChildren().add(cancelledAnimalView);
+                            });
                     // handle occupants
                     placedTile.potentialOccupants()
-                        .forEach(occupant -> {
-                            Node occupantSvg = Icon.newFor(placedTile.placer(), occupant.kind());
-                            occupantSvg.setId(STR."\{occupant.kind().toString().toLowerCase()}_\{occupant.zoneId()}");
-                            occupantSvg.setOnMouseClicked((_) -> occupantConsumer.accept(occupant));
-                            occupantSvg.visibleProperty().bind(occupantsO.map(occupants -> occupants.contains(occupant)));
-                            group.getChildren().add(occupantSvg);
-                        });
+                            .forEach(occupant -> {
+                                Node occupantSvg = Icon.newFor(placedTile.placer(), occupant.kind());
+                                occupantSvg.setId(STR."\{occupant.kind().toString().toLowerCase()}_\{occupant.zoneId()}");
+                                occupantSvg.setOnMouseClicked((_) -> occupantConsumer.accept(occupant));
+                                occupantSvg.visibleProperty().bind(occupantsO.map(occupants -> occupants.contains(occupant)));
+                                group.getChildren().add(occupantSvg);
+                            });
                 });
             }
         }
@@ -149,22 +156,16 @@ public final class BoardUI {
     private record CellData (Image tileImage, Rotation tileRotation, Color veilColor) {
         public CellData(PlacedTile placedTile, Color veilColor) {
             this(
-                cachedImages.computeIfAbsent(placedTile.id(), ImageLoader::normalImageForTile),
-                placedTile.rotation(), veilColor
+                    cachedImages.computeIfAbsent(placedTile.id(), ImageLoader::normalImageForTile),
+                    placedTile.rotation(), veilColor
             );
         }
         public CellData(Color veilColor) {
             this(ImageLoader.EMPTY_IMAGE, Rotation.NONE, veilColor);
         }
-        public Blend getBlendEffect() {
-            Blend blend = new Blend();
-            blend.setMode(BlendMode.SRC_OVER);
-            blend.setTopInput(this.veilColor == null ? null : new ColorInput(
-                    0, 0, ImageLoader.NORMAL_TILE_FIT_SIZE, ImageLoader.NORMAL_TILE_FIT_SIZE, this.veilColor
-            ));
-            blend.setOpacity(0.5);
-            blend.setBottomInput(null);
-            return blend;
+        public ColorInput blendTopInput() {
+            if (this.veilColor == null) return null;
+            return new ColorInput(0, 0, ImageLoader.NORMAL_TILE_FIT_SIZE, ImageLoader.NORMAL_TILE_FIT_SIZE, this.veilColor);
         }
     }
 }
