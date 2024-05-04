@@ -4,7 +4,8 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * A utility class to encode and decode actions in Base32 for the game of ChaCuN,
+ * A utility class that offers methods
+ * to encode and decode actions in Base32 for the game of ChaCuN
  */
 public final class ActionEncoder {
     /**
@@ -17,16 +18,40 @@ public final class ActionEncoder {
         public InvalidActionException() {}
     }
 
+    /**
+     * The Base32-encoded action signaling that no occupant is to be placed.
+     */
     private static final int WITH_NO_OCCUPANT = 0b11111;
     // format: K-O-O-O
+    /**
+     * The length of a Base32-encoded action where an occupant is placed.
+     */
     private static final int WITH_NEW_OCCUPANT_ACTION_LENGTH = 1;
+    /**
+     * The number of bits used to encode the id of the zone where the occupant is placed, used to shift its kind.
+     */
     private static final int WITH_NEW_OCCUPANT_KIND_SHIFT = 4;
+    /**
+     * The mask to extract the zone id from the encoded action where an occupant is placed.
+     */
     private static final int WITH_NEW_OCCUPANT_ZONE_MASK = (1 << WITH_NEW_OCCUPANT_KIND_SHIFT) - 1;
     // format: P-P-P-P-P-P-P-P-R-R
+    /**
+     * The length of a Base32-encoded action where a tile is placed.
+     */
     private static final int WITH_PLACED_TILE_ACTION_LENGTH = 2;
+    /**
+     * The number of bits of the rotation to encode, used to shift the index in the fringe of the tile to place.
+     */
     private static final int WITH_PLACED_TILE_IDX_SHIFT = 2;
+    /**
+     * The mask to extract the rotation from the encoded action where a tile is placed.
+     */
     private static final int WITH_PLACED_TILE_ROTATION_MASK = (1 << WITH_PLACED_TILE_ACTION_LENGTH) - 1;
     // format: O-O-O-O
+    /**
+     * The length of a Base32-encoded action where an occupant is removed.
+     */
     private static final int WITH_OCCUPANT_REMOVED_ACTION_LENGTH = 1;
 
     /**
@@ -91,9 +116,20 @@ public final class ActionEncoder {
         return new StateAction(gameState.withOccupantRemoved(occupant), Base32.encodeBits5(indexToEncode));
     }
 
+    /**
+     * Decode and apply the given action encoded in Base32 to the given game state,
+     * throwing an InvalidActionException if the action is invalid.
+     * This method lets the caller handle the exception, to choose what to do in case of an invalid action.
+     * @param gameState the initial game state
+     * @param action the Base32-code for the action to decode and apply
+     * @return the new game state resulting from the action and the decoded action
+     * @throws InvalidActionException if the action is invalid for the given game state
+     */
     private static StateAction decodeAndApplyWithException(GameState gameState, String action)
             throws InvalidActionException {
         if (!Base32.isValid(action)) throw new InvalidActionException();
+        // we decode the parameters of the given action differently
+        // depending on the next action of the initial game state
         return switch (gameState.nextAction()) {
             case PLACE_TILE -> { //
                 if (action.length() != WITH_PLACED_TILE_ACTION_LENGTH) throw new InvalidActionException();
