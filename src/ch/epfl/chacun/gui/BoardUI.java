@@ -21,8 +21,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
+/**
+ * This class is responsible for creating the graphical representation of the board of a ChaCuN game,
+ * handling the tiles that are placed, the animals on them (also the cancelled ones), and the
+ * occupants of each tile. It also handles the highlighting of the tiles that are responsible
+ * for a certain message when the player hovers over it. It also handles some graphical effects to
+ * render the positions where a tile can be placed in the next turn and the mouse interactions.
+ */
 public final class BoardUI {
-
+    /**
+     * This map is used to save in a cache the images that have already been loaded once,
+     * in order to avoid loading them again and again when they are needed to be shown.
+     */
     private static final Map<Integer, Image> cachedImages = new HashMap<>();
 
     /**
@@ -30,6 +40,22 @@ public final class BoardUI {
      */
     private BoardUI() {}
 
+    /**
+     * This method creates the graphical representation of the board of a ChaCuN game.
+     * It handles the tiles that are placed, the animals on them (also the cancelled ones), and the
+     * occupants of each tile. It also handles the highlighting of the tiles that are responsible
+     * for a certain message when the player hovers over it. It also handles some graphical effects to
+     * render the positions where a tile can be placed in the next turn and the mouse interactions.
+     * @param range
+     * @param gameStateO
+     * @param rotationO
+     * @param occupantsO
+     * @param highlightedTilesO
+     * @param rotationConsumer
+     * @param posConsumer
+     * @param occupantConsumer
+     * @return
+     */
     public static Node create(
             int range,
             ObservableValue<GameState> gameStateO,

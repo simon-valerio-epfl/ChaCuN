@@ -23,7 +23,6 @@ public final class ActionsUI {
      * This is a utility class, it's not instantiable
      */
     private ActionsUI() {}
-
     /**
      * The number of actions to represent on the screen
      */

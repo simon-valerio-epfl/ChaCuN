@@ -15,11 +15,25 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * This class represents the graphical representation
+ * of a node containing the occupants of the game with their names, their colours,
+ * their points and available occupants, with the current player highlighted
+ */
 public final class PlayersUI {
     /**
      * This class is not instantiable
      */
     private PlayersUI() {}
+
+    /**
+     * Creates the node containing the occupants of the game with their names, their colours,
+     * their points and available occupants, with the current player highlighted
+     * @param gameStateO the observable current state of a game
+     * @param textMaker the text maker used to generate the text for the players' names and points
+     * @return a graphical node containing the occupants of the game with their names, their colours,
+     * their points and available occupants, with the current player highlighted
+     */
     public static Node create(ObservableValue<GameState> gameStateO, TextMaker textMaker) {
 
         ObservableValue<Map<PlayerColor, Integer>> pointsO = gameStateO.map(gState -> gState.messageBoard().points());
@@ -74,6 +88,15 @@ public final class PlayersUI {
         return vBox;
     }
 
+    /**
+     * Returns a list of nodes representing each the occupants of a player,
+     * with the opacity of each node bound to the number of used and available occupants
+     * @param playerColor the color of the player owning this list of occupants
+     * @param kind the kind of the occupants to represent
+     * @param occupantsO the observable map of the number of used occupants
+     * @return a list of nodes representing each the occupants of a player,
+     * with the opacity of each node bound to the number of used and available occupants
+     */
     private static List<Node> getOccupants(
             PlayerColor playerColor, Occupant.Kind kind,
             ObservableValue<Map<Occupant.Kind, Integer>> occupantsO
