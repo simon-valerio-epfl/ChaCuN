@@ -290,9 +290,9 @@ public final class Board {
     }
 
     /**
-     * Returns whether the given placed tile can be put on the board at its position
+     * Returns whether the given placed tile can be put on the board at its position and rotation
      * @param tile the tile to test
-     * @return whether the given placed tile can be put on the board at its position
+     * @return whether the given placed tile can be put on the board at its position and rotation
      */
     public boolean canAddTile(PlacedTile tile) {
         return insertionPositions().contains(tile.pos()) &&
