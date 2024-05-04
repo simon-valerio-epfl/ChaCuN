@@ -12,7 +12,13 @@ import javafx.scene.text.Text;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
-
+/**
+ * This class provides utility methods to create a node containing the graphical representation of the message board,
+ * with the property of highlighting the tiles related to a message whenever the mouse passes on it.
+ *
+ * @author Valerio De Santis (373247)
+ * @author Simon Lefort (371918)
+ */
 public final class MessageBoardUI {
     /**
      * This is a utility class, therefore it is not instantiable

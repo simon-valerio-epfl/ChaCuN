@@ -9,6 +9,9 @@ import java.util.Map;
 
 /**
  * This class provides utility methods to create occupants' graphical representations
+ *
+ * @author Valerio De Santis (373247)
+ * @author Simon Lefort (371918)
  */
 public final class Icon {
     /**

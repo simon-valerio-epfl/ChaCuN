@@ -15,6 +15,9 @@ import java.util.function.Consumer;
 
 /**
  * This class represents the graphical representation of the updating tile decks of a ChaCuN game
+ *
+ * @author Valerio De Santis (373247)
+ * @author Simon Lefort (371918)
  */
 public final class DecksUI {
     private final static double WRAPPING_WIDTH = 0.8;

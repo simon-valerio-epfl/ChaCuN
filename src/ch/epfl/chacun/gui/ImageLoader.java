@@ -8,6 +8,9 @@ import java.util.FormatProcessor;
 
 /**
  * This class is a utility class that provides methods to load images
+ *
+ * @author Valerio De Santis (373247)
+ * @author Simon Lefort (371918)
  */
 public final class ImageLoader {
     /**

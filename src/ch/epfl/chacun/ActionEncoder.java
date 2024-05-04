@@ -6,10 +6,16 @@ import java.util.List;
 /**
  * A utility class that offers methods
  * to encode and decode actions in Base32 for the game of ChaCuN
+ *
+ * @author Valerio De Santis (373247)
+ * @author Simon Lefort (371918)
  */
 public final class ActionEncoder {
     /**
      * An exception to be thrown when an action is invalid for the given game state.
+     *
+     * @author Valerio De Santis (373247)
+     * @author Simon Lefort (371918)
      */
     private static class InvalidActionException extends Exception {
         /**

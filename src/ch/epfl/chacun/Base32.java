@@ -2,6 +2,9 @@ package ch.epfl.chacun;
 
 /**
  * This is a utility class containing useful methods to work with Base32
+ *
+ * @author Valerio De Santis (373247)
+ * @author Simon Lefort (371918)
  */
 public final class Base32 {
     /**

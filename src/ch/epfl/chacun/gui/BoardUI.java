@@ -27,6 +27,9 @@ import java.util.function.Consumer;
  * occupants of each tile. It also handles the highlighting of the tiles that are responsible
  * for a certain message when the player hovers over it. It also handles some graphical effects to
  * render the positions where a tile can be placed in the next turn and the mouse interactions.
+ *
+ * @author Valerio De Santis (373247)
+ * @author Simon Lefort (371918)
  */
 public final class BoardUI {
     /**

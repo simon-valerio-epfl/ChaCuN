@@ -17,6 +17,9 @@ import java.util.function.Consumer;
  * This class represents the graphical representation
  * of a node containing the last actions of the game state and
  * a field where one may insert a new action
+ *
+ * @author Valerio De Santis (373247)
+ * @author Simon Lefort (371918)
  */
 public final class ActionsUI {
     /**

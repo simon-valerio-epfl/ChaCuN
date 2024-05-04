@@ -19,6 +19,9 @@ import java.util.Map;
  * This class represents the graphical representation
  * of a node containing the occupants of the game with their names, their colours,
  * their points and available occupants, with the current player highlighted
+ *
+ * @author Valerio De Santis (373247)
+ * @author Simon Lefort (371918)
  */
 public final class PlayersUI {
     /**

@@ -1,7 +1,7 @@
 package ch.epfl.chacun;
 
 /**
- * Util class to check if arguments are correct.
+ * Utility class to check if arguments are correct.
  *
  * @author Valerio De Santis (373247)
  * @author Simon Lefort (371918)
