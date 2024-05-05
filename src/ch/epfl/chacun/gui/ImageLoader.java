@@ -73,8 +73,4 @@ public final class ImageLoader {
         return imageForTile(tileId, LARGE_TILE_PIXEL_SIZE);
     }
 
-    public static Image largeFallbackImageForTile(Predi) {
-
-    }
-
 }
