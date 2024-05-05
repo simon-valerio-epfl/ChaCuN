@@ -64,7 +64,11 @@ public final class DecksUI {
         text.setWrappingWidth(WRAPPING_WIDTH * ImageLoader.LARGE_TILE_FIT_SIZE);
         stackPane.getChildren().setAll(view, text);
         // we bind the graphical view of the tile to place to the tile itself
-        view.imageProperty().bind(tileO.map(t -> t == null ? ImageLoader.EMPTY_IMAGE : ImageLoader.largeImageForTile(t.id())));
+        view.imageProperty().bind(tileO.map(t ->
+            t == null
+                ? ImageLoader.EMPTY_IMAGE
+                : ImageLoader.largeImageForTile(t.id()))
+        );
         // here we handle the decks containing the remaining cards
         Node menhirNode = getDeckNode("MENHIR", leftMenhirTilesO);
         Node normalNode = getDeckNode("NORMAL", leftNormalTilesO);

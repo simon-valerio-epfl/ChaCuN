@@ -9,7 +9,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
 

@@ -17,5 +17,11 @@ public final class Preconditions {
     public static void checkArgument (boolean shouldBeTrue) {
         if (!shouldBeTrue) throw new IllegalArgumentException();
     }
+
+    public static void checkValidAction (boolean shouldBeTrue) throws ActionEncoder.IllegalActionException {
+        if (!shouldBeTrue) {
+            throw new ActionEncoder.IllegalActionException();
+        }
+    }
 }
 

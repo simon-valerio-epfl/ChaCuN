@@ -11,12 +11,10 @@ import javafx.scene.effect.BlendMode;
 import javafx.scene.effect.ColorInput;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseButton;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -135,7 +133,7 @@ public final class BoardUI {
                     if (isAlreadyPlaced) return new CellData(placedTile,
                             darkVeilEnabledO.getValue() ? Color.BLACK : Color.TRANSPARENT);
                     // else, if the tile is not placed yet, nor in the fringe, display it as an empty image
-                    if (!isInFringeO.getValue()) return new CellData(Color.TRANSPARENT); //todo, should'nt we see if there is a dark veil?
+                    if (!isInFringeO.getValue()) return new CellData(Color.TRANSPARENT);
 
                     PlayerColor currentPlayer = gameStateO.getValue().currentPlayer();
 
@@ -168,27 +166,27 @@ public final class BoardUI {
                     if (oldPlacedTile != null || placedTile == null) return;
                     // handle "jeton d'annulation", a marker that signals that an animal is cancelled
                     placedTile.meadowZones().stream()
-                            .flatMap(meadow -> meadow.animals().stream())
-                            .forEach(animal -> {
-                                ImageView cancelledAnimalView = new ImageView();
-                                cancelledAnimalView.visibleProperty().bind(cancelledAnimalsO.map(
-                                        cancelledAnimals -> cancelledAnimals.contains(animal)
-                                ));
-                                cancelledAnimalView.setId(STR."marker_\{animal.id()}");
-                                cancelledAnimalView.getStyleClass().add("marker");
-                                cancelledAnimalView.setFitHeight(ImageLoader.MARKER_FIT_SIZE);
-                                cancelledAnimalView.setFitWidth(ImageLoader.MARKER_FIT_SIZE);
-                                group.getChildren().add(cancelledAnimalView);
-                            });
+                        .flatMap(meadow -> meadow.animals().stream())
+                        .forEach(animal -> {
+                            ImageView cancelledAnimalView = new ImageView();
+                            cancelledAnimalView.visibleProperty().bind(cancelledAnimalsO.map(
+                                    cancelledAnimals -> cancelledAnimals.contains(animal)
+                            ));
+                            cancelledAnimalView.setId(STR."marker_\{animal.id()}");
+                            cancelledAnimalView.getStyleClass().add("marker");
+                            cancelledAnimalView.setFitHeight(ImageLoader.MARKER_FIT_SIZE);
+                            cancelledAnimalView.setFitWidth(ImageLoader.MARKER_FIT_SIZE);
+                            group.getChildren().add(cancelledAnimalView);
+                        });
                     // here we handle the graphical representation of the occupants
                     placedTile.potentialOccupants()
-                            .forEach(occupant -> {
-                                Node occupantSvg = Icon.newFor(placedTile.placer(), occupant.kind());
-                                occupantSvg.setId(STR."\{occupant.kind().toString().toLowerCase()}_\{occupant.zoneId()}");
-                                occupantSvg.setOnMouseClicked((_) -> occupantConsumer.accept(occupant));
-                                occupantSvg.visibleProperty().bind(occupantsO.map(occupants -> occupants.contains(occupant)));
-                                group.getChildren().add(occupantSvg);
-                            });
+                        .forEach(occupant -> {
+                            Node occupantSvg = Icon.newFor(placedTile.placer(), occupant.kind());
+                            occupantSvg.setId(STR."\{occupant.kind().toString().toLowerCase()}_\{occupant.zoneId()}");
+                            occupantSvg.setOnMouseClicked((_) -> occupantConsumer.accept(occupant));
+                            occupantSvg.visibleProperty().bind(occupantsO.map(occupants -> occupants.contains(occupant)));
+                            group.getChildren().add(occupantSvg);
+                        });
                 });
             }
         }

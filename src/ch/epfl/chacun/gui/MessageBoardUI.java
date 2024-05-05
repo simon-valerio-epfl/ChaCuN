@@ -37,10 +37,7 @@ public final class MessageBoardUI {
             ObservableValue<List<MessageBoard.Message>> messagesO,
             ObjectProperty<Set<Integer>> tileIds
     ) {
-        //todo, normally we have to set the id and the style of the scrollPane, not of the vBox
         VBox vBox = new VBox();
-        //vBox.getStylesheets().add("message-board.css");
-        //vBox.setId("message-board");
 
         ScrollPane scrollPane = new ScrollPane(vBox);
         scrollPane.getStylesheets().add("message-board.css");

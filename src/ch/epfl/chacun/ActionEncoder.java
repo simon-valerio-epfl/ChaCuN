@@ -17,11 +17,11 @@ public final class ActionEncoder {
      * @author Valerio De Santis (373247)
      * @author Simon Lefort (371918)
      */
-    private static class InvalidActionException extends Exception {
+    public static class IllegalActionException extends Exception {
         /**
-         * Construct an InvalidActionException, with no message.
+         * Construct an IllegalActionException, with no message.
          */
-        public InvalidActionException() {}
+        public IllegalActionException() {}
     }
 
     /**
@@ -124,36 +124,36 @@ public final class ActionEncoder {
 
     /**
      * Decode and apply the given action encoded in Base32 to the given game state,
-     * throwing an InvalidActionException if the action is invalid.
+     * throwing an IllegalActionException if the action is invalid.
      * This method lets the caller handle the exception, to choose what to do in case of an invalid action.
      * @param gameState the initial game state
      * @param action the Base32-code for the action to decode and apply
      * @return the new game state resulting from the action and the decoded action
-     * @throws InvalidActionException if the action is invalid for the given game state
+     * @throws IllegalActionException if the action is invalid for the given game state
      */
     private static StateAction decodeAndApplyWithException(GameState gameState, String action)
-            throws InvalidActionException {
-        if (!Base32.isValid(action)) throw new InvalidActionException();
+            throws IllegalActionException {
+        Preconditions.checkValidAction(Base32.isValid(action));
         // we decode the parameters of the given action differently
         // depending on the next action of the initial game state
         return switch (gameState.nextAction()) {
             case PLACE_TILE -> { //
-                if (action.length() != WITH_PLACED_TILE_ACTION_LENGTH) throw new InvalidActionException();
+                Preconditions.checkValidAction(action.length() == WITH_PLACED_TILE_ACTION_LENGTH);
                 int decoded = Base32.decode(action);
                 int tileInFringeIdx = decoded >> WITH_PLACED_TILE_IDX_SHIFT;
                 int rotationIdx = decoded & WITH_PLACED_TILE_ROTATION_MASK;
                 List<Pos> fringeIndexes = fringeIndexes(gameState);
-                if (fringeIndexes.size() <= tileInFringeIdx) throw new InvalidActionException();
+                Preconditions.checkValidAction(fringeIndexes.size() > tileInFringeIdx);
                 Pos pos = fringeIndexes.get(tileInFringeIdx);
                 Tile tile = gameState.tileToPlace();
                 PlacedTile placedTile = new PlacedTile(
                     tile, gameState.currentPlayer(), Rotation.ALL.get(rotationIdx), pos
                 );
-                if (!gameState.board().canAddTile(placedTile)) throw new InvalidActionException();
+                Preconditions.checkValidAction(gameState.board().canAddTile(placedTile));
                 yield new StateAction(gameState.withPlacedTile(placedTile), action);
             }
             case OCCUPY_TILE -> {
-                if (action.length() != WITH_NEW_OCCUPANT_ACTION_LENGTH) throw new InvalidActionException();
+                Preconditions.checkValidAction(action.length() == WITH_NEW_OCCUPANT_ACTION_LENGTH);
                 int decoded = Base32.decode(action);
                 if (decoded == WITH_NO_OCCUPANT) yield new StateAction(gameState.withNewOccupant(null), action);
                 int kindIdx = decoded >> WITH_NEW_OCCUPANT_KIND_SHIFT;
@@ -162,26 +162,26 @@ public final class ActionEncoder {
                 Occupant occupant = gameState.lastTilePotentialOccupants().stream()
                     .filter(occ -> occ.kind() == kind && Zone.localId(occ.zoneId()) == localId)
                     .findFirst()
-                    .orElseThrow(InvalidActionException::new);
+                    .orElseThrow(IllegalActionException::new);
                 yield new StateAction(gameState.withNewOccupant(occupant), action);
             }
             case RETAKE_PAWN -> {
-                if (action.length() != WITH_OCCUPANT_REMOVED_ACTION_LENGTH) throw new InvalidActionException();
+                Preconditions.checkValidAction(action.length() == WITH_OCCUPANT_REMOVED_ACTION_LENGTH);
                 int decoded = Base32.decode(action);
                 if (decoded == WITH_NO_OCCUPANT) yield new StateAction(gameState.withOccupantRemoved(null), action);
                 List<Occupant> occupants = gameState.board().occupants()
                     .stream()
                     .sorted(Comparator.comparingInt(Occupant::zoneId))
                     .toList();
-                if (occupants.size() <= decoded) throw new InvalidActionException();
+                Preconditions.checkValidAction(occupants.size() > decoded);
                 Occupant occupant = occupants.get(decoded);
-                if (occupant.kind() != Occupant.Kind.PAWN) throw new InvalidActionException();
+                Preconditions.checkValidAction(occupant.kind() == Occupant.Kind.PAWN);
                 PlayerColor currentPlayer = gameState.currentPlayer();
                 PlayerColor occupantPlacer = gameState.board().tileWithId(Zone.tileId(occupant.zoneId())).placer();
-                if (currentPlayer != occupantPlacer) throw new InvalidActionException();
+                Preconditions.checkValidAction(currentPlayer == occupantPlacer);
                 yield new StateAction(gameState.withOccupantRemoved(occupant), action);
             }
-            default -> throw new InvalidActionException();
+            default -> throw new IllegalActionException();
         };
     }
 
@@ -196,7 +196,7 @@ public final class ActionEncoder {
         // we catch the exception and return null if the action is invalid
         try {
             return decodeAndApplyWithException(gameState, action);
-        } catch (InvalidActionException e) {
+        } catch (IllegalActionException e) {
             return null;
         }
     }
