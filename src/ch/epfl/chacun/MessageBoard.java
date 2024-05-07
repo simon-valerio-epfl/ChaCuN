@@ -237,8 +237,12 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
      * @return a new message board with the message of the event added,
      *                 the same message board if the hunting trap didn't get any point
      */
-    public MessageBoard withScoredHuntingTrap(PlayerColor scorer, Area<Zone.Meadow> adjacentMeadow) {
-        return withGenericScoredMeadow(MeadowMessageType.HUNTING_TRAP, adjacentMeadow, Set.of(), scorer);
+    public MessageBoard withScoredHuntingTrap(
+        PlayerColor scorer,
+        Area<Zone.Meadow> adjacentMeadow,
+        Set<Animal> cancelledAnimals
+    ) {
+        return withGenericScoredMeadow(MeadowMessageType.HUNTING_TRAP, adjacentMeadow, cancelledAnimals, scorer);
     }
 
     /**

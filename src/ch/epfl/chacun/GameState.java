@@ -279,12 +279,10 @@ public record GameState (
             }
             case Zone.Meadow meadow when meadow.specialPower() == Zone.SpecialPower.HUNTING_TRAP -> {
                 Area<Zone.Meadow> adjacentMeadow = newBoard.adjacentMeadow(tile.pos(), meadow);
-                Set<Animal> ignoredS = deersToCancel(adjacentMeadow);
-                // todo cancel deers and score the hunting trap
-                /* newMessageBoard = newMessageBoard.withScoredHuntingTrap(
+                Set<Animal> cancelledDeers = deersToCancel(adjacentMeadow);
+                newMessageBoard = newMessageBoard.withScoredHuntingTrap(
                     currentPlayer(), adjacentMeadow, cancelledDeers
-                ); */
-                newMessageBoard = newMessageBoard.withScoredHuntingTrap(currentPlayer(), adjacentMeadow);
+                );
                 // then cancel all other animals
                 newBoard = newBoard.withMoreCancelledAnimals(Area.animals(adjacentMeadow, newBoard.cancelledAnimals()));
             }
