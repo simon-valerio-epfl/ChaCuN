@@ -21,7 +21,8 @@ public final class ActionEncoder {
         /**
          * Construct an IllegalActionException, with no message.
          */
-        public IllegalActionException() {}
+        public IllegalActionException() {
+        }
     }
 
     /**
@@ -63,27 +64,30 @@ public final class ActionEncoder {
     /**
      * This class can not be instantiated.
      */
-    private ActionEncoder() {}
+    private ActionEncoder() {
+    }
 
     /**
      * Get the fringe indexes of the given game state's board, in a list sorted by x and then y.
+     *
      * @param gameState the game state to get the fringe indexes from
      * @return the list of ordered (x-precedence) fringe indexes of the game state
      */
     private static List<Pos> fringeIndexes(GameState gameState) {
         Board board = gameState.board();
         return board.insertionPositions().stream()
-            .sorted(Comparator.comparing(Pos::x).thenComparing(Pos::y))
-            .toList();
+                .sorted(Comparator.comparing(Pos::x).thenComparing(Pos::y))
+                .toList();
     }
 
     /**
      * Encode an action where the given tile is placed on the board of the given game state.
+     *
      * @param gameState the initial game state
-     * @param tile the tile to place
+     * @param tile      the tile to place
      * @return the new game state resulting from the action and the encoded action
      */
-    public static StateAction withPlacedTile(GameState gameState, PlacedTile tile){
+    public static StateAction withPlacedTile(GameState gameState, PlacedTile tile) {
         List<Pos> fringeIndexes = fringeIndexes(gameState);
         //todo: check if the tile is in the fringe?
         int indexToEncode = fringeIndexes.indexOf(tile.pos()); // a number between 0 and 189
@@ -95,13 +99,15 @@ public final class ActionEncoder {
 
     /**
      * Encode an action where the given occupant is placed on the board of the given game state.
+     *
      * @param gameState the initial game state
-     * @param occupant the occupant to place
+     * @param occupant  the occupant to place
      * @return the new game state resulting from the action and the encoded action
      */
     public static StateAction withNewOccupant(GameState gameState, Occupant occupant) {
         // if the occupant is null, we encode 11111, which means that there is no occupant to place
-        if (occupant == null) return new StateAction(gameState.withNewOccupant(null), Base32.encodeBits5(WITH_NO_OCCUPANT));
+        if (occupant == null)
+            return new StateAction(gameState.withNewOccupant(null), Base32.encodeBits5(WITH_NO_OCCUPANT));
         int kindToEncode = occupant.kind().ordinal(); // a number between 0 and 1
         int zoneToEncode = Zone.localId(occupant.zoneId());
         int toEncode = kindToEncode << WITH_NEW_OCCUPANT_KIND_SHIFT | zoneToEncode;
@@ -110,14 +116,16 @@ public final class ActionEncoder {
 
     /**
      * Encode an action where the given occupant is removed from the board of the given game state.
+     *
      * @param gameState the initial game state
-     * @param occupant the occupant to remove
+     * @param occupant  the occupant to remove
      * @return the new game state resulting from the action and the encoded action
      */
     public static StateAction withOccupantRemoved(GameState gameState, Occupant occupant) {
-        if (occupant == null) return new StateAction(gameState.withOccupantRemoved(null), Base32.encodeBits5(WITH_NO_OCCUPANT));
+        if (occupant == null)
+            return new StateAction(gameState.withOccupantRemoved(null), Base32.encodeBits5(WITH_NO_OCCUPANT));
         List<Occupant> occupants = gameState.board().occupants().stream()
-            .sorted(Comparator.comparingInt(Occupant::zoneId)).toList();
+                .sorted(Comparator.comparingInt(Occupant::zoneId)).toList();
         int indexToEncode = occupants.indexOf(occupant); // a number between 0 and 24
         return new StateAction(gameState.withOccupantRemoved(occupant), Base32.encodeBits5(indexToEncode));
     }
@@ -126,8 +134,9 @@ public final class ActionEncoder {
      * Decode and apply the given action encoded in Base32 to the given game state,
      * throwing an IllegalActionException if the action is invalid.
      * This method lets the caller handle the exception, to choose what to do in case of an invalid action.
+     *
      * @param gameState the initial game state
-     * @param action the Base32-code for the action to decode and apply
+     * @param action    the Base32-code for the action to decode and apply
      * @return the new game state resulting from the action and the decoded action
      * @throws IllegalActionException if the action is invalid for the given game state
      */
@@ -147,7 +156,7 @@ public final class ActionEncoder {
                 Pos pos = fringeIndexes.get(tileInFringeIdx);
                 Tile tile = gameState.tileToPlace();
                 PlacedTile placedTile = new PlacedTile(
-                    tile, gameState.currentPlayer(), Rotation.ALL.get(rotationIdx), pos
+                        tile, gameState.currentPlayer(), Rotation.ALL.get(rotationIdx), pos
                 );
                 Preconditions.checkValidAction(gameState.board().canAddTile(placedTile));
                 yield new StateAction(gameState.withPlacedTile(placedTile), action);
@@ -160,9 +169,9 @@ public final class ActionEncoder {
                 int localId = decoded & WITH_NEW_OCCUPANT_ZONE_MASK;
                 Occupant.Kind kind = Occupant.Kind.ALL.get(kindIdx);
                 Occupant occupant = gameState.lastTilePotentialOccupants().stream()
-                    .filter(occ -> occ.kind() == kind && Zone.localId(occ.zoneId()) == localId)
-                    .findFirst()
-                    .orElseThrow(IllegalActionException::new);
+                        .filter(occ -> occ.kind() == kind && Zone.localId(occ.zoneId()) == localId)
+                        .findFirst()
+                        .orElseThrow(IllegalActionException::new);
                 yield new StateAction(gameState.withNewOccupant(occupant), action);
             }
             case RETAKE_PAWN -> {
@@ -170,9 +179,9 @@ public final class ActionEncoder {
                 int decoded = Base32.decode(action);
                 if (decoded == WITH_NO_OCCUPANT) yield new StateAction(gameState.withOccupantRemoved(null), action);
                 List<Occupant> occupants = gameState.board().occupants()
-                    .stream()
-                    .sorted(Comparator.comparingInt(Occupant::zoneId))
-                    .toList();
+                        .stream()
+                        .sorted(Comparator.comparingInt(Occupant::zoneId))
+                        .toList();
                 Preconditions.checkValidAction(occupants.size() > decoded);
                 Occupant occupant = occupants.get(decoded);
                 Preconditions.checkValidAction(occupant.kind() == Occupant.Kind.PAWN);
@@ -187,10 +196,11 @@ public final class ActionEncoder {
 
     /**
      * Decode and apply the given action encoded in Base32 to the given game state.
+     *
      * @param gameState the initial game state
-     * @param action the Base32-code for the action to decode and apply
+     * @param action    the Base32-code for the action to decode and apply
      * @return the new game state resulting from the action and the decoded action,
-     *        or null if the action is invalid
+     * or null if the action is invalid
      */
     public static StateAction decodeAndApply(GameState gameState, String action) {
         // we catch the exception and return null if the action is invalid
@@ -204,8 +214,10 @@ public final class ActionEncoder {
     /**
      * A record to represent a pair of a game state and an action, used in this program
      * to return a game state resulting from an action and the Base32 encoded action itself.
+     *
      * @param gameState the game state
-     * @param action the action
+     * @param action    the action
      */
-    public record StateAction(GameState gameState, String action) {}
+    public record StateAction(GameState gameState, String action) {
+    }
 }

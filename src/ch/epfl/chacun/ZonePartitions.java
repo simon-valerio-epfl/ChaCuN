@@ -1,19 +1,17 @@
 package ch.epfl.chacun;
 
-import java.util.Comparator;
-
 /**
  * Represents the different partitions of the zones
  * belonging to the tiles that have already been placed on the board
- * @param forests the partition of the forests
- * @param meadows the partition of the meadows
- * @param rivers the partition of the rivers
- * @param riverSystems the partition of the river systems
  *
+ * @param forests      the partition of the forests
+ * @param meadows      the partition of the meadows
+ * @param rivers       the partition of the rivers
+ * @param riverSystems the partition of the river systems
  * @author Valerio De Santis (373247)
  * @author Simon Lefort (371918)
  */
-public record ZonePartitions (
+public record ZonePartitions(
         // we don't copy the zone partitions we take as arguments
         // because they're already immutable
         ZonePartition<Zone.Forest> forests,
@@ -46,9 +44,10 @@ public record ZonePartitions (
         /**
          * Creates a new builder for ZonePartitions,
          * taking an initial zone partitions as a starting point
+         *
          * @param initial the initial zone partitions to start from
          */
-        public Builder (ZonePartitions initial) {
+        public Builder(ZonePartitions initial) {
             forests = new ZonePartition.Builder<>(initial.forests);
             meadows = new ZonePartition.Builder<>(initial.meadows);
             rivers = new ZonePartition.Builder<>(initial.rivers);
@@ -59,6 +58,7 @@ public record ZonePartitions (
          * Adds a tile to the building zone partitions,
          * updating the partitions accordingly (without connecting the sides,
          * only taking the new zones into the builder)
+         *
          * @param tile the tile to add
          */
         public void addTile(Tile tile) {
@@ -66,8 +66,8 @@ public record ZonePartitions (
             // indexed by local zoneId
             int[] openConnectionsPerZone = new int[10];
 
-            for (TileSide side: tile.sides()) {
-                for (Zone zone: side.zones()) {
+            for (TileSide side : tile.sides()) {
+                for (Zone zone : side.zones()) {
                     int localId = zone.localId();
                     openConnectionsPerZone[localId]++;
 
@@ -89,7 +89,7 @@ public record ZonePartitions (
                                       because this connection has been closed by the lake)
             river systems : {{563}[2], {568}[1]}
              */
-            for (Zone zone: tile.zones()) {
+            for (Zone zone : tile.zones()) {
                 int localId = zone.localId();
                 int openConnectionCount = openConnectionsPerZone[localId];
                 switch (zone) {
@@ -117,18 +117,19 @@ public record ZonePartitions (
         /**
          * Connects the sides of two tiles together, updating the partitions accordingly
          * The side zones have to be of the same type, the method throws an exception otherwise
+         *
          * @param s1 the first side to connect
          * @param s2 the second side to connect
          * @throws IllegalArgumentException if the sides are not of the same type
          */
         public void connectSides(TileSide s1, TileSide s2) {
-            switch(s1) {
+            switch (s1) {
                 case TileSide.Meadow(Zone.Meadow m1)
-                    when s2 instanceof TileSide.Meadow(Zone.Meadow m2) -> meadows.union(m1, m2);
+                        when s2 instanceof TileSide.Meadow(Zone.Meadow m2) -> meadows.union(m1, m2);
                 case TileSide.Forest(Zone.Forest f1)
-                    when s2 instanceof TileSide.Forest(Zone.Forest f2) -> forests.union(f1, f2);
+                        when s2 instanceof TileSide.Forest(Zone.Forest f2) -> forests.union(f1, f2);
                 case TileSide.River(Zone.Meadow m1, Zone.River r1, Zone.Meadow m2)
-                    when s2 instanceof TileSide.River(Zone.Meadow m3, Zone.River r2, Zone.Meadow m4) -> {
+                        when s2 instanceof TileSide.River(Zone.Meadow m3, Zone.River r2, Zone.Meadow m4) -> {
                     rivers.union(r1, r2);
                     riverSystems.union(r1, r2);
                     meadows.union(m1, m4);
@@ -144,7 +145,8 @@ public record ZonePartitions (
          * the method throws an exception otherwise
          * The partitions are updated accordingly, with the huts being added to the river systems partition
          * and the pawns to the other zone partitions
-         * @param occupant the color of the player adding the initial occupant
+         *
+         * @param occupant     the color of the player adding the initial occupant
          * @param occupantKind the kind of the initial occupant
          *                     (HUT for rivers and lakes or PAWN for rivers, forests and meadows)
          * @param occupiedZone the zone where the initial occupant has to be added
@@ -153,14 +155,14 @@ public record ZonePartitions (
         public void addInitialOccupant(PlayerColor occupant, Occupant.Kind occupantKind, Zone occupiedZone) {
             switch (occupiedZone) {
                 case Zone.Meadow meadow when occupantKind.equals(Occupant.Kind.PAWN) ->
-                    meadows.addInitialOccupant(meadow, occupant);
+                        meadows.addInitialOccupant(meadow, occupant);
                 case Zone.Forest forest when occupantKind.equals(Occupant.Kind.PAWN) ->
-                    forests.addInitialOccupant(forest, occupant);
+                        forests.addInitialOccupant(forest, occupant);
                 case Zone.River river when occupantKind.equals(Occupant.Kind.PAWN) ->
-                    rivers.addInitialOccupant(river, occupant);
+                        rivers.addInitialOccupant(river, occupant);
                 // we regroup the cases lake and river under the water type
                 case Zone.Water water when occupantKind.equals(Occupant.Kind.HUT) ->
-                    riverSystems.addInitialOccupant(water, occupant);
+                        riverSystems.addInitialOccupant(water, occupant);
                 default -> throw new IllegalArgumentException();
             }
         }
@@ -169,7 +171,8 @@ public record ZonePartitions (
          * Removes a pawn of the given player color from the given zone
          * throws an exception if the zone is not of the right type, namely if it's a lake,
          * or if the given zone does not contain a pawn of the given player color
-         * @param occupant the player color of the pawn to remove
+         *
+         * @param occupant     the player color of the pawn to remove
          * @param occupiedZone the zone to remove the pawn from
          * @throws IllegalArgumentException if there can not be any pawn in the zone (lake)
          */
@@ -186,6 +189,7 @@ public record ZonePartitions (
 
         /**
          * removes all the gatherers from the given forest
+         *
          * @param forest the forest to remove the gatherers from
          * @throws IllegalArgumentException if the forest is not in the partition
          */
@@ -195,6 +199,7 @@ public record ZonePartitions (
 
         /**
          * removes all the fishers from the given river
+         *
          * @param river the river to remove the fishers from
          * @throws IllegalArgumentException if the river is not in the partition
          */
@@ -204,6 +209,7 @@ public record ZonePartitions (
 
         /**
          * Builds the zone partitions, returning an immutable zonePartitions
+         *
          * @return the zone partitions
          */
         public ZonePartitions build() {

@@ -17,7 +17,8 @@ public final class Icon {
     /**
      * This class is not instantiable
      */
-    private Icon () {}
+    private Icon() {
+    }
 
     /**
      * The SVG path for a pawn
@@ -31,14 +32,15 @@ public final class Icon {
      * A map associating each kind of occupant to its SVG path
      */
     private final static Map<Occupant.Kind, String> SVG_MAP = Map.of(
-        Occupant.Kind.PAWN, PAWN_SVG,
-        Occupant.Kind.HUT, HUT_SVG
+            Occupant.Kind.PAWN, PAWN_SVG,
+            Occupant.Kind.HUT, HUT_SVG
     );
 
     /**
      * Creates a new node representing an occupant of the given kind and player
+     *
      * @param playerColor the color of the player owning the occupant
-     * @param kind the kind of the occupant
+     * @param kind        the kind of the occupant
      * @return a new node representing the occupant
      */
     public static Node newFor(PlayerColor playerColor, Occupant.Kind kind) {

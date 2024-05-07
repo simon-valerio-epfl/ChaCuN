@@ -7,9 +7,9 @@ import java.util.Objects;
 /**
  * Represents an occupant in the game
  * An occupant is defined by its kind and the id of the zone where it is
- * @param kind non null
- * @param zoneId non negative
  *
+ * @param kind   non null
+ * @param zoneId non negative
  * @author Valerio De Santis (373247)
  * @author Simon Lefort (371918)
  */
@@ -24,10 +24,10 @@ public record Occupant(Kind kind, int zoneId) {
 
     /**
      * Constructor for Occupant
-     * @param kind non null
-     * @param zoneId non negative
      *
-     * @throws NullPointerException if kind is null
+     * @param kind   non null
+     * @param zoneId non negative
+     * @throws NullPointerException     if kind is null
      * @throws IllegalArgumentException if zoneId is negative
      */
     public Occupant {
@@ -37,10 +37,11 @@ public record Occupant(Kind kind, int zoneId) {
 
     /**
      * Returns the number of occupants of the given kind
+     *
      * @param kind non-null, the kind of occupant
      * @return the number of occupants of the given kind
      */
-    public static int occupantsCount (Kind kind) {
+    public static int occupantsCount(Kind kind) {
         return switch (kind) {
             case Kind.PAWN -> PAWN_COUNT;
             case Kind.HUT -> HUT_COUNT;

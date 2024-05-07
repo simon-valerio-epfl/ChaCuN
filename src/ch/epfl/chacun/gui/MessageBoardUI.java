@@ -11,7 +11,7 @@ import javafx.scene.text.Text;
 
 import java.util.List;
 import java.util.Set;
-import java.util.function.BiConsumer;
+
 /**
  * This class provides utility methods to create a node containing the graphical representation of the message board,
  * with the property of highlighting the tiles related to a message whenever the mouse passes on it.
@@ -23,13 +23,15 @@ public final class MessageBoardUI {
     /**
      * This is a utility class, therefore it is not instantiable
      */
-    private MessageBoardUI() {}
+    private MessageBoardUI() {
+    }
 
     /**
      * Creates a node containing the graphical representation of the message board,
      * with the property of highlighting the tiles related to a message whenever the mouse passes on it.
+     *
      * @param messagesO the list of updating messages to show
-     * @param tileIds the set of indexes of the tiles to highlight because they're related to some message
+     * @param tileIds   the set of indexes of the tiles to highlight because they're related to some message
      * @return a node containing the graphical representation of the message board, with the
      * property of highlighting the tiles related to a message whenever the mouse passes on it
      */

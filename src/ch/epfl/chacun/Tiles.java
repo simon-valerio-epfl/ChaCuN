@@ -5,7 +5,8 @@ import java.util.Collections;
 import java.util.List;
 
 public final class Tiles {
-    private Tiles() {}
+    private Tiles() {
+    }
 
     public static final List<Tile> TILES = createTiles();
 

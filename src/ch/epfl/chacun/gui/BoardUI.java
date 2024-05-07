@@ -1,10 +1,8 @@
 package ch.epfl.chacun.gui;
 
 import ch.epfl.chacun.*;
-import javafx.beans.binding.Binding;
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ObservableValue;
-import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.control.ScrollPane;
@@ -13,7 +11,6 @@ import javafx.scene.effect.BlendMode;
 import javafx.scene.effect.ColorInput;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 
@@ -42,7 +39,8 @@ public final class BoardUI {
     /**
      * This is a utility class and therefore is not instantiable
      */
-    private BoardUI() {}
+    private BoardUI() {
+    }
 
     /**
      * This method creates the graphical representation of the board of a ChaCuN game.
@@ -50,15 +48,16 @@ public final class BoardUI {
      * occupants of each tile. It also handles the highlighting of the tiles that are responsible
      * for a certain message when the player hovers over it. It also handles some graphical effects to
      * render the positions where a tile can be placed in the next turn and the mouse interactions.
-     * @param range the range of the board (the distance from the center to the borders),
-     *             the board will be a square of size (2*range+1)²
-     * @param gameStateO the observable value of the current game state
-     * @param rotationO the observable value of the current rotation of the tile to be placed
-     * @param occupantsO the observable value of the set containing the occupants on the board to show
+     *
+     * @param range             the range of the board (the distance from the center to the borders),
+     *                          the board will be a square of size (2*range+1)²
+     * @param gameStateO        the observable value of the current game state
+     * @param rotationO         the observable value of the current rotation of the tile to be placed
+     * @param occupantsO        the observable value of the set containing the occupants on the board to show
      * @param highlightedTilesO the observable value of the set containing the tiles to highlight
-     * @param rotationConsumer the consumer that will be called when the player rotates the tile to be placed (right click)
-     * @param posConsumer the consumer that will be called when the player places the tile (left click)
-     * @param occupantConsumer the consumer that will be called when the player clicks on an occupant
+     * @param rotationConsumer  the consumer that will be called when the player rotates the tile to be placed (right click)
+     * @param posConsumer       the consumer that will be called when the player places the tile (left click)
+     * @param occupantConsumer  the consumer that will be called when the player clicks on an occupant
      * @return a graphical node representing the board of the game
      */
     public static Node create(
@@ -176,32 +175,32 @@ public final class BoardUI {
 
                     // handle "jeton d'annulation", a marker that signals that an animal is cancelled
                     placedTile.meadowZones().stream()
-                        .flatMap(meadow -> meadow.animals().stream())
-                        .forEach(animal -> {
-                            ImageView cancelledAnimalView = new ImageView();
-                            cancelledAnimalView.visibleProperty().bind(cancelledAnimalsO.map(
-                                    cancelledAnimals -> cancelledAnimals.contains(animal)
-                            ));
-                            cancelledAnimalView.setId(STR."marker_\{animal.id()}");
-                            cancelledAnimalView.getStyleClass().add("marker");
-                            cancelledAnimalView.setFitHeight(ImageLoader.MARKER_FIT_SIZE);
-                            cancelledAnimalView.setFitWidth(ImageLoader.MARKER_FIT_SIZE);
-                            cancelledAnimalView.setRotate(negatedTileRotation);
-                            group.getChildren().add(cancelledAnimalView);
-                        });
+                            .flatMap(meadow -> meadow.animals().stream())
+                            .forEach(animal -> {
+                                ImageView cancelledAnimalView = new ImageView();
+                                cancelledAnimalView.visibleProperty().bind(cancelledAnimalsO.map(
+                                        cancelledAnimals -> cancelledAnimals.contains(animal)
+                                ));
+                                cancelledAnimalView.setId(STR."marker_\{animal.id()}");
+                                cancelledAnimalView.getStyleClass().add("marker");
+                                cancelledAnimalView.setFitHeight(ImageLoader.MARKER_FIT_SIZE);
+                                cancelledAnimalView.setFitWidth(ImageLoader.MARKER_FIT_SIZE);
+                                cancelledAnimalView.setRotate(negatedTileRotation);
+                                group.getChildren().add(cancelledAnimalView);
+                            });
                     // here we handle the graphical representation of the occupants
                     placedTile.potentialOccupants()
-                        .forEach(occupant -> {
-                            Node occupantSvg = Icon.newFor(placedTile.placer(), occupant.kind());
-                            occupantSvg.setId(STR."\{occupant.kind().toString().toLowerCase()}_\{occupant.zoneId()}");
-                            occupantSvg.setOnMouseClicked((e) -> {
-                                e.consume();
-                                occupantConsumer.accept(occupant);
+                            .forEach(occupant -> {
+                                Node occupantSvg = Icon.newFor(placedTile.placer(), occupant.kind());
+                                occupantSvg.setId(STR."\{occupant.kind().toString().toLowerCase()}_\{occupant.zoneId()}");
+                                occupantSvg.setOnMouseClicked((e) -> {
+                                    e.consume();
+                                    occupantConsumer.accept(occupant);
+                                });
+                                occupantSvg.visibleProperty().bind(occupantsO.map(occupants -> occupants.contains(occupant)));
+                                occupantSvg.setRotate(negatedTileRotation);
+                                group.getChildren().add(occupantSvg);
                             });
-                            occupantSvg.visibleProperty().bind(occupantsO.map(occupants -> occupants.contains(occupant)));
-                            occupantSvg.setRotate(negatedTileRotation);
-                            group.getChildren().add(occupantSvg);
-                        });
                 });
             }
         }
@@ -215,16 +214,18 @@ public final class BoardUI {
     /**
      * This class is used to store the data of a cell of the board, which is the image of the tile,
      * its rotation and the color of the veil that is applied to the tile.
-     * @param tileImage the image of the tile
+     *
+     * @param tileImage    the image of the tile
      * @param tileRotation the rotation of the tile
-     * @param veilColor the color of the veil that has to be applied to the tile
+     * @param veilColor    the color of the veil that has to be applied to the tile
      */
-    private record CellData (Image tileImage, Rotation tileRotation, Color veilColor) {
+    private record CellData(Image tileImage, Rotation tileRotation, Color veilColor) {
         /**
          * This constructor creates a CellData object from a placed tile and a veil color,
          * computing its rotation and image from the placed tile (the image will have normal size).
+         *
          * @param placedTile the tile from which to take the image and the rotation
-         * @param veilColor the color of the veil that has to be applied to the tile
+         * @param veilColor  the color of the veil that has to be applied to the tile
          */
         public CellData(PlacedTile placedTile, Color veilColor) {
             this(
@@ -236,6 +237,7 @@ public final class BoardUI {
         /**
          * This constructor creates a CellData object from a veil color,
          * using the empty image and no rotation, representing an empty cell.
+         *
          * @param veilColor the color of the veil that has to be applied to the tile
          */
         public CellData(Color veilColor) {
@@ -245,6 +247,7 @@ public final class BoardUI {
         /**
          * Returns the color input that has to be applied to the tile to show the veil, or null
          * if there is no veil to apply.
+         *
          * @return the color input that has to be applied to the tile to show the veil, or null
          * if there is no veil to apply
          */

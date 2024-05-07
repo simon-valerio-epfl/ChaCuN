@@ -10,7 +10,6 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
@@ -21,22 +20,23 @@ import java.util.function.Consumer;
  */
 public final class DecksUI {
     private final static double WRAPPING_WIDTH = 0.8;
+
     /**
      * This is a utility class, therefore it is not instantiable
      */
-    private DecksUI() {}
+    private DecksUI() {
+    }
 
     /**
-     *
-     * @param tileO the updating tile to place
+     * @param tileO            the updating tile to place
      * @param leftNormalTilesO the updating number of normal tiles left in the deck
      * @param leftMenhirTilesO the updating number of menhir tiles left in the deck
-     * @param textToDisplay the text to display when the player can place or retake an occupant,
-     *                     to let him pass on this action
-     * @param onOccupantClick the action to do when the player does not want to place or retake an occupant,
-     *                        clicking on the text
+     * @param textToDisplay    the text to display when the player can place or retake an occupant,
+     *                         to let him pass on this action
+     * @param onOccupantClick  the action to do when the player does not want to place or retake an occupant,
+     *                         clicking on the text
      * @return a node representing the decks of the game, with the next tile to place and
-*    *                        the number of tiles left for each kind
+     * *                        the number of tiles left for each kind
      */
     public static Node create(
             ObservableValue<Tile> tileO,
@@ -52,9 +52,9 @@ public final class DecksUI {
         // ImageView of the next tile to place, which has to be shown in large size
         ImageView view = new ImageView();
         view.imageProperty().bind(tileO.map(t ->
-            t == null
-                ? ImageLoader.EMPTY_IMAGE
-                : ImageLoader.largeImageForTile(t.id())));
+                t == null
+                        ? ImageLoader.EMPTY_IMAGE
+                        : ImageLoader.largeImageForTile(t.id())));
         view.setFitHeight(ImageLoader.LARGE_TILE_FIT_SIZE);
         view.setFitWidth(ImageLoader.LARGE_TILE_FIT_SIZE);
         // Text, occupy tile (only visible if textToDisplay is not empty,
@@ -68,9 +68,9 @@ public final class DecksUI {
         stackPane.getChildren().setAll(view, text);
         // we bind the graphical view of the tile to place to the tile itself
         view.imageProperty().bind(tileO.map(t ->
-            t == null
-                ? ImageLoader.EMPTY_IMAGE
-                : ImageLoader.largeImageForTile(t.id()))
+                t == null
+                        ? ImageLoader.EMPTY_IMAGE
+                        : ImageLoader.largeImageForTile(t.id()))
         );
         // here we handle the decks containing the remaining cards
         Node menhirNode = getDeckNode("MENHIR", leftMenhirTilesO);
@@ -86,7 +86,8 @@ public final class DecksUI {
 
     /**
      * This method creates a node representing a deck containing the remaining tiles
-     * @param name the name of the deck, which represents the kind of tiles it contains
+     *
+     * @param name      the name of the deck, which represents the kind of tiles it contains
      * @param leftTiles the updating number of tiles left in the deck
      * @return a node representing the deck
      */

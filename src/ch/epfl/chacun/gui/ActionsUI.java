@@ -24,7 +24,9 @@ public final class ActionsUI {
     /**
      * This is a utility class, it's not instantiable
      */
-    private ActionsUI() {}
+    private ActionsUI() {
+    }
+
     /**
      * The number of actions to represent on the screen
      */
@@ -33,9 +35,10 @@ public final class ActionsUI {
     /**
      * Creates the node containing the last actions of the game state and
      * a field where one may insert a new action
+     *
      * @param actionsO the observable list of all actions since the start of the game
-     * @param handler an event handler whose method has to be applied when the player
-     *                inserts a new action in the field
+     * @param handler  an event handler whose method has to be applied when the player
+     *                 inserts a new action in the field
      * @return a node containing the last actions of the game state and a field where one may insert a new action
      */
     public static Node create(ObservableValue<List<String>> actionsO, Consumer<String> handler) {
@@ -62,19 +65,21 @@ public final class ActionsUI {
 
     /**
      * Converts a string to a standard format which is valid for the actions' graphical representation
+     *
      * @param input the string to format
      * @return the valid formatted string
      */
     private static String cleanupInput(String input) {
         return input.toUpperCase()
-            .chars()
-            .filter(c -> Base32.isValid(Character.toString(c)))
-            .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
-            .toString();
+                .chars()
+                .filter(c -> Base32.isValid(Character.toString(c)))
+                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+                .toString();
     }
 
     /**
      * Associates the last actions to show to their index from the beginning of the list
+     *
      * @param actions the list of actions, whose last elements have to be shown
      * @return the textual representation of the last indexed actions
      */

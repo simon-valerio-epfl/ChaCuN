@@ -1,6 +1,5 @@
 package ch.epfl.chacun.gui;
 
-import ch.epfl.chacun.PlacedTile;
 import javafx.scene.image.Image;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
@@ -33,6 +32,7 @@ public final class ImageLoader {
      * An empty image, graphically represented by a grey square
      */
     public static final Image EMPTY_IMAGE;
+
     static {
         WritableImage writableImage = new WritableImage(1, 1);
         writableImage.getPixelWriter().setColor(0, 0, Color.gray(0.98));
@@ -42,11 +42,13 @@ public final class ImageLoader {
     /**
      * This is a utility class and therefore is not instantiable
      */
-    private ImageLoader() {}
+    private ImageLoader() {
+    }
 
     /**
      * Returns the image corresponding to the tile with the given tile id and pixel size
-     * @param tileId the id of the tile
+     *
+     * @param tileId    the id of the tile
      * @param pixelSize the size of the image in pixels
      * @return the image corresponding to the tile with the given tile id and pixel size
      */
@@ -57,6 +59,7 @@ public final class ImageLoader {
 
     /**
      * Returns the normal image for the tile with the given tile id
+     *
      * @param tileId the id of the tile whose image has to be returned
      * @return the normal image for the tile with the given tile id
      */
@@ -66,6 +69,7 @@ public final class ImageLoader {
 
     /**
      * Returns the large image for the tile with the given tile id
+     *
      * @param tileId the id of the tile whose image has to be returned
      * @return the large image for the tile with the given tile id
      */

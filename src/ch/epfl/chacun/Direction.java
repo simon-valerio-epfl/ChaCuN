@@ -28,6 +28,7 @@ public enum Direction {
 
     /**
      * Returns the direction obtained by rotating this direction
+     *
      * @param rotation the rotation to apply
      * @return the direction obtained by rotating this direction by the given rotation
      */
@@ -39,6 +40,7 @@ public enum Direction {
 
     /**
      * Returns the direction opposite to this direction
+     *
      * @return the direction opposite to this direction
      */
     public final Direction opposite() {

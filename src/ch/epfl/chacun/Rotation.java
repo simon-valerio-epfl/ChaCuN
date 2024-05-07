@@ -29,14 +29,16 @@ public enum Rotation {
 
     /**
      * Returns the number of degrees of the rotation.
+     *
      * @return the number of degrees of the rotation
      */
-    public int degreesCW(){
+    public int degreesCW() {
         return this.quarterTurnsCW() * QUARTER_TURN_DEGREES;
     }
 
     /**
      * Returns the rotation obtained by adding the given rotation to this one.
+     *
      * @param that the rotation to add
      * @return the rotation obtained by adding the given rotation to this one
      */
@@ -47,9 +49,10 @@ public enum Rotation {
 
     /**
      * Returns the rotation obtained by negating this one.
+     *
      * @return the rotation obtained by negating this one
      */
-    public Rotation negated(){
+    public Rotation negated() {
         //The mod 4 operation is used to ensure that this.ordinal being 0
         //works as expected
         int negated = COUNT - this.ordinal();
@@ -58,9 +61,10 @@ public enum Rotation {
 
     /**
      * Returns the number of quarter turns of the rotation.
+     *
      * @return the number of quarter turns of the rotation
      */
-    public int quarterTurnsCW(){
+    public int quarterTurnsCW() {
         return this.ordinal();
     }
 

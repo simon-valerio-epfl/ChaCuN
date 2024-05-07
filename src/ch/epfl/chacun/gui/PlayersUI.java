@@ -27,13 +27,15 @@ public final class PlayersUI {
     /**
      * This class is not instantiable
      */
-    private PlayersUI() {}
+    private PlayersUI() {
+    }
 
     /**
      * Creates the node containing the occupants of the game with their names, their colours,
      * their points and available occupants, with the current player highlighted
+     *
      * @param gameStateO the observable current state of a game
-     * @param textMaker the text maker used to generate the text for the players' names and points
+     * @param textMaker  the text maker used to generate the text for the players' names and points
      * @return a graphical node containing the occupants of the game with their names, their colours,
      * their points and available occupants, with the current player highlighted
      */
@@ -69,10 +71,10 @@ public final class PlayersUI {
 
                 ObservableValue<String> pointsTextO = pointsO.map(points -> STR." \{name} : \{textMaker.points(points.getOrDefault(playerColor, 0))}\n");
                 ObservableValue<Map<Occupant.Kind, Integer>> occupantsO = gameStateO
-                    .map(gState -> Map.of(
-                        Occupant.Kind.PAWN, gState.freeOccupantsCount(playerColor, Occupant.Kind.PAWN),
-                        Occupant.Kind.HUT, gState.freeOccupantsCount(playerColor, Occupant.Kind.HUT)
-                    ));
+                        .map(gState -> Map.of(
+                                Occupant.Kind.PAWN, gState.freeOccupantsCount(playerColor, Occupant.Kind.PAWN),
+                                Occupant.Kind.HUT, gState.freeOccupantsCount(playerColor, Occupant.Kind.HUT)
+                        ));
 
                 Text pointsText = new Text();
                 pointsText.textProperty().bind(pointsTextO);
@@ -94,9 +96,10 @@ public final class PlayersUI {
     /**
      * Returns a list of nodes representing each the occupants of a player,
      * with the opacity of each node bound to the number of used and available occupants
+     *
      * @param playerColor the color of the player owning this list of occupants
-     * @param kind the kind of the occupants to represent
-     * @param occupantsO the observable map of the number of used occupants
+     * @param kind        the kind of the occupants to represent
+     * @param occupantsO  the observable map of the number of used occupants
      * @return a list of nodes representing each the occupants of a player,
      * with the opacity of each node bound to the number of used and available occupants
      */

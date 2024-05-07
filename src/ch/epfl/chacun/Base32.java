@@ -10,7 +10,8 @@ public final class Base32 {
     /**
      * This is a utility class. It is not instantiable
      */
-    private Base32() {}
+    private Base32() {
+    }
 
     /**
      * The set of characters that compose Base32
@@ -27,6 +28,7 @@ public final class Base32 {
 
     /**
      * Checks if all the characters of the given string belong to the charset of Base32
+     *
      * @param encoded the string to verify
      * @return if all the characters of the given string belong to the charset of Base32
      */
@@ -36,6 +38,7 @@ public final class Base32 {
 
     /**
      * Returns the Base32-encoded string resulting of the 5 least significant bits of a given integer
+     *
      * @param toEncode the integer whose 5 least significant bits have to be encoded
      * @return the Base32-encoded string resulting of the 5 least significant bits of a given integer
      */
@@ -45,6 +48,7 @@ public final class Base32 {
 
     /**
      * Returns the Base32-encoded string resulting of the 10 least significant bits of a given integer
+     *
      * @param toEncode the integer whose 10 least significant bits have to be encoded
      * @return the Base32-encoded string resulting of the 10 least significant bits of a given integer
      */
@@ -54,6 +58,7 @@ public final class Base32 {
 
     /**
      * Returns the number corresponding to the given Base32-encoded message
+     *
      * @param encoded the Base32-encoded message
      * @return the number corresponding to the given Base32-encoded message
      */

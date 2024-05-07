@@ -7,18 +7,20 @@ package ch.epfl.chacun;
  * @author Simon Lefort (371918)
  */
 public final class Preconditions {
-    private Preconditions() {}
+    private Preconditions() {
+    }
 
     /**
      * Throws an IllegalArgumentException if the given boolean is false.
+     *
      * @param shouldBeTrue the boolean condition to check
      * @throws IllegalArgumentException if the given boolean is false
      */
-    public static void checkArgument (boolean shouldBeTrue) {
+    public static void checkArgument(boolean shouldBeTrue) {
         if (!shouldBeTrue) throw new IllegalArgumentException();
     }
 
-    public static void checkValidAction (boolean shouldBeTrue) throws ActionEncoder.IllegalActionException {
+    public static void checkValidAction(boolean shouldBeTrue) throws ActionEncoder.IllegalActionException {
         if (!shouldBeTrue) {
             throw new ActionEncoder.IllegalActionException();
         }
