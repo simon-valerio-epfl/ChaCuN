@@ -49,6 +49,8 @@ public final class Points {
      */
     private static final int FISHER_HUT_POINTS = 1;
 
+    private Points() {}
+
     /**
      * Returns the number of points gained by a player when a forest is closed
      * @param tileCount the number of tiles in the forest, at least 2

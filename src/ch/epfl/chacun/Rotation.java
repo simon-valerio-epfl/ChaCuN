@@ -32,7 +32,7 @@ public enum Rotation {
      * @return the number of degrees of the rotation
      */
     public int degreesCW(){
-        return this.ordinal() * QUARTER_TURN_DEGREES;
+        return this.quarterTurnsCW() * QUARTER_TURN_DEGREES;
     }
 
     /**

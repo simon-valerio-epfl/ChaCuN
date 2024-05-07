@@ -130,16 +130,7 @@ public sealed interface Zone {
      * @author Valerio De Santis (373247)
      * @author Simon Lefort (371918)
      */
-    record Lake (int id, int fishCount, SpecialPower specialPower) implements Water {
-        /**
-         * Gets the fish count of the lake.
-         * @return the fish count of the lake
-         */
-        @Override
-        public int fishCount() {
-            return fishCount;
-        }
-    }
+    record Lake (int id, int fishCount, SpecialPower specialPower) implements Water {}
 
     /**
      * Represents a river.
@@ -158,14 +149,6 @@ public sealed interface Zone {
          */
         public boolean hasLake () {
             return lake != null;
-        }
-        /**
-         * Gets the fish count of the river (not including the lake if there is one).
-         * @return the fish count of the river
-         */
-        @Override
-        public int fishCount() {
-            return fishCount;
         }
     }
 
