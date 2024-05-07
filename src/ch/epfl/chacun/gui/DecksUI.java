@@ -51,7 +51,10 @@ public final class DecksUI {
 
         // ImageView of the next tile to place, which has to be shown in large size
         ImageView view = new ImageView();
-        view.setImage(ImageLoader.largeImageForTile(tileO.getValue().id()));
+        view.imageProperty().bind(tileO.map(t ->
+            t == null
+                ? ImageLoader.EMPTY_IMAGE
+                : ImageLoader.largeImageForTile(t.id())));
         view.setFitHeight(ImageLoader.LARGE_TILE_FIT_SIZE);
         view.setFitWidth(ImageLoader.LARGE_TILE_FIT_SIZE);
         // Text, occupy tile (only visible if textToDisplay is not empty,

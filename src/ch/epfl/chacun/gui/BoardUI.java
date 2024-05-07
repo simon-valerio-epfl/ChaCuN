@@ -87,7 +87,11 @@ public final class BoardUI {
         // the fringe only exists when the next action is to place a tile
         ObservableValue<Set<Pos>> fringeTilesO = gameStateO.map(
                 state -> state.nextAction() == GameState.Action.PLACE_TILE
-                        ? boardO.getValue().insertionPositions()
+                        // important to understand
+                        // we can not use boardO.getValue() here!
+                        // because this map may be triggered before boardO gets updated!
+                        // therefore we would be using the old board
+                        ? state.board().insertionPositions()
                         : Set.of()
         );
 
@@ -168,7 +172,7 @@ public final class BoardUI {
                 placedTileO.addListener((_, oldPlacedTile, placedTile) -> {
                     if (oldPlacedTile != null || placedTile == null) return;
 
-                    double negatedTileRotation = placedTile.rotation().negated().quarterTurnsCW();
+                    double negatedTileRotation = placedTile.rotation().negated().degreesCW();
 
                     // handle "jeton d'annulation", a marker that signals that an animal is cancelled
                     placedTile.meadowZones().stream()

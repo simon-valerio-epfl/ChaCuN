@@ -32,6 +32,17 @@ public final class Main extends Application {
         launch(args);
     }
 
+    private void saveState(
+        ActionEncoder.StateAction stateAction,
+        SimpleObjectProperty<GameState> gameStateO,
+        SimpleObjectProperty<List<String>> actionsO
+    ) {
+        gameStateO.setValue(stateAction.gameState());
+        List<String> newActions = new ArrayList<>(actionsO.getValue());
+        newActions.add(stateAction.action());
+        actionsO.setValue(newActions);
+    }
+
     private TileDecks getShuffledTileDecks(Long seed) {
         List<Tile> tiles = new ArrayList<>(Tiles.TILES);
         if (seed != null) {
@@ -73,7 +84,6 @@ public final class Main extends Application {
             tileDecks,
             textMaker
         );
-        gameState = gameState.withStartingTilePlaced();
 
         SimpleObjectProperty<GameState> gameStateO = new SimpleObjectProperty<>(gameState);
         ObservableValue<List<MessageBoard.Message>> observableMessagesO = gameStateO.map(
@@ -85,13 +95,15 @@ public final class Main extends Application {
         ObservableValue<TileDecks> tileDecksO = gameStateO.map(GameState::tileDecks);
         ObservableValue<Integer> leftNormalTilesO = tileDecksO.map(tDecks -> tDecks.normalTiles().size());
         ObservableValue<Integer> leftMenhirTilesO = tileDecksO.map(tDecks -> tDecks.menhirTiles().size());
-        ObservableValue<String> textToDisplayO = gameStateO.map(gameState1 ->
-            switch (gameState1.nextAction()){
+        ObservableValue<String> textToDisplayO = gameStateO.map(gState ->
+            switch (gState.nextAction()){
                 case GameState.Action.OCCUPY_TILE -> textMaker.clickToOccupy();
                 case GameState.Action.RETAKE_PAWN -> textMaker.clickToUnoccupy();
                 default -> "";
             }
         );
+
+        SimpleObjectProperty<List<String>> actionsO = new SimpleObjectProperty<>(List.of());
 
         Consumer<Occupant> onOccupantClick = occupant -> {
             // todo handle things
@@ -100,27 +112,27 @@ public final class Main extends Application {
                 assert currentGameState.board().lastPlacedTile() != null;
                 int lastPlacedTileId = currentGameState.board().lastPlacedTile().id();
                 if (occupant != null && Zone.tileId(occupant.zoneId()) != lastPlacedTileId) return;
-                gameStateO.setValue(currentGameState.withNewOccupant(occupant));
+                ActionEncoder.StateAction stateAction = ActionEncoder.withNewOccupant(currentGameState, occupant);
+                saveState(stateAction, gameStateO, actionsO);
             }
             else if (currentGameState.nextAction() == GameState.Action.RETAKE_PAWN) {
                 // todo check owner stuff etc
-                gameStateO.setValue(currentGameState.withOccupantRemoved(occupant));
+                ActionEncoder.StateAction stateAction = ActionEncoder.withOccupantRemoved(currentGameState, occupant);
+                saveState(stateAction, gameStateO, actionsO);
             }
         };
-
-        SimpleObjectProperty<List<String>> actions = new SimpleObjectProperty<>(List.of());
 
         Consumer<String> onEnteredAction = action -> {
             ActionEncoder.StateAction newSt = ActionEncoder.decodeAndApply(gameStateO.getValue(), action);
             if (newSt != null) {
-                gameStateO.setValue(newSt.gameState());
+                saveState(newSt, gameStateO, actionsO);
             }
         };
 
         Node playersNode = PlayersUI.create(gameStateO, new TextMakerFr(playersNames));
         Node messagesNode = MessageBoardUI.create(observableMessagesO, highlightedTilesO);
         Node decksNode = DecksUI.create(tileToPlaceO, leftNormalTilesO, leftMenhirTilesO, textToDisplayO, onOccupantClick);
-        Node actionsNode = ActionsUI.create(actions, onEnteredAction);
+        Node actionsNode = ActionsUI.create(actionsO, onEnteredAction);
 
         SimpleObjectProperty<Rotation> nextRotationO = new SimpleObjectProperty<>(Rotation.NONE);
         Consumer<Rotation> onRotationClick = r -> {
@@ -139,7 +151,8 @@ public final class Main extends Application {
                 nextRotationO.getValue(),
                 pos
             );
-            gameStateO.setValue(currentGameState.withPlacedTile(placedTile));
+            ActionEncoder.StateAction stateAction = ActionEncoder.withPlacedTile(currentGameState, placedTile);
+            saveState(stateAction, gameStateO, actionsO);
         };
 
         ObservableValue<Set<Occupant>> visibleOccupants = gameStateO.map(gState -> {
@@ -178,6 +191,8 @@ public final class Main extends Application {
         primaryStage.setScene(new Scene(rootNode));
         primaryStage.setTitle("ChaCuN");
         primaryStage.show();
+
+        gameStateO.setValue(gameStateO.getValue().withStartingTilePlaced());
 
     }
 }
