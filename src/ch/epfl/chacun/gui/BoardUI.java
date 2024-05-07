@@ -205,6 +205,8 @@ public final class BoardUI {
                 });
             }
         }
+        scrollPane.setHvalue(.5);
+        scrollPane.setVvalue(.5);
 
         scrollPane.setContent(grid);
         return scrollPane;

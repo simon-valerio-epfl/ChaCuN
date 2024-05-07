@@ -13,6 +13,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -79,13 +80,10 @@ public final class Main extends Application {
 
         TextMaker textMaker = new TextMakerFr(playersNames);
 
-        GameState gameState = GameState.initial(
-            playerColors,
-            tileDecks,
-            textMaker
-        );
-
+        GameState gameState = GameState.initial(playerColors, tileDecks, textMaker);
         SimpleObjectProperty<GameState> gameStateO = new SimpleObjectProperty<>(gameState);
+
+
         ObservableValue<List<MessageBoard.Message>> observableMessagesO = gameStateO.map(
             gState -> gState.messageBoard().messages()
         );
@@ -124,9 +122,7 @@ public final class Main extends Application {
 
         Consumer<String> onEnteredAction = action -> {
             ActionEncoder.StateAction newSt = ActionEncoder.decodeAndApply(gameStateO.getValue(), action);
-            if (newSt != null) {
-                saveState(newSt, gameStateO, actionsO);
-            }
+            if (newSt != null) saveState(newSt, gameStateO, actionsO);
         };
 
         Node playersNode = PlayersUI.create(gameStateO, new TextMakerFr(playersNames));
@@ -140,17 +136,14 @@ public final class Main extends Application {
         };
 
         Consumer<Pos> onPosClick = pos -> {
-            // todo checker l'action ?
-            // todo checker le placement ?
             GameState currentGameState = gameStateO.getValue();
             if (currentGameState.nextAction() != GameState.Action.PLACE_TILE) return;
             Tile tileToPlace = currentGameState.tileToPlace();
             PlacedTile placedTile = new PlacedTile(
-                tileToPlace,
-                currentGameState.currentPlayer(),
-                nextRotationO.getValue(),
-                pos
+                tileToPlace, currentGameState.currentPlayer(),
+                nextRotationO.getValue(), pos
             );
+            if (!currentGameState.board().canAddTile(placedTile)) return;
             ActionEncoder.StateAction stateAction = ActionEncoder.withPlacedTile(currentGameState, placedTile);
             saveState(stateAction, gameStateO, actionsO);
         };
@@ -163,32 +156,31 @@ public final class Main extends Application {
             return occupants;
         });
 
-        ScrollPane boardNode = (ScrollPane) BoardUI.create(
-            Board.REACH,
-            gameStateO,
-            nextRotationO,
-            visibleOccupants,
-            highlightedTilesO,
-
-            onRotationClick,
-            onPosClick,
-            onOccupantClick
+        Node boardNode = BoardUI.create(
+            Board.REACH, gameStateO, nextRotationO, visibleOccupants, highlightedTilesO,
+            // consumers
+            onRotationClick, onPosClick, onOccupantClick
         );
 
-        var sideBar = new VBox(playersNode, actionsNode, messagesNode, decksNode);
-        VBox.setVgrow(messagesNode, Priority.ALWAYS);
+        // actions and decks border pane
+        VBox actionsAndDecksBox = new VBox();
+        actionsAndDecksBox.getChildren().addAll(actionsNode, decksNode);
 
-        boardNode.setFitToHeight(true);
-        boardNode.setFitToWidth(true);
-        boardNode.setMinWidth(720);
-        boardNode.maxHeightProperty().bind(primaryStage.heightProperty());
-        boardNode.maxWidthProperty().bind(primaryStage.widthProperty().map(w -> w.doubleValue() - sideBar.getWidth()));
-        boardNode.setHvalue(.5);
-        boardNode.setVvalue(.5);
+        // side border pane
+        BorderPane sideBorderPane = new BorderPane();
+        sideBorderPane.setCenter(messagesNode);
+        sideBorderPane.setTop(playersNode);
+        sideBorderPane.setBottom(actionsAndDecksBox);
 
-        var rootNode = new HBox(boardNode, sideBar);
-        HBox.setHgrow(boardNode, Priority.ALWAYS);
-        primaryStage.setScene(new Scene(rootNode));
+        // main border pane
+        BorderPane mainBorderPane = new BorderPane();
+        mainBorderPane.setCenter(boardNode);
+        mainBorderPane.setRight(sideBorderPane);
+
+        primaryStage.setWidth(1440);
+        primaryStage.setHeight(1080);
+
+        primaryStage.setScene(new Scene(mainBorderPane));
         primaryStage.setTitle("ChaCuN");
         primaryStage.show();
 
