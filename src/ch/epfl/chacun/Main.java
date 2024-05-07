@@ -1,6 +1,7 @@
 package ch.epfl.chacun;
 
 import ch.epfl.chacun.gui.*;
+import ch.epfl.chacun.net.WSManager;
 import javafx.application.Application;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -34,6 +35,16 @@ public final class Main extends Application {
         actionsO.setValue(newActions);
     }
 
+    private void saveStateAndDispatch(
+            ActionEncoder.StateAction stateAction,
+            SimpleObjectProperty<GameState> gameStateO,
+            SimpleObjectProperty<List<String>> actionsO,
+            WSManager wsManager
+    ) {
+        saveState(stateAction, gameStateO, actionsO);
+        wsManager.sendAction(stateAction.action());
+    }
+
     private TileDecks getShuffledTileDecks(Long seed) {
         List<Tile> tiles = new ArrayList<>(Tiles.TILES);
         if (seed != null) {
@@ -50,29 +61,21 @@ public final class Main extends Application {
     }
 
     @Override
-    public void start(Stage primaryStage) {
-/*
-        Parameters parameters = getParameters();
-        Map<String, String> namedParameters = parameters.getNamed();
+    public void start(Stage primaryStage) throws InterruptedException {
 
-        Long seed = namedParameters.containsKey("seed") ? Long.parseUnsignedLong(namedParameters.get("seed")) : null;
-        TileDecks tileDecks = getShuffledTileDecks(seed);
+        String gameName = "androzGame";
 
-        List<String> players = parameters.getUnnamed();
-        int playersSize = players.size();
-        Preconditions.checkArgument(playersSize >= 2 && playersSize <= 5);
+        WSManager wsManager = new WSManager(
+            gameName,
+            "Androz" + new Random().nextInt(1000)
+        );
 
-        List<PlayerColor> playerColors = PlayerColor.ALL.subList(0, playersSize);
-        Map<PlayerColor, String> playersNames = new TreeMap<>();
-        for (int i = 0; i < playersSize; i++) {
-            playersNames.put(playerColors.get(i), players.get(i));
-        }
+        TileDecks tileDecks = getShuffledTileDecks((long) gameName.hashCode());
 
-        TextMaker textMaker = new TextMakerFr(playersNames);
+        SimpleObjectProperty<TextMaker> textMakerO = new SimpleObjectProperty<>(new TextMakerFr(Map.of()));
 
-        GameState gameState = GameState.initial(playerColors, tileDecks, textMaker);
+        GameState gameState = GameState.initial(List.of(), tileDecks, textMakerO.getValue());
         SimpleObjectProperty<GameState> gameStateO = new SimpleObjectProperty<>(gameState);
-
 
         ObservableValue<List<MessageBoard.Message>> observableMessagesO = gameStateO.map(
                 gState -> gState.messageBoard().messages()
@@ -85,8 +88,8 @@ public final class Main extends Application {
         ObservableValue<Integer> leftMenhirTilesO = tileDecksO.map(tDecks -> tDecks.menhirTiles().size());
         ObservableValue<String> textToDisplayO = gameStateO.map(gState ->
                 switch (gState.nextAction()) {
-                    case GameState.Action.OCCUPY_TILE -> textMaker.clickToOccupy();
-                    case GameState.Action.RETAKE_PAWN -> textMaker.clickToUnoccupy();
+                    case GameState.Action.OCCUPY_TILE -> textMakerO.getValue().clickToOccupy();
+                    case GameState.Action.RETAKE_PAWN -> textMakerO.getValue().clickToUnoccupy();
                     default -> "";
                 }
         );
@@ -101,11 +104,11 @@ public final class Main extends Application {
                 int lastPlacedTileId = currentGameState.board().lastPlacedTile().id();
                 if (occupant != null && Zone.tileId(occupant.zoneId()) != lastPlacedTileId) return;
                 ActionEncoder.StateAction stateAction = ActionEncoder.withNewOccupant(currentGameState, occupant);
-                saveState(stateAction, gameStateO, actionsO);
+                saveStateAndDispatch(stateAction, gameStateO, actionsO, wsManager);
             } else if (currentGameState.nextAction() == GameState.Action.RETAKE_PAWN) {
                 // todo check owner stuff etc
                 ActionEncoder.StateAction stateAction = ActionEncoder.withOccupantRemoved(currentGameState, occupant);
-                saveState(stateAction, gameStateO, actionsO);
+                saveStateAndDispatch(stateAction, gameStateO, actionsO, wsManager);
             }
         };
 
@@ -114,7 +117,7 @@ public final class Main extends Application {
             if (newSt != null) saveState(newSt, gameStateO, actionsO);
         };
 
-        Node playersNode = PlayersUI.create(gameStateO, new TextMakerFr(playersNames));
+        Node playersNode = PlayersUI.create(gameStateO, textMakerO);
         Node messagesNode = MessageBoardUI.create(observableMessagesO, highlightedTilesO);
         Node decksNode = DecksUI.create(tileToPlaceO, leftNormalTilesO, leftMenhirTilesO, textToDisplayO, onOccupantClick);
         Node actionsNode = ActionsUI.create(actionsO, onEnteredAction);
@@ -134,7 +137,7 @@ public final class Main extends Application {
             );
             if (!currentGameState.board().canAddTile(placedTile)) return;
             ActionEncoder.StateAction stateAction = ActionEncoder.withPlacedTile(currentGameState, placedTile);
-            saveState(stateAction, gameStateO, actionsO);
+            saveStateAndDispatch(stateAction, gameStateO, actionsO, wsManager);
         };
 
         ObservableValue<Set<Occupant>> visibleOccupants = gameStateO.map(gState -> {
@@ -150,6 +153,25 @@ public final class Main extends Application {
                 // consumers
                 onRotationClick, onPosClick, onOccupantClick
         );
+
+        List<String> existingPlayers = new ArrayList<>();
+        wsManager.connect(onEnteredAction, (playerName, isMyself) -> {
+            if (existingPlayers.contains(playerName)) return;
+            int playersSize = gameStateO.getValue().players().size() + 1;
+            existingPlayers.add(playerName);
+            List<PlayerColor> playerColors = PlayerColor.ALL.subList(0, playersSize);
+            Map<PlayerColor, String> playersNames = new TreeMap<>();
+            for (int i = 0; i < playersSize; i++) {
+                playersNames.put(playerColors.get(i), i == playersSize - 1 ? playerName : existingPlayers.get(i));
+            }
+            textMakerO.setValue(new TextMakerFr(playersNames));
+            gameStateO.setValue(gameStateO.getValue().withNewPlayers(playerColors, textMakerO.getValue()));
+            if (!isMyself) {
+                wsManager.sayHello();
+            }
+        });
+
+        wsManager.sayHello();
 
         // actions and decks border pane
         VBox actionsAndDecksBox = new VBox();
@@ -174,15 +196,14 @@ public final class Main extends Application {
         primaryStage.show();
 
         gameStateO.setValue(gameStateO.getValue().withStartingTilePlaced());
-*/
 
-        BorderPane lobby = (BorderPane) LobbyUI.create();
+        /*BorderPane lobby = (BorderPane) LobbyUI.create();
 
         primaryStage.setWidth(1440);
         primaryStage.setHeight(1080);
 
         primaryStage.setScene(new Scene(lobby));
         primaryStage.setTitle("ChaCuN");
-        primaryStage.show();
+        primaryStage.show();*/
     }
 }

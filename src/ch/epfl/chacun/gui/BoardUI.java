@@ -190,17 +190,17 @@ public final class BoardUI {
                             });
                     // here we handle the graphical representation of the occupants
                     placedTile.potentialOccupants()
-                            .forEach(occupant -> {
-                                Node occupantSvg = Icon.newFor(placedTile.placer(), occupant.kind());
-                                occupantSvg.setId(STR."\{occupant.kind().toString().toLowerCase()}_\{occupant.zoneId()}");
-                                occupantSvg.setOnMouseClicked((e) -> {
-                                    e.consume();
-                                    occupantConsumer.accept(occupant);
-                                });
-                                occupantSvg.visibleProperty().bind(occupantsO.map(occupants -> occupants.contains(occupant)));
-                                occupantSvg.setRotate(negatedTileRotation);
-                                group.getChildren().add(occupantSvg);
+                        .forEach(occupant -> {
+                            Node occupantSvg = Icon.newFor(placedTile.placer(), occupant.kind());
+                            occupantSvg.setId(STR."\{occupant.kind().toString().toLowerCase()}_\{occupant.zoneId()}");
+                            occupantSvg.setOnMouseClicked((e) -> {
+                                e.consume();
+                                occupantConsumer.accept(occupant);
                             });
+                            occupantSvg.visibleProperty().bind(occupantsO.map(occupants -> occupants.contains(occupant)));
+                            occupantSvg.setRotate(negatedTileRotation);
+                            group.getChildren().add(occupantSvg);
+                        });
                 });
             }
         }

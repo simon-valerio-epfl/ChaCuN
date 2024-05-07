@@ -39,7 +39,7 @@ public final class PlayersUI {
      * @return a graphical node containing the occupants of the game with their names, their colours,
      * their points and available occupants, with the current player highlighted
      */
-    public static Node create(ObservableValue<GameState> gameStateO, TextMaker textMaker) {
+    public static Node create(ObservableValue<GameState> gameStateO, ObservableValue<TextMaker> textMakerO) {
 
         ObservableValue<Map<PlayerColor, Integer>> pointsO = gameStateO.map(gState -> gState.messageBoard().points());
 
@@ -48,46 +48,49 @@ public final class PlayersUI {
         vBox.getStylesheets().add("players.css");
         vBox.setId("players");
 
-        // for each player color, create a text flow
-        PlayerColor.ALL.forEach(playerColor -> {
-            String name = textMaker.playerName(playerColor);
+        textMakerO.addListener((_, __, textMaker) -> {
+            vBox.getChildren().clear();
+            // for each player color, create a text flow
+            PlayerColor.ALL.forEach(playerColor -> {
+                String name = textMaker.playerName(playerColor);
 
-            if (name != null) {
+                if (name != null) {
 
-                TextFlow textFlow = new TextFlow();
-                textFlow.getStyleClass().add("player");
+                    TextFlow textFlow = new TextFlow();
+                    textFlow.getStyleClass().add("player");
 
-                // we update here the current player
-                ObservableValue<Boolean> isCurrentPlayer = gameStateO.map(gState -> gState.currentPlayer() == playerColor);
-                isCurrentPlayer.addListener((_, _, newValue) -> {
-                    if (newValue) textFlow.getStyleClass().add("current");
-                    else textFlow.getStyleClass().remove("current");
-                });
-                // todo fabrice doit-on ajouter ça ?
-                if (gameStateO.getValue().currentPlayer() == playerColor) textFlow.getStyleClass().add("current");
+                    // we update here the current player
+                    ObservableValue<Boolean> isCurrentPlayer = gameStateO.map(gState -> gState.currentPlayer() == playerColor);
+                    isCurrentPlayer.addListener((_, _, newValue) -> {
+                        if (newValue) textFlow.getStyleClass().add("current");
+                        else textFlow.getStyleClass().remove("current");
+                    });
+                    // todo fabrice doit-on ajouter ça ?
+                    if (gameStateO.getValue().currentPlayer() == playerColor) textFlow.getStyleClass().add("current");
 
-                Circle circle = new Circle(5);
-                circle.setFill(ColorMap.fillColor(playerColor));
+                    Circle circle = new Circle(5);
+                    circle.setFill(ColorMap.fillColor(playerColor));
 
-                ObservableValue<String> pointsTextO = pointsO.map(points -> STR." \{name} : \{textMaker.points(points.getOrDefault(playerColor, 0))}\n");
-                ObservableValue<Map<Occupant.Kind, Integer>> occupantsO = gameStateO
-                        .map(gState -> Map.of(
-                                Occupant.Kind.PAWN, gState.freeOccupantsCount(playerColor, Occupant.Kind.PAWN),
-                                Occupant.Kind.HUT, gState.freeOccupantsCount(playerColor, Occupant.Kind.HUT)
-                        ));
+                    ObservableValue<String> pointsTextO = pointsO.map(points -> STR." \{name} : \{textMaker.points(points.getOrDefault(playerColor, 0))}\n");
+                    ObservableValue<Map<Occupant.Kind, Integer>> occupantsO = gameStateO
+                            .map(gState -> Map.of(
+                                    Occupant.Kind.PAWN, gState.freeOccupantsCount(playerColor, Occupant.Kind.PAWN),
+                                    Occupant.Kind.HUT, gState.freeOccupantsCount(playerColor, Occupant.Kind.HUT)
+                            ));
 
-                Text pointsText = new Text();
-                pointsText.textProperty().bind(pointsTextO);
+                    Text pointsText = new Text();
+                    pointsText.textProperty().bind(pointsTextO);
 
-                textFlow.getChildren().addAll(circle, pointsText);
+                    textFlow.getChildren().addAll(circle, pointsText);
 
-                textFlow.getChildren().addAll(getOccupants(playerColor, Occupant.Kind.HUT, occupantsO));
-                textFlow.getChildren().add(new Text("   "));
-                textFlow.getChildren().addAll(getOccupants(playerColor, Occupant.Kind.PAWN, occupantsO));
+                    textFlow.getChildren().addAll(getOccupants(playerColor, Occupant.Kind.HUT, occupantsO));
+                    textFlow.getChildren().add(new Text("   "));
+                    textFlow.getChildren().addAll(getOccupants(playerColor, Occupant.Kind.PAWN, occupantsO));
 
-                vBox.getChildren().add(textFlow);
+                    vBox.getChildren().add(textFlow);
 
-            }
+                }
+            });
         });
 
         return vBox;

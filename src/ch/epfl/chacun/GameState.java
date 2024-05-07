@@ -65,7 +65,7 @@ public record GameState(
 
         Objects.requireNonNull(players);
         players = List.copyOf(players);
-        Preconditions.checkArgument(players.size() >= MIN_PLAYER_COUNT);
+        //Preconditions.checkArgument(players.size() >= MIN_PLAYER_COUNT);
 
         Preconditions.checkArgument(tileToPlace == null ^ nextAction == Action.PLACE_TILE);
     }
@@ -86,6 +86,17 @@ public record GameState(
                 Board.EMPTY,
                 Action.START_GAME,
                 new MessageBoard(textMaker, List.of())
+        );
+    }
+
+    public GameState withNewPlayers(List<PlayerColor> players, TextMaker textMaker) {
+        return new GameState(
+                players,
+                tileDecks,
+                tileToPlace,
+                board,
+                nextAction,
+                new MessageBoard(textMaker, messageBoard.messages())
         );
     }
 

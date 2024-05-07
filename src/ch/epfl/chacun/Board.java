@@ -498,13 +498,13 @@ public final class Board {
             // it guarantees that if in the future this class won't be final anymore
             // the method call on a subclass will return false
             return false;
-        } else {
-            Board thatBoard = (Board) that;
-            return Arrays.equals(thatBoard.orderedTileIndexes, orderedTileIndexes)
-                    && Arrays.equals(thatBoard.placedTiles, placedTiles)
-                    && cancelledAnimals.equals(thatBoard.cancelledAnimals)
-                    && zonePartitions.equals(thatBoard.zonePartitions);
         }
+
+        Board thatBoard = (Board) that;
+        return Arrays.equals(thatBoard.orderedTileIndexes, orderedTileIndexes)
+                && Arrays.equals(thatBoard.placedTiles, placedTiles)
+                && cancelledAnimals.equals(thatBoard.cancelledAnimals)
+                && zonePartitions.equals(thatBoard.zonePartitions);
     }
 
     /**
