@@ -1,0 +1,43 @@
+.player {
+    -fx-padding: 5;
+    -fx-line-spacing: 5;
+    -fx-border-radius: 4;
+    -fx-border-width: 2;
+    -fx-border-style: solid;
+    -fx-border-color: transparent;
+    -fx-font-size: 200%;
+}
+
+.ready {
+    -fx-background-color: lightgreen;
+}
+
+.title {
+    -fx-font-size: 500%;
+    -fx-font-weight: bold;
+    -fx-text-alignment: center;
+}
+
+.title-container {
+    -fx-padding: 10;
+}
+
+.start-button-container {
+    -fx-padding: 10;
+}
+
+.start-button {
+    -fx-font-size: 200%;
+    -fx-font-weight: bold;
+    -fx-text-alignment: center;
+    -fx-padding: 10;
+    -fx-background-color: lightgreen;
+}
+
+.status {
+    -fx-padding: 10;
+}
+
+.ready {
+    -fx-background-color: lightgreen;
+}

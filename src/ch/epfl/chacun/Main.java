@@ -51,7 +51,7 @@ public final class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-
+/*
         Parameters parameters = getParameters();
         Map<String, String> namedParameters = parameters.getNamed();
 
@@ -174,6 +174,15 @@ public final class Main extends Application {
         primaryStage.show();
 
         gameStateO.setValue(gameStateO.getValue().withStartingTilePlaced());
+*/
 
+        BorderPane lobby = (BorderPane) LobbyUI.create();
+
+        primaryStage.setWidth(1440);
+        primaryStage.setHeight(1080);
+
+        primaryStage.setScene(new Scene(lobby));
+        primaryStage.setTitle("ChaCuN");
+        primaryStage.show();
     }
 }
