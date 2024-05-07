@@ -1,13 +1,11 @@
 package ch.epfl.chacun;
 
-import ch.epfl.chacun.tile.Tiles;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.function.BiFunction;
 
 import static org.junit.jupiter.api.Assertions.*;
 

@@ -1,8 +1,10 @@
 package ch.epfl.chacun.gui;
 
 import ch.epfl.chacun.*;
+import javafx.beans.binding.Binding;
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ObservableValue;
+import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.control.ScrollPane;
@@ -11,6 +13,7 @@ import javafx.scene.effect.BlendMode;
 import javafx.scene.effect.ColorInput;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 
@@ -103,7 +106,7 @@ public final class BoardUI {
                 group.setEffect(blend);
                 Pos pos = new Pos(x, y);
                 // here we handle the mouse interactions
-                group.setOnMouseClicked(e -> {
+                group.setOnMouseClicked((e) -> {
                     switch (e.getButton()) {
                         case SECONDARY -> rotationConsumer.accept(e.isAltDown() ? Rotation.RIGHT : Rotation.LEFT);
                         case PRIMARY -> posConsumer.accept(pos);
@@ -164,6 +167,9 @@ public final class BoardUI {
                 // when a tile is placed, we add the animals and the occupants on it
                 placedTileO.addListener((_, oldPlacedTile, placedTile) -> {
                     if (oldPlacedTile != null || placedTile == null) return;
+
+                    double negatedTileRotation = placedTile.rotation().negated().quarterTurnsCW();
+
                     // handle "jeton d'annulation", a marker that signals that an animal is cancelled
                     placedTile.meadowZones().stream()
                         .flatMap(meadow -> meadow.animals().stream())
@@ -176,6 +182,7 @@ public final class BoardUI {
                             cancelledAnimalView.getStyleClass().add("marker");
                             cancelledAnimalView.setFitHeight(ImageLoader.MARKER_FIT_SIZE);
                             cancelledAnimalView.setFitWidth(ImageLoader.MARKER_FIT_SIZE);
+                            cancelledAnimalView.setRotate(negatedTileRotation);
                             group.getChildren().add(cancelledAnimalView);
                         });
                     // here we handle the graphical representation of the occupants
@@ -183,8 +190,12 @@ public final class BoardUI {
                         .forEach(occupant -> {
                             Node occupantSvg = Icon.newFor(placedTile.placer(), occupant.kind());
                             occupantSvg.setId(STR."\{occupant.kind().toString().toLowerCase()}_\{occupant.zoneId()}");
-                            occupantSvg.setOnMouseClicked((_) -> occupantConsumer.accept(occupant));
+                            occupantSvg.setOnMouseClicked((e) -> {
+                                e.consume();
+                                occupantConsumer.accept(occupant);
+                            });
                             occupantSvg.visibleProperty().bind(occupantsO.map(occupants -> occupants.contains(occupant)));
+                            occupantSvg.setRotate(negatedTileRotation);
                             group.getChildren().add(occupantSvg);
                         });
                 });

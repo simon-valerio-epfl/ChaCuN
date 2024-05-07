@@ -16,7 +16,6 @@ public final class Board {
     private final int[] orderedTileIndexes;
     private final ZonePartitions zonePartitions;
     private final Set<Animal> cancelledAnimals;
-
     /**
      * The maximum distance from the origin
      */
@@ -25,7 +24,6 @@ public final class Board {
     // there are REACH numbers at the left and REACH numbers at the right
     // of the origin, and the matrix is a square
     private final static int WIDTH = REACH * 2 + 1;
-
     /**
      * Represents an empty board, with no placed tiles, no ordered tile indexes,
      * no zone partitions and no cancelled animals
@@ -41,7 +39,8 @@ public final class Board {
      * Creates a new board with the given placed tiles, ordered tile indexes,
      * zone partitions and cancelled animals.
      * Copies the set of cancelled animals to prevent external modification
-     */
+      */
+
     private Board(
             PlacedTile[] placedTiles, int[] orderedTileIndexes,
             ZonePartitions zonePartitions, Set<Animal> cancelledAnimals
