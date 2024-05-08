@@ -88,7 +88,7 @@ public final class ActionsUI {
         int startingIdx = Math.max(0, actions.size() - NUMBER_OF_ACTIONS);
         List<String> lastActions = actions.subList(startingIdx, actions.size());
         for (int i = 0; i < lastActions.size(); i++) {
-            sj.add(STR."\{startingIdx + i}:\{lastActions.get(i)}");
+            sj.add(STR."\{startingIdx + i + 1}:\{lastActions.get(i)}");
         }
         return sj.toString();
     }

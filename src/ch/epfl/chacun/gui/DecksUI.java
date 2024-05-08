@@ -75,7 +75,7 @@ public final class DecksUI {
         // here we handle the decks containing the remaining cards
         Node menhirNode = getDeckNode("MENHIR", leftMenhirTilesO);
         Node normalNode = getDeckNode("NORMAL", leftNormalTilesO);
-        HBox hBox = new HBox(menhirNode, normalNode);
+        HBox hBox = new HBox(normalNode, menhirNode);
 
         VBox vBox = new VBox(hBox, stackPane);
         vBox.getStylesheets().add("/decks.css");
