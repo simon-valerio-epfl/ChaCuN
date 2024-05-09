@@ -66,6 +66,7 @@ public final class BoardUI {
             ObservableValue<Rotation> rotationO,
             ObservableValue<Set<Occupant>> occupantsO,
             ObservableValue<Set<Integer>> highlightedTilesO,
+            ObservableValue<Boolean> isOwnerCurrentPlayerO,
 
             Consumer<Rotation> rotationConsumer,
             Consumer<Pos> posConsumer,
@@ -85,7 +86,7 @@ public final class BoardUI {
         ObservableValue<Set<Animal>> cancelledAnimalsO = boardO.map(Board::cancelledAnimals);
         // the fringe only exists when the next action is to place a tile
         ObservableValue<Set<Pos>> fringeTilesO = gameStateO.map(
-                state -> state.nextAction() == GameState.Action.PLACE_TILE
+                state -> state.nextAction() == GameState.Action.PLACE_TILE && isOwnerCurrentPlayerO.getValue()
                         // important to understand
                         // we can not use boardO.getValue() here!
                         // because this map may be triggered before boardO gets updated!

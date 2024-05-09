@@ -65,7 +65,7 @@ public record GameState(
 
         Objects.requireNonNull(players);
         players = List.copyOf(players);
-        Preconditions.checkArgument(players.size() >= MIN_PLAYER_COUNT);
+        //Preconditions.checkArgument(players.size() >= MIN_PLAYER_COUNT);
 
         Preconditions.checkArgument(tileToPlace == null ^ nextAction == Action.PLACE_TILE);
     }
@@ -203,6 +203,10 @@ public record GameState(
                 occupant == null ? board : board.withOccupant(occupant),
                 Action.OCCUPY_TILE, messageBoard)
                 .withTurnFinished();
+    }
+
+    public GameState withPlayers(List<PlayerColor> players) {
+        return new GameState(players, tileDecks, tileToPlace, board, nextAction, messageBoard);
     }
 
     private Set<Animal> deersToCancel(Area<Zone.Meadow> meadowArea) {

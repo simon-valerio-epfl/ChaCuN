@@ -41,7 +41,11 @@ public final class ActionsUI {
      *                 inserts a new action in the field
      * @return a node containing the last actions of the game state and a field where one may insert a new action
      */
-    public static Node create(ObservableValue<List<String>> actionsO, Consumer<String> handler) {
+    public static Node create(
+            ObservableValue<List<String>> actionsO,
+            Consumer<String> handler,
+            ObservableValue<Boolean> isOwnerCurrentPlayerO
+    ) {
         HBox hbox = new HBox();
         hbox.setId("actions");
         hbox.getStylesheets().add("actions.css");
@@ -58,6 +62,8 @@ public final class ActionsUI {
             handler.accept(textField.getText());
             textField.clear();
         });
+
+        textField.disableProperty().bind(isOwnerCurrentPlayerO.map(v -> !v));
 
         hbox.getChildren().addAll(text, textField);
         return hbox;

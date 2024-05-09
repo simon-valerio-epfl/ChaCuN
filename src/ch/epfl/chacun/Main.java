@@ -1,10 +1,12 @@
 package ch.epfl.chacun;
 
 import ch.epfl.chacun.gui.*;
+import ch.epfl.chacun.net.WSClient;
 import javafx.application.Application;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
+import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
@@ -13,6 +15,7 @@ import javafx.stage.Stage;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.random.RandomGenerator;
 import java.util.random.RandomGeneratorFactory;
 import java.util.stream.Collectors;
@@ -21,6 +24,15 @@ public final class Main extends Application {
 
     public static void main(String[] args) {
         launch(args);
+    }
+
+    private Map<PlayerColor, String> getPlayersMap(String playerNames) {
+        String[] names = playerNames.split(",");
+        Map<PlayerColor, String> playersMap = new TreeMap<>();
+        for (int i = 0; i < names.length; i++) {
+            playersMap.put(PlayerColor.ALL.get(i), names[i]);
+        }
+        return playersMap;
     }
 
     private void saveState(
@@ -52,6 +64,13 @@ public final class Main extends Application {
     @Override
     public void start(Stage primaryStage) {
 
+        String gameName = "androzGame";
+        String mySuperName = "Androz" + new Random().nextInt(1000);
+        WSClient wsClient = new WSClient(
+            gameName,
+            mySuperName
+        );
+
         Parameters parameters = getParameters();
         Map<String, String> namedParameters = parameters.getNamed();
 
@@ -62,20 +81,25 @@ public final class Main extends Application {
         int playersSize = players.size();
         Preconditions.checkArgument(playersSize >= 2 && playersSize <= 5);
 
-        List<PlayerColor> playerColors = PlayerColor.ALL.subList(0, playersSize);
-        Map<PlayerColor, String> playersNames = new TreeMap<>();
-        for (int i = 0; i < playersSize; i++) {
-            playersNames.put(playerColors.get(i), players.get(i));
-        }
+        SimpleObjectProperty<Map<PlayerColor, String>> playerNamesO = new SimpleObjectProperty<>(new TreeMap<>());
+        ObservableValue<List<PlayerColor>> playerColorsO = playerNamesO.map(map -> new ArrayList<>(map.keySet()));
+        playerNamesO.setValue(getPlayersMap(mySuperName));
 
-        TextMaker textMaker = new TextMakerFr(playersNames);
-
-        GameState gameState = GameState.initial(playerColors, tileDecks, textMaker);
+        TextMaker textMaker = new TextMakerFr(playerNamesO);
+        GameState gameState = GameState.initial(playerColorsO.getValue(), tileDecks, textMaker);
         SimpleObjectProperty<GameState> gameStateO = new SimpleObjectProperty<>(gameState);
 
+        wsClient.setOnGamePlayerJoin(newPlayerNames -> {
+            playerNamesO.setValue(getPlayersMap(newPlayerNames));
+            gameStateO.setValue(gameStateO.getValue().withPlayers(playerColorsO.getValue()));
+        });
+        wsClient.setOnGameJoinAccept(newPlayerNames -> {
+            playerNamesO.setValue(getPlayersMap(newPlayerNames));
+            gameStateO.setValue(gameStateO.getValue().withPlayers(playerColorsO.getValue()));
+        });
 
         ObservableValue<List<MessageBoard.Message>> observableMessagesO = gameStateO.map(
-                gState -> gState.messageBoard().messages()
+            gState -> gState.messageBoard().messages()
         );
         ObjectProperty<Set<Integer>> highlightedTilesO = new SimpleObjectProperty<>(Set.of());
         ObservableValue<Tile> tileToPlaceO = gameStateO.map(GameState::tileToPlace);
@@ -114,10 +138,25 @@ public final class Main extends Application {
             if (newSt != null) saveState(newSt, gameStateO, actionsO);
         };
 
-        Node playersNode = PlayersUI.create(gameStateO, new TextMakerFr(playersNames));
+        ObservableValue<String> ownerPlayerColorO = playerNamesO.map(playerName -> {
+            PlayerColor owner = null;
+            for (Map.Entry<PlayerColor, String> entry : playerName.entrySet()) {
+                if (entry.getValue().equals(mySuperName)) {
+                    owner = entry.getKey();
+                    break;
+                }
+            }
+            return owner.toString();
+        });
+
+        ObservableValue<Boolean> isOwnerCurrentPlayerO = gameStateO.map(
+                gState -> gState.currentPlayer() == PlayerColor.valueOf(ownerPlayerColorO.getValue())
+        );
+
+        Node playersNode = PlayersUI.create(gameStateO, textMaker);
         Node messagesNode = MessageBoardUI.create(observableMessagesO, highlightedTilesO);
         Node decksNode = DecksUI.create(tileToPlaceO, leftNormalTilesO, leftMenhirTilesO, textToDisplayO, onOccupantClick);
-        Node actionsNode = ActionsUI.create(actionsO, onEnteredAction);
+        Node actionsNode = ActionsUI.create(actionsO, onEnteredAction, isOwnerCurrentPlayerO);
 
         SimpleObjectProperty<Rotation> nextRotationO = new SimpleObjectProperty<>(Rotation.NONE);
         Consumer<Rotation> onRotationClick = r -> {
@@ -146,7 +185,7 @@ public final class Main extends Application {
         });
 
         Node boardNode = BoardUI.create(
-                Board.REACH, gameStateO, nextRotationO, visibleOccupants, highlightedTilesO,
+                Board.REACH, gameStateO, nextRotationO, visibleOccupants, highlightedTilesO, isOwnerCurrentPlayerO,
                 // consumers
                 onRotationClick, onPosClick, onOccupantClick
         );
@@ -169,11 +208,15 @@ public final class Main extends Application {
         primaryStage.setWidth(1440);
         primaryStage.setHeight(1080);
 
-        primaryStage.setScene(new Scene(mainBorderPane));
+        Scene scene = new Scene(mainBorderPane);
+        primaryStage.setScene(scene);
         primaryStage.setTitle("ChaCuN");
         primaryStage.show();
 
         gameStateO.setValue(gameStateO.getValue().withStartingTilePlaced());
+        wsClient.connect();
+
+        scene.cursorProperty().bind(isOwnerCurrentPlayerO.map(v -> v ? Cursor.DEFAULT : Cursor.WAIT));
 
     }
 }

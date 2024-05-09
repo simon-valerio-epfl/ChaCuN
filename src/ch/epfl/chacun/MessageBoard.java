@@ -340,6 +340,10 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         );
     }
 
+    public MessageBoard withNewTextMaker(TextMaker textMaker) {
+        return new MessageBoard(textMaker, messages);
+    }
+
     /**
      * Represents a message on the message board.
      *
