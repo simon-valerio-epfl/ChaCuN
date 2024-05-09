@@ -24,7 +24,7 @@ public final class Base32 {
     /**
      * The number of bits encoded by a Base32-character
      */
-    private final static int BASE_32_BIT_SIZE = 5;
+    private final static int BASE_32_SYMBOL_BIT_SIZE = 5;
 
     /**
      * Checks if all the characters of the given string belong to the charset of Base32
@@ -53,7 +53,7 @@ public final class Base32 {
      * @return the Base32-encoded string resulting of the 10 least significant bits of a given integer
      */
     public static String encodeBits10(int toEncode) {
-        return encodeBits5(toEncode >> BASE_32_BIT_SIZE) + encodeBits5(toEncode);
+        return encodeBits5(toEncode >> BASE_32_SYMBOL_BIT_SIZE) + encodeBits5(toEncode);
     }
 
     /**
@@ -66,7 +66,7 @@ public final class Base32 {
         Preconditions.checkArgument(isValid(encoded));
         int decoded = 0;
         for (int i = 0; i < encoded.length(); i++) {
-            decoded = decoded << BASE_32_BIT_SIZE | ALPHABET.indexOf(encoded.charAt(i));
+            decoded = decoded << BASE_32_SYMBOL_BIT_SIZE | ALPHABET.indexOf(encoded.charAt(i));
         }
         return decoded;
     }
