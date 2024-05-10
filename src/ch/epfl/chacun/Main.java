@@ -19,8 +19,8 @@ import java.util.stream.Collectors;
 
 public final class Main extends Application {
 
-    private final static int APP_WIDTH = 1440;
-    private final static int APP_HEIGHT = 1080;
+    private final static int WINDOW_WIDTH = 1440;
+    private final static int WINDOW_HEIGHT = 1080;
 
     public static void main(String[] args) {
         launch(args);
@@ -174,8 +174,8 @@ public final class Main extends Application {
         mainBorderPane.setCenter(boardNode);
         mainBorderPane.setRight(sideBorderPane);
 
-        primaryStage.setWidth(APP_WIDTH);
-        primaryStage.setHeight(APP_HEIGHT);
+        primaryStage.setWidth(WINDOW_WIDTH);
+        primaryStage.setHeight(WINDOW_HEIGHT);
 
         primaryStage.setScene(new Scene(mainBorderPane));
         primaryStage.setTitle("ChaCuN");
