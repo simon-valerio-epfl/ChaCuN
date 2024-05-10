@@ -17,17 +17,6 @@ final public class ColorMap {
     private ColorMap() {
     }
 
-    /**
-     * A map associating each player color to its fill color
-     */
-    private final static Map<PlayerColor, Color> fillColorMap = Map.of(
-            PlayerColor.RED, Color.RED,
-            PlayerColor.BLUE, Color.BLUE,
-            PlayerColor.GREEN, Color.LIME,
-            PlayerColor.YELLOW, Color.YELLOW,
-            PlayerColor.PURPLE, Color.PURPLE
-    );
-
     private static Color deriveStrokePlayerColor(PlayerColor playerColor) {
         return fillColor(playerColor).deriveColor(0, 1, STROKE_BRIGHTNESS_FACTOR, 1);
     }
