@@ -1,6 +1,6 @@
-package ch.epfl.chacun;
+package ch.epfl.chacun.gui;
 
-import ch.epfl.chacun.gui.*;
+import ch.epfl.chacun.*;
 import javafx.application.Application;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;

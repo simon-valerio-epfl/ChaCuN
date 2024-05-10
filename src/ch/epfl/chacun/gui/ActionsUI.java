@@ -44,12 +44,13 @@ public final class ActionsUI {
     public static Node create(ObservableValue<List<String>> actionsO, Consumer<String> handler) {
         HBox hbox = new HBox();
         hbox.setId("actions");
-        hbox.getStylesheets().add("actions.css");
+        hbox.getStylesheets().add("/actions.css");
 
         Text text = new Text();
         text.textProperty().bind(actionsO.map(ActionsUI::textRepresentation));
 
         TextField textField = new TextField();
+        textField.setId("action-field");
         textField.setTextFormatter(new TextFormatter<>(change -> {
             change.setText(cleanupInput(change.getText()));
             return change;
