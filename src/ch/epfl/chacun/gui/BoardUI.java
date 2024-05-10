@@ -37,6 +37,10 @@ public final class BoardUI {
      */
     private static final Map<Integer, Image> cachedImages = new HashMap<>();
 
+    private static final double H_SCROLL_CENTER = .5;
+    private static final double V_SCROLL_CENTER = .5;
+    private static final double VEIl_OPACITY = .5;
+
     /**
      * This is a utility class and therefore is not instantiable
      */
@@ -50,7 +54,7 @@ public final class BoardUI {
      * for a certain message when the player hovers over it. It also handles some graphical effects to
      * render the positions where a tile can be placed in the next turn and the mouse interactions.
      *
-     * @param range             the range of the board (the distance from the center to the borders),
+     * @param reach             the reach of the board (the distance from the center to the borders),
      *                          the board will be a square of size (2*range+1)²
      * @param gameStateO        the observable value of the current game state
      * @param rotationO         the observable value of the current rotation of the tile to be placed
@@ -62,18 +66,18 @@ public final class BoardUI {
      * @return a graphical node representing the board of the game
      */
     public static Node create(
-        int range,
-        ObservableValue<GameState> gameStateO,
-        ObservableValue<Rotation> rotationO,
-        ObservableValue<Set<Occupant>> occupantsO,
-        ObservableValue<Set<Integer>> highlightedTilesO,
+            int reach,
+            ObservableValue<GameState> gameStateO,
+            ObservableValue<Rotation> rotationO,
+            ObservableValue<Set<Occupant>> occupantsO,
+            ObservableValue<Set<Integer>> highlightedTilesO,
 
-        Consumer<Rotation> rotationConsumer,
-        Consumer<Pos> posConsumer,
-        Consumer<Occupant> occupantConsumer
+            Consumer<Rotation> rotationConsumer,
+            Consumer<Pos> posConsumer,
+            Consumer<Occupant> occupantConsumer
     ) {
 
-        Preconditions.checkArgument(range > 0);
+        Preconditions.checkArgument(reach > 0);
 
         ScrollPane scrollPane = new ScrollPane();
         scrollPane.setId("board-scroll-pane");
@@ -86,24 +90,24 @@ public final class BoardUI {
         ObservableValue<Set<Animal>> cancelledAnimalsO = boardO.map(Board::cancelledAnimals);
         // the fringe only exists when the next action is to place a tile
         ObservableValue<Set<Pos>> fringeTilesO = gameStateO.map(
-            state -> state.nextAction() == GameState.Action.PLACE_TILE
-                // important to understand
-                // we can not use boardO.getValue() here!
-                // because this map may be triggered before boardO gets updated!
-                // therefore we would be using the old board
-                ? state.board().insertionPositions()
-                : Set.of()
+                state -> state.nextAction() == GameState.Action.PLACE_TILE
+                        // important to understand
+                        // we can not use boardO.getValue() here!
+                        // because this map may be triggered before boardO gets updated!
+                        // therefore we would be using the old board
+                        ? state.board().insertionPositions()
+                        : Set.of()
         );
 
-        for (int x = -range; x <= range; x++) {
-            for (int y = -range; y <= range; y++) {
+        for (int x = -reach; x <= reach; x++) {
+            for (int y = -reach; y <= reach; y++) {
                 //each cell of the grid contains a tile
                 ImageView imageView = new ImageView();
                 imageView.setFitWidth(ImageLoader.NORMAL_TILE_FIT_SIZE);
                 imageView.setFitHeight(ImageLoader.NORMAL_TILE_FIT_SIZE);
                 Blend blend = new Blend();
                 blend.setMode(BlendMode.SRC_OVER);
-                blend.setOpacity(0.5);
+                blend.setOpacity(VEIl_OPACITY);
                 blend.setBottomInput(null);
 
                 Group group = new Group(imageView);
@@ -167,7 +171,7 @@ public final class BoardUI {
                 blend.topInputProperty().bind(cellDataO.map(CellData::blendTopInput));
 
                 // we add range and position in order to translate our tile from the left corner to the center
-                grid.add(group, x + range, y + range);
+                grid.add(group, x + reach, y + reach);
                 // when a tile is placed, we add the animals and the occupants on it
                 placedTileO.addListener((_, oldPlacedTile, placedTile) -> {
                     if (oldPlacedTile != null || placedTile == null) return;
@@ -176,26 +180,26 @@ public final class BoardUI {
 
                     // handle "jeton d'annulation", a marker that signals that an animal is cancelled
                     List<Node> cancelledAnimalsNodes = placedTile.meadowZones().stream()
-                        .flatMap(meadow -> meadow.animals().stream())
-                        .map(animal -> getCancelledAnimalNode(animal, cancelledAnimalsO, negatedTileRotation))
-                        .toList();
+                            .flatMap(meadow -> meadow.animals().stream())
+                            .map(animal -> getCancelledAnimalNode(animal, cancelledAnimalsO, negatedTileRotation))
+                            .toList();
                     group.getChildren().addAll(cancelledAnimalsNodes);
                     // here we handle the graphical representation of the occupants
                     List<Node> potentialOccupantsNodes = placedTile.potentialOccupants()
-                        .stream()
-                        .map(occupant -> getOccupantNode(
-                            placedTile.placer(), occupant,
-                            occupantsO, occupantConsumer, negatedTileRotation
-                        ))
-                        .toList();
+                            .stream()
+                            .map(occupant -> getOccupantNode(
+                                    placedTile.placer(), occupant,
+                                    occupantsO, occupantConsumer, negatedTileRotation
+                            ))
+                            .toList();
 
                     group.getChildren().addAll(potentialOccupantsNodes);
                 });
             }
         }
 
-        scrollPane.setHvalue(.5);
-        scrollPane.setVvalue(.5);
+        scrollPane.setHvalue(H_SCROLL_CENTER);
+        scrollPane.setVvalue(V_SCROLL_CENTER);
 
         scrollPane.setContent(grid);
         return scrollPane;
@@ -252,8 +256,8 @@ public final class BoardUI {
          */
         public CellData(PlacedTile placedTile, Color veilColor) {
             this(
-                cachedImages.computeIfAbsent(placedTile.id(), ImageLoader::normalImageForTile),
-                placedTile.rotation(), veilColor
+                    cachedImages.computeIfAbsent(placedTile.id(), ImageLoader::normalImageForTile),
+                    placedTile.rotation(), veilColor
             );
         }
 

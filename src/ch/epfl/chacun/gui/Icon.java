@@ -5,8 +5,6 @@ import ch.epfl.chacun.PlayerColor;
 import javafx.scene.Node;
 import javafx.scene.shape.SVGPath;
 
-import java.util.Map;
-
 /**
  * This class provides utility methods to create occupants' graphical representations
  *
@@ -28,13 +26,6 @@ public final class Icon {
      * The SVG path for a hut
      */
     private final static String HUT_SVG = "M -8 10 H 8 V 2 H 12 L 0 -10 L -12 2 H -8 Z";
-    /**
-     * A map associating each kind of occupant to its SVG path
-     */
-    private final static Map<Occupant.Kind, String> SVG_MAP = Map.of(
-            Occupant.Kind.PAWN, PAWN_SVG,
-            Occupant.Kind.HUT, HUT_SVG
-    );
 
     /**
      * Creates a new node representing an occupant of the given kind and player
@@ -45,7 +36,10 @@ public final class Icon {
      */
     public static Node newFor(PlayerColor playerColor, Occupant.Kind kind) {
         SVGPath svgPath = new SVGPath();
-        svgPath.setContent(SVG_MAP.get(kind));
+        svgPath.setContent(switch (kind) {
+            case PAWN -> PAWN_SVG;
+            case HUT -> HUT_SVG;
+        });
         svgPath.setFill(ColorMap.fillColor(playerColor));
         svgPath.setStroke(ColorMap.strokeColor(playerColor));
         return svgPath;

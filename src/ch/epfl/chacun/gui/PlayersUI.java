@@ -24,6 +24,10 @@ import java.util.Map;
  * @author Simon Lefort (371918)
  */
 public final class PlayersUI {
+
+    private static final double PLACED_OCCUPANT_OPACITY = .1;
+    private static final double HELD_OCCUPANT_OPACITY = 1;
+
     /**
      * This class is not instantiable
      */
@@ -62,6 +66,7 @@ public final class PlayersUI {
                 if (newValue) textFlow.getStyleClass().add("current");
                 else textFlow.getStyleClass().remove("current");
             });
+            // todo check null --> currentplayer should trigger listener
             if (gameStateO.getValue().currentPlayer() == playerColor) textFlow.getStyleClass().add("current");
 
             Circle circle = new Circle(5);
@@ -69,10 +74,10 @@ public final class PlayersUI {
 
             ObservableValue<String> pointsTextO = pointsO.map(points -> STR." \{name} : \{textMaker.points(points.getOrDefault(playerColor, 0))}\n");
             ObservableValue<Map<Occupant.Kind, Integer>> occupantsO = gameStateO
-                .map(gState -> Map.of(
-                    Occupant.Kind.PAWN, gState.freeOccupantsCount(playerColor, Occupant.Kind.PAWN),
-                    Occupant.Kind.HUT, gState.freeOccupantsCount(playerColor, Occupant.Kind.HUT)
-                ));
+                    .map(gState -> Map.of(
+                            Occupant.Kind.PAWN, gState.freeOccupantsCount(playerColor, Occupant.Kind.PAWN),
+                            Occupant.Kind.HUT, gState.freeOccupantsCount(playerColor, Occupant.Kind.HUT)
+                    ));
 
             Text pointsText = new Text();
             pointsText.textProperty().bind(pointsTextO);
@@ -109,7 +114,9 @@ public final class PlayersUI {
             Node occupantNode = Icon.newFor(playerColor, kind);
             // bind opacity to the number of used occupants
             int finalI = i;
-            occupantNode.opacityProperty().bind(occupantsO.map(occupants -> occupants.get(kind) > finalI ? 1.0 : 0.1));
+            occupantNode.opacityProperty().bind(
+                    occupantsO.map(occupants -> occupants.get(kind) > finalI ? HELD_OCCUPANT_OPACITY : PLACED_OCCUPANT_OPACITY)
+            );
             nodes.add(occupantNode);
         }
         return nodes;

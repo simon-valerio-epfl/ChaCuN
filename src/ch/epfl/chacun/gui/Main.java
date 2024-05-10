@@ -97,21 +97,19 @@ public final class Main extends Application {
 
         Consumer<Occupant> onOccupantClick = occupant -> {
             GameState currentGameState = gameStateO.getValue();
-            if (currentGameState.nextAction() == GameState.Action.OCCUPY_TILE) {
-                assert currentGameState.board().lastPlacedTile() != null;
-                int lastPlacedTileId = currentGameState.board().lastPlacedTile().id();
-                if (occupant != null && Zone.tileId(occupant.zoneId()) != lastPlacedTileId) return;
-                ActionEncoder.StateAction stateAction = ActionEncoder.withNewOccupant(currentGameState, occupant);
-                saveState(stateAction, gameStateO, actionsO);
-            } else if (currentGameState.nextAction() == GameState.Action.RETAKE_PAWN) {
-                // todo this code is duplicated from ActionEncoder
-                // ask an assistant
-                if (occupant.kind() != Occupant.Kind.PAWN) return;
-                PlayerColor currentPlayer = gameState.currentPlayer();
-                PlayerColor occupantPlacer = gameState.board().tileWithId(Zone.tileId(occupant.zoneId())).placer();
-                if (currentPlayer != occupantPlacer) return;
-                ActionEncoder.StateAction stateAction = ActionEncoder.withOccupantRemoved(currentGameState, occupant);
-                saveState(stateAction, gameStateO, actionsO);
+            Board board = currentGameState.board();
+            int tileId = Zone.tileId(occupant.zoneId());
+            switch (currentGameState.nextAction()) {
+                case OCCUPY_TILE -> {
+                    if (occupant != null && tileId != board.lastPlacedTile().id()) return;
+                    saveState(ActionEncoder.withNewOccupant(currentGameState, occupant), gameStateO, actionsO);
+                }
+                case RETAKE_PAWN -> {
+                    // todo or
+                    if (occupant.kind() != Occupant.Kind.PAWN) return;
+                    if (currentGameState.currentPlayer() != board.tileWithId(tileId).placer()) return;
+                    saveState(ActionEncoder.withOccupantRemoved(currentGameState, occupant), gameStateO, actionsO);
+                }
             }
         };
 
@@ -139,9 +137,7 @@ public final class Main extends Application {
                     nextRotationO.getValue(), pos
             );
             if (!currentGameState.board().canAddTile(placedTile)) return;
-            ActionEncoder.StateAction stateAction = ActionEncoder.withPlacedTile(currentGameState, placedTile);
-            saveState(stateAction, gameStateO, actionsO);
-
+            saveState(ActionEncoder.withPlacedTile(currentGameState, placedTile), gameStateO, actionsO);
             nextRotationO.setValue(Rotation.NONE);
         };
 
@@ -154,9 +150,9 @@ public final class Main extends Application {
         });
 
         Node boardNode = BoardUI.create(
-            Board.REACH, gameStateO, nextRotationO, visibleOccupants, highlightedTilesO,
-            // consumers
-            onRotationClick, onPosClick, onOccupantClick
+                Board.REACH, gameStateO, nextRotationO, visibleOccupants, highlightedTilesO,
+                // consumers
+                onRotationClick, onPosClick, onOccupantClick
         );
 
         // actions and decks border pane

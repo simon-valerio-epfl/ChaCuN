@@ -1,7 +1,6 @@
 package ch.epfl.chacun.gui;
 
 import ch.epfl.chacun.MessageBoard;
-import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
@@ -40,6 +39,8 @@ public final class MessageBoardUI {
             ObjectProperty<Set<Integer>> tileIds
     ) {
         VBox vBox = new VBox();
+
+        // todo scrollbar
 
         ScrollPane scrollPane = new ScrollPane(vBox);
         scrollPane.getStylesheets().add("message-board.css");

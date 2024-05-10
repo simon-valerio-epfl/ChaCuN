@@ -52,10 +52,7 @@ public final class DecksUI {
 
         // ImageView of the next tile to place, which has to be shown in large size
         ImageView view = new ImageView();
-        view.imageProperty().bind(tileO.map(t ->
-                t == null
-                        ? ImageLoader.EMPTY_IMAGE
-                        : ImageLoader.largeImageForTile(t.id())));
+        view.imageProperty().bind(tileO.map(t -> ImageLoader.largeImageForTile(t.id())));
         view.setFitHeight(ImageLoader.LARGE_TILE_FIT_SIZE);
         view.setFitWidth(ImageLoader.LARGE_TILE_FIT_SIZE);
         // Text, occupy tile (only visible if textToDisplay is not empty,
@@ -68,14 +65,10 @@ public final class DecksUI {
         text.setWrappingWidth(WRAPPING_WIDTH * ImageLoader.LARGE_TILE_FIT_SIZE);
         stackPane.getChildren().setAll(view, text);
         // we bind the graphical view of the tile to place to the tile itself
-        view.imageProperty().bind(tileO.map(t ->
-                t == null
-                        ? ImageLoader.EMPTY_IMAGE
-                        : ImageLoader.largeImageForTile(t.id()))
-        );
+        view.imageProperty().bind(tileO.map(t -> ImageLoader.largeImageForTile(t.id())));
         // here we handle the decks containing the remaining cards
-        Node menhirNode = getDeckNode("MENHIR", leftMenhirTilesO);
-        Node normalNode = getDeckNode("NORMAL", leftNormalTilesO);
+        Node normalNode = getDeckNode(Tile.Kind.NORMAL, leftNormalTilesO);
+        Node menhirNode = getDeckNode(Tile.Kind.MENHIR, leftMenhirTilesO);
         HBox hBox = new HBox(normalNode, menhirNode);
         hBox.setAlignment(Pos.CENTER);
 
@@ -89,13 +82,13 @@ public final class DecksUI {
     /**
      * This method creates a node representing a deck containing the remaining tiles
      *
-     * @param name      the name of the deck, which represents the kind of tiles it contains
+     * @param kind      the kind of the deck, which represents the kind of tiles it contains
      * @param leftTiles the updating number of tiles left in the deck
      * @return a node representing the deck
      */
-    private static Node getDeckNode(String name, ObservableValue<Integer> leftTiles) {
+    private static Node getDeckNode(Tile.Kind kind, ObservableValue<Integer> leftTiles) {
         ImageView image = new ImageView();
-        image.setId(name);
+        image.setId(kind.toString());
         image.setFitHeight(ImageLoader.NORMAL_TILE_FIT_SIZE);
         image.setFitWidth(ImageLoader.NORMAL_TILE_FIT_SIZE);
         Text text = new Text();

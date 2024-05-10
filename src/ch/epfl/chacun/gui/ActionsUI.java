@@ -11,6 +11,7 @@ import javafx.scene.text.Text;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * This class represents the graphical representation
@@ -72,10 +73,10 @@ public final class ActionsUI {
      */
     private static String cleanupInput(String input) {
         return input.toUpperCase()
-            .chars()
-            .filter(c -> Base32.isValid(Character.toString(c)))
-            .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
-            .toString();
+                .chars()
+                .mapToObj(Character::toString)
+                .filter(Base32::isValid)
+                .collect(Collectors.joining());
     }
 
     /**

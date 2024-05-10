@@ -27,20 +27,10 @@ final public class ColorMap {
             PlayerColor.YELLOW, Color.YELLOW,
             PlayerColor.PURPLE, Color.PURPLE
     );
-    /**
-     * A map associating each player color to its stroke color
-     */
-    private final static Map<PlayerColor, Color> strokeColorMap = Map.of(
-            PlayerColor.RED, Color.WHITE,
-            PlayerColor.BLUE, Color.WHITE,
-            PlayerColor.PURPLE, Color.WHITE,
-            PlayerColor.GREEN, fillColor(PlayerColor.GREEN).deriveColor(
-                    0, 1, STROKE_BRIGHTNESS_FACTOR, 1
-            ),
-            PlayerColor.YELLOW, fillColor(PlayerColor.YELLOW).deriveColor(
-                    0, 1, STROKE_BRIGHTNESS_FACTOR, 1
-            )
-    );
+
+    private static Color deriveStrokePlayerColor(PlayerColor playerColor) {
+        return fillColor(playerColor).deriveColor(0, 1, STROKE_BRIGHTNESS_FACTOR, 1);
+    }
 
     /**
      * Returns the fill color for the given player color
@@ -49,7 +39,13 @@ final public class ColorMap {
      * @return the fill color for the given player color
      */
     public static Color fillColor(PlayerColor playerColor) {
-        return fillColorMap.get(playerColor);
+        return switch (playerColor) {
+            case RED -> Color.RED;
+            case BLUE -> Color.BLUE;
+            case GREEN -> Color.LIME;
+            case YELLOW -> Color.YELLOW;
+            case PURPLE -> Color.PURPLE;
+        };
     }
 
     /**
@@ -59,7 +55,10 @@ final public class ColorMap {
      * @return the stroke color for the given player color
      */
     public static Color strokeColor(PlayerColor playerColor) {
-        return strokeColorMap.get(playerColor);
+        return switch (playerColor) {
+            case RED, BLUE, PURPLE -> Color.WHITE;
+            case GREEN, YELLOW -> deriveStrokePlayerColor(playerColor);
+        };
     }
 
 }
