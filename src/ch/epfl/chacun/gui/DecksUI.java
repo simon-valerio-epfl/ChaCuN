@@ -3,6 +3,7 @@ package ch.epfl.chacun.gui;
 import ch.epfl.chacun.Occupant;
 import ch.epfl.chacun.Tile;
 import javafx.beans.value.ObservableValue;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
@@ -76,6 +77,7 @@ public final class DecksUI {
         Node menhirNode = getDeckNode("MENHIR", leftMenhirTilesO);
         Node normalNode = getDeckNode("NORMAL", leftNormalTilesO);
         HBox hBox = new HBox(normalNode, menhirNode);
+        hBox.setAlignment(Pos.CENTER);
 
         VBox vBox = new VBox(hBox, stackPane);
         vBox.getStylesheets().add("decks.css");
