@@ -19,6 +19,7 @@ public final class WSClient implements WebSocket.Listener {
 
     private Consumer<String> onGameJoinAccept;
     private Consumer<String> onGamePlayerJoin;
+    private Consumer<String> onPlayerAction;
 
     public WSClient(String gameName, String username) {
         this.gameName = gameName;
@@ -26,6 +27,7 @@ public final class WSClient implements WebSocket.Listener {
 
         this.onGameJoinAccept = (data) -> {};
         this.onGamePlayerJoin = (data) -> {};
+        this.onPlayerAction = (data) -> {};
     }
 
     private static String connectURI(String gameName, String username) {
@@ -38,6 +40,7 @@ public final class WSClient implements WebSocket.Listener {
     }
 
     private void handleMessage(String message) {
+        System.out.println(message);
         String[] messageParts = message.split("\\.");
         String action = messageParts[0];
         String data = messageParts[1];
@@ -48,6 +51,8 @@ public final class WSClient implements WebSocket.Listener {
             case "GAMEJOIN_NEWCOMER":
                 onGamePlayerJoin.accept(data);
                 break;
+            case "GAMEACTION":
+                onPlayerAction.accept(data);
             case "PING":
                 acknowledgePing();
                 break;
@@ -60,6 +65,10 @@ public final class WSClient implements WebSocket.Listener {
 
     public void setOnGamePlayerJoin(Consumer<String> onGamePlayerJoin) {
         this.onGamePlayerJoin = onGamePlayerJoin;
+    }
+
+    public void setOnPlayerAction(Consumer<String> onPlayerAction) {
+        this.onPlayerAction = onPlayerAction;
     }
 
     public void connect() {
@@ -90,7 +99,7 @@ public final class WSClient implements WebSocket.Listener {
     }
 
     public void sendAction(String message) {
-        ws.sendText(message, true);
+        ws.sendText(STR."GAMEACTION.\{message}", true);
     }
 
     public void dispatchGameStarted() {

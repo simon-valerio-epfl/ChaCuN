@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * This class represents the graphical representation
@@ -59,6 +60,8 @@ public final class PlayersUI {
         ObservableValue<List<PlayerColor>> players = gameStateO.map(GameState::players);
 
         Function<List<PlayerColor>, Boolean> addPlayersNodes = (newPlayers) -> {
+            System.out.println("rerender players");
+            System.out.println(newPlayers.stream().map(e -> textMaker.playerName(e)).collect(Collectors.joining()));
             newPlayers
                     .stream()
                     .skip(vBox.getChildren().size())

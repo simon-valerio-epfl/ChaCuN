@@ -38,6 +38,16 @@ public final class Main extends Application {
         actionsO.setValue(newActions);
     }
 
+    private void saveStateAndDispatch(
+            ActionEncoder.StateAction stateAction,
+            SimpleObjectProperty<GameState> gameStateO,
+            SimpleObjectProperty<List<String>> actionsO,
+            WSClient wsClient
+    ) {
+        saveState(stateAction, gameStateO, actionsO);
+        wsClient.sendAction(stateAction.action());
+    }
+
     private TileDecks getShuffledTileDecks(Long seed) {
         List<Tile> tiles = new ArrayList<>(Tiles.TILES);
         if (seed != null) {
@@ -68,16 +78,13 @@ public final class Main extends Application {
         String gameName = "androzGame";
         String mySuperName = "Androz" + new Random().nextInt(1000);
         WSClient wsClient = new WSClient(
-                gameName,
-                mySuperName
+            gameName,
+            mySuperName
         );
 
-
         Parameters parameters = getParameters();
-        Map<String, String> namedParameters = parameters.getNamed();
 
-        Long seed = namedParameters.containsKey("seed") ? Long.parseUnsignedLong(namedParameters.get("seed")) : null;
-        TileDecks tileDecks = getShuffledTileDecks(seed);
+        TileDecks tileDecks = getShuffledTileDecks((long) gameName.hashCode());
 
         List<String> players = parameters.getUnnamed();
         int playersSize = players.size();
@@ -91,6 +98,7 @@ public final class Main extends Application {
 
         GameState gameState = GameState.initial(playerColorsO.getValue(), tileDecks, textMaker);
         SimpleObjectProperty<GameState> gameStateO = new SimpleObjectProperty<>(gameState);
+        SimpleObjectProperty<List<String>> actionsO = new SimpleObjectProperty<>(List.of());
 
         wsClient.setOnGamePlayerJoin(newPlayerNames -> {
             playerNamesO.setValue(getPlayersMap(newPlayerNames));
@@ -99,6 +107,15 @@ public final class Main extends Application {
         wsClient.setOnGameJoinAccept(newPlayerNames -> {
             playerNamesO.setValue(getPlayersMap(newPlayerNames));
             gameStateO.setValue(gameStateO.getValue().withPlayers(playerColorsO.getValue()));
+        });
+        wsClient.setOnPlayerAction(action -> {
+            System.out.println("Received" + action);
+            ActionEncoder.StateAction stateAction = ActionEncoder.decodeAndApply(gameStateO.getValue(), action);
+            if (stateAction == null) {
+                // todo server what have you done bro?
+                return;
+            }
+            saveState(stateAction, gameStateO, actionsO);
         });
 
         ObservableValue<List<MessageBoard.Message>> observableMessagesO = gameStateO.map(
@@ -118,33 +135,6 @@ public final class Main extends Application {
                 }
         );
 
-        SimpleObjectProperty<List<String>> actionsO = new SimpleObjectProperty<>(List.of());
-
-        Consumer<Occupant> onOccupantClick = occupant -> {
-            GameState currentGameState = gameStateO.getValue();
-            Board board = currentGameState.board();
-            int tileId = Zone.tileId(occupant.zoneId());
-            switch (currentGameState.nextAction()) {
-                case OCCUPY_TILE -> {
-                    assert board.lastPlacedTile() != null;
-                    if (tileId != board.lastPlacedTile().id()) return;
-                    saveState(ActionEncoder.withNewOccupant(currentGameState, occupant), gameStateO, actionsO);
-                }
-                case RETAKE_PAWN -> {
-                    if (
-                            (occupant.kind() != Occupant.Kind.PAWN)
-                                    || (currentGameState.currentPlayer() != board.tileWithId(tileId).placer())
-                    ) return;
-                    saveState(ActionEncoder.withOccupantRemoved(currentGameState, occupant), gameStateO, actionsO);
-                }
-            }
-        };
-
-        Consumer<String> onEnteredAction = action -> {
-            ActionEncoder.StateAction newSt = ActionEncoder.decodeAndApply(gameStateO.getValue(), action);
-            if (newSt != null) saveState(newSt, gameStateO, actionsO);
-        };
-
         ObservableValue<String> ownerPlayerColorO = playerNamesO.map(playerName -> {
             PlayerColor owner = null;
             for (Map.Entry<PlayerColor, String> entry : playerName.entrySet()) {
@@ -160,6 +150,32 @@ public final class Main extends Application {
                 gState -> gState.currentPlayer() == PlayerColor.valueOf(ownerPlayerColorO.getValue())
         );
 
+        Consumer<Occupant> onOccupantClick = occupant -> {
+            if (!isOwnerCurrentPlayerO.getValue()) return;
+            GameState currentGameState = gameStateO.getValue();
+            Board board = currentGameState.board();
+            int tileId = Zone.tileId(occupant.zoneId());
+            switch (currentGameState.nextAction()) {
+                case OCCUPY_TILE -> {
+                    assert board.lastPlacedTile() != null;
+                    if (tileId != board.lastPlacedTile().id()) return;
+                    saveStateAndDispatch(ActionEncoder.withNewOccupant(currentGameState, occupant), gameStateO, actionsO, wsClient);
+                }
+                case RETAKE_PAWN -> {
+                    if (
+                            (occupant.kind() != Occupant.Kind.PAWN)
+                                    || (currentGameState.currentPlayer() != board.tileWithId(tileId).placer())
+                    ) return;
+                    saveStateAndDispatch(ActionEncoder.withOccupantRemoved(currentGameState, occupant), gameStateO, actionsO, wsClient);
+                }
+            }
+        };
+
+        Consumer<String> onEnteredAction = action -> {
+            ActionEncoder.StateAction newSt = ActionEncoder.decodeAndApply(gameStateO.getValue(), action);
+            if (newSt != null) saveStateAndDispatch(newSt, gameStateO, actionsO, wsClient);
+        };
+
         Node playersNode = PlayersUI.create(gameStateO, new TextMakerFr(playerNamesO));
         Node messagesNode = MessageBoardUI.create(observableMessagesO, highlightedTilesO);
         Node decksNode = DecksUI.create(tileToPlaceO, leftNormalTilesO, leftMenhirTilesO, textToDisplayO, onOccupantClick);
@@ -171,6 +187,7 @@ public final class Main extends Application {
         };
 
         Consumer<Pos> onPosClick = pos -> {
+            if (!isOwnerCurrentPlayerO.getValue()) return;
             GameState currentGameState = gameStateO.getValue();
             if (currentGameState.nextAction() != GameState.Action.PLACE_TILE) return;
             Tile tileToPlace = currentGameState.tileToPlace();
@@ -179,7 +196,7 @@ public final class Main extends Application {
                     nextRotationO.getValue(), pos
             );
             if (!currentGameState.board().canAddTile(placedTile)) return;
-            saveState(ActionEncoder.withPlacedTile(currentGameState, placedTile), gameStateO, actionsO);
+            saveStateAndDispatch(ActionEncoder.withPlacedTile(currentGameState, placedTile), gameStateO, actionsO, wsClient);
             nextRotationO.setValue(Rotation.NONE);
         };
 
