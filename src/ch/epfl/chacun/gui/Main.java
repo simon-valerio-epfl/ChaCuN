@@ -101,13 +101,15 @@ public final class Main extends Application {
             int tileId = Zone.tileId(occupant.zoneId());
             switch (currentGameState.nextAction()) {
                 case OCCUPY_TILE -> {
-                    if (occupant != null && tileId != board.lastPlacedTile().id()) return;
+                    assert board.lastPlacedTile() != null;
+                    if (tileId != board.lastPlacedTile().id()) return;
                     saveState(ActionEncoder.withNewOccupant(currentGameState, occupant), gameStateO, actionsO);
                 }
                 case RETAKE_PAWN -> {
-                    // todo or
-                    if (occupant.kind() != Occupant.Kind.PAWN) return;
-                    if (currentGameState.currentPlayer() != board.tileWithId(tileId).placer()) return;
+                    if (
+                            (occupant.kind() != Occupant.Kind.PAWN)
+                                    || (currentGameState.currentPlayer() != board.tileWithId(tileId).placer())
+                    ) return;
                     saveState(ActionEncoder.withOccupantRemoved(currentGameState, occupant), gameStateO, actionsO);
                 }
             }
