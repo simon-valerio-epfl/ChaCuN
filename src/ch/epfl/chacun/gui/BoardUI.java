@@ -62,15 +62,15 @@ public final class BoardUI {
      * @return a graphical node representing the board of the game
      */
     public static Node create(
-            int range,
-            ObservableValue<GameState> gameStateO,
-            ObservableValue<Rotation> rotationO,
-            ObservableValue<Set<Occupant>> occupantsO,
-            ObservableValue<Set<Integer>> highlightedTilesO,
+        int range,
+        ObservableValue<GameState> gameStateO,
+        ObservableValue<Rotation> rotationO,
+        ObservableValue<Set<Occupant>> occupantsO,
+        ObservableValue<Set<Integer>> highlightedTilesO,
 
-            Consumer<Rotation> rotationConsumer,
-            Consumer<Pos> posConsumer,
-            Consumer<Occupant> occupantConsumer
+        Consumer<Rotation> rotationConsumer,
+        Consumer<Pos> posConsumer,
+        Consumer<Occupant> occupantConsumer
     ) {
 
         Preconditions.checkArgument(range > 0);
@@ -252,8 +252,8 @@ public final class BoardUI {
          */
         public CellData(PlacedTile placedTile, Color veilColor) {
             this(
-                    cachedImages.computeIfAbsent(placedTile.id(), ImageLoader::normalImageForTile),
-                    placedTile.rotation(), veilColor
+                cachedImages.computeIfAbsent(placedTile.id(), ImageLoader::normalImageForTile),
+                placedTile.rotation(), veilColor
             );
         }
 
