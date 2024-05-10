@@ -12,8 +12,12 @@ import java.util.Map;
  * @author Simon Lefort (371918)
  */
 final public class ColorMap {
+
     private final static double STROKE_BRIGHTNESS_FACTOR = 0.6;
 
+    /**
+     * This class is not instantiable
+     */
     private ColorMap() {
     }
 

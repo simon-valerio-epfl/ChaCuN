@@ -10,3 +10,4 @@ scripts/run_tests/reports
 
 # Lib
 lib
+.idea/.name
