@@ -62,7 +62,8 @@ public final class MessageBoardUI {
                         vBox.getChildren().add(text);
                     });
 
-            Platform.runLater(() -> scrollPane.setVvalue(1));
+            scrollPane.layout();
+            scrollPane.setVvalue(1);
         });
 
         return scrollPane;
