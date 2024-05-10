@@ -39,3 +39,19 @@ jobs:
           JAVA_HOME: ${{ steps.setup-java.outputs.java-path }}
           PATH: ${{ steps.setup-java.outputs.java-path }}/bin:$PATH
           JAVAFX_SDK_PATH: ${{ env.JAVAFX_SDK_PATH }}
+
+      - name: Compile and Package Application
+        run: |
+          echo "Main-Class: ch.epfl.chacun.gui.Main" > out/manifest.txt
+          jar cfm ChaCuN.jar out/manifest.txt -C out/ .
+        working-directory: ./scripts/run_tests
+        env:
+          JAVA_HOME: ${{ steps.setup-java.outputs.java-path }}
+          PATH: ${{ steps.setup-java.outputs.java-path }}/bin:$PATH
+          JAVAFX_SDK_PATH: ${{ env.JAVAFX_SDK_PATH }}
+
+      - name: Upload JAR
+        uses: actions/upload-artifact@v3
+        with:
+          name: javafx-application
+          path: ChaCuN.jar
