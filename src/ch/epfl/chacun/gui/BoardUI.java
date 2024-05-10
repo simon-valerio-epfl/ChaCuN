@@ -71,6 +71,7 @@ public final class BoardUI {
             ObservableValue<Rotation> rotationO,
             ObservableValue<Set<Occupant>> occupantsO,
             ObservableValue<Set<Integer>> highlightedTilesO,
+            ObservableValue<Boolean> isOwnerCurrentPlayerO,
 
             Consumer<Rotation> rotationConsumer,
             Consumer<Pos> posConsumer,

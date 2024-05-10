@@ -14,6 +14,7 @@ import javafx.scene.text.TextFlow;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * This class represents the graphical representation
@@ -43,7 +44,10 @@ public final class PlayersUI {
      * @return a graphical node containing the occupants of the game with their names, their colours,
      * their points and available occupants, with the current player highlighted
      */
-    public static Node create(ObservableValue<GameState> gameStateO, TextMaker textMaker) {
+    public static Node create(
+            ObservableValue<GameState> gameStateO,
+            TextMaker textMaker
+    ) {
 
         ObservableValue<Map<PlayerColor, Integer>> pointsO = gameStateO.map(gState -> gState.messageBoard().points());
 
@@ -52,45 +56,57 @@ public final class PlayersUI {
         vBox.getStylesheets().add("players.css");
         vBox.setId("players");
 
-        // for each player color, create a text flow
-        PlayerColor.ALL.forEach(playerColor -> {
-            String name = textMaker.playerName(playerColor);
-            if (name == null) return;
+        ObservableValue<List<PlayerColor>> players = gameStateO.map(GameState::players);
 
-            TextFlow textFlow = new TextFlow();
-            textFlow.getStyleClass().add("player");
+        Function<List<PlayerColor>, Boolean> addPlayersNodes = (newPlayers) -> {
+            newPlayers
+                    .stream()
+                    .skip(vBox.getChildren().size())
+                    .forEach(playerColor -> {
+                        String name = textMaker.playerName(playerColor);
 
-            // we update here the current player
-            ObservableValue<Boolean> isCurrentPlayer = gameStateO.map(gState -> gState.currentPlayer() == playerColor);
-            isCurrentPlayer.addListener((_, _, newValue) -> {
-                if (newValue) textFlow.getStyleClass().add("current");
-                else textFlow.getStyleClass().remove("current");
-            });
-            // todo check null --> currentplayer should trigger listener
-            if (gameStateO.getValue().currentPlayer() == playerColor) textFlow.getStyleClass().add("current");
+                        if (name == null) return;
 
-            Circle circle = new Circle(5);
-            circle.setFill(ColorMap.fillColor(playerColor));
+                        TextFlow textFlow = new TextFlow();
+                        textFlow.getStyleClass().add("player");
 
-            ObservableValue<String> pointsTextO = pointsO.map(points -> STR." \{name} : \{textMaker.points(points.getOrDefault(playerColor, 0))}\n");
-            ObservableValue<Map<Occupant.Kind, Integer>> occupantsO = gameStateO
-                    .map(gState -> Map.of(
-                            Occupant.Kind.PAWN, gState.freeOccupantsCount(playerColor, Occupant.Kind.PAWN),
-                            Occupant.Kind.HUT, gState.freeOccupantsCount(playerColor, Occupant.Kind.HUT)
-                    ));
+                        // we update here the current player
+                        ObservableValue<Boolean> isCurrentPlayer = gameStateO.map(gState -> gState.currentPlayer() == playerColor);
+                        isCurrentPlayer.addListener((_, _, newValue) -> {
+                            if (newValue) textFlow.getStyleClass().add("current");
+                            else textFlow.getStyleClass().remove("current");
+                        });
+                        // todo check null --> currentplayer should trigger listener
+                        if (gameStateO.getValue().currentPlayer() == playerColor)
+                            textFlow.getStyleClass().add("current");
 
-            Text pointsText = new Text();
-            pointsText.textProperty().bind(pointsTextO);
+                        Circle circle = new Circle(5);
+                        circle.setFill(ColorMap.fillColor(playerColor));
 
-            textFlow.getChildren().addAll(circle, pointsText);
+                        ObservableValue<String> pointsTextO = pointsO.map(points -> STR." \{name} : \{textMaker.points(points.getOrDefault(playerColor, 0))}\n");
+                        ObservableValue<Map<Occupant.Kind, Integer>> occupantsO = gameStateO
+                                .map(gState -> Map.of(
+                                        Occupant.Kind.PAWN, gState.freeOccupantsCount(playerColor, Occupant.Kind.PAWN),
+                                        Occupant.Kind.HUT, gState.freeOccupantsCount(playerColor, Occupant.Kind.HUT)
+                                ));
 
-            textFlow.getChildren().addAll(getOccupants(playerColor, Occupant.Kind.HUT, occupantsO));
-            textFlow.getChildren().add(new Text("   "));
-            textFlow.getChildren().addAll(getOccupants(playerColor, Occupant.Kind.PAWN, occupantsO));
+                        Text pointsText = new Text();
+                        pointsText.textProperty().bind(pointsTextO);
 
-            vBox.getChildren().add(textFlow);
+                        textFlow.getChildren().addAll(circle, pointsText);
 
-        });
+                        textFlow.getChildren().addAll(getOccupants(playerColor, Occupant.Kind.HUT, occupantsO));
+                        textFlow.getChildren().add(new Text("   "));
+                        textFlow.getChildren().addAll(getOccupants(playerColor, Occupant.Kind.PAWN, occupantsO));
+
+                        vBox.getChildren().add(textFlow);
+
+                    });
+            return true;
+        };
+
+        players.addListener((_, _, newPlayers) -> addPlayersNodes.apply(newPlayers));
+        addPlayersNodes.apply(players.getValue());
 
         return vBox;
     }

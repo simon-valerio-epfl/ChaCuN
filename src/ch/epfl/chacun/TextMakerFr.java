@@ -1,5 +1,7 @@
 package ch.epfl.chacun;
 
+import javafx.beans.value.ObservableValue;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -30,10 +32,10 @@ final public class TextMakerFr implements TextMaker {
             Animal.Kind.TIGER, "tigre"
     );
 
-    private final Map<PlayerColor, String> names;
+    private final ObservableValue<Map<PlayerColor, String>> namesO;
 
-    public TextMakerFr(Map<PlayerColor, String> names) {
-        this.names = Map.copyOf(names);
+    public TextMakerFr(ObservableValue<Map<PlayerColor, String>> namesO) {
+        this.namesO = namesO;
     }
 
     private String pluralizeGameItems(GameItem item, int count) {
@@ -101,7 +103,7 @@ final public class TextMakerFr implements TextMaker {
 
     @Override
     public String playerName(PlayerColor playerColor) {
-        return names.getOrDefault(playerColor, null);
+        return namesO.getValue().getOrDefault(playerColor, null);
     }
 
     @Override

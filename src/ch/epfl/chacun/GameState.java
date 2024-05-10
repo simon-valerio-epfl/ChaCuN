@@ -65,7 +65,7 @@ public record GameState(
 
         Objects.requireNonNull(players);
         players = List.copyOf(players);
-        Preconditions.checkArgument(players.size() >= MIN_PLAYER_COUNT);
+        //Preconditions.checkArgument(players.size() >= MIN_PLAYER_COUNT);
 
         Preconditions.checkArgument(tileToPlace == null ^ nextAction == Action.PLACE_TILE);
     }
@@ -444,6 +444,10 @@ public record GameState(
         newMessageBoard = newMessageBoard.withWinners(winners, maxCount);
         // the game is ended, and the winners are determined
         return new GameState(players, tileDecks, null, newBoard, Action.END_GAME, newMessageBoard);
+    }
+
+    public GameState withPlayers(List<PlayerColor> players) {
+        return new GameState(players, tileDecks, tileToPlace, board, nextAction, messageBoard);
     }
 
 }
