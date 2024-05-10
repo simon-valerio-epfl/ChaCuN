@@ -71,10 +71,10 @@ public final class ActionsUI {
      */
     private static String cleanupInput(String input) {
         return input.toUpperCase()
-                .chars()
-                .filter(c -> Base32.isValid(Character.toString(c)))
-                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
-                .toString();
+            .chars()
+            .filter(c -> Base32.isValid(Character.toString(c)))
+            .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+            .toString();
     }
 
     /**

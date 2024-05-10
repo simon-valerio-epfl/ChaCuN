@@ -15,6 +15,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -85,13 +86,13 @@ public final class BoardUI {
         ObservableValue<Set<Animal>> cancelledAnimalsO = boardO.map(Board::cancelledAnimals);
         // the fringe only exists when the next action is to place a tile
         ObservableValue<Set<Pos>> fringeTilesO = gameStateO.map(
-                state -> state.nextAction() == GameState.Action.PLACE_TILE
-                        // important to understand
-                        // we can not use boardO.getValue() here!
-                        // because this map may be triggered before boardO gets updated!
-                        // therefore we would be using the old board
-                        ? state.board().insertionPositions()
-                        : Set.of()
+            state -> state.nextAction() == GameState.Action.PLACE_TILE
+                // important to understand
+                // we can not use boardO.getValue() here!
+                // because this map may be triggered before boardO gets updated!
+                // therefore we would be using the old board
+                ? state.board().insertionPositions()
+                : Set.of()
         );
 
         for (int x = -range; x <= range; x++) {
@@ -174,41 +175,63 @@ public final class BoardUI {
                     double negatedTileRotation = placedTile.rotation().negated().degreesCW();
 
                     // handle "jeton d'annulation", a marker that signals that an animal is cancelled
-                    placedTile.meadowZones().stream()
-                            .flatMap(meadow -> meadow.animals().stream())
-                            .forEach(animal -> {
-                                ImageView cancelledAnimalView = new ImageView();
-                                cancelledAnimalView.visibleProperty().bind(cancelledAnimalsO.map(
-                                        cancelledAnimals -> cancelledAnimals.contains(animal)
-                                ));
-                                cancelledAnimalView.setId(STR."marker_\{animal.id()}");
-                                cancelledAnimalView.getStyleClass().add("marker");
-                                cancelledAnimalView.setFitHeight(ImageLoader.MARKER_FIT_SIZE);
-                                cancelledAnimalView.setFitWidth(ImageLoader.MARKER_FIT_SIZE);
-                                cancelledAnimalView.setRotate(negatedTileRotation);
-                                group.getChildren().add(cancelledAnimalView);
-                            });
+                    List<Node> cancelledAnimalsNodes = placedTile.meadowZones().stream()
+                        .flatMap(meadow -> meadow.animals().stream())
+                        .map(animal -> getCancelledAnimalNode(animal, cancelledAnimalsO, negatedTileRotation))
+                        .toList();
+                    group.getChildren().addAll(cancelledAnimalsNodes);
                     // here we handle the graphical representation of the occupants
-                    placedTile.potentialOccupants()
-                            .forEach(occupant -> {
-                                Node occupantSvg = Icon.newFor(placedTile.placer(), occupant.kind());
-                                occupantSvg.setId(STR."\{occupant.kind().toString().toLowerCase()}_\{occupant.zoneId()}");
-                                occupantSvg.setOnMouseClicked((e) -> {
-                                    e.consume();
-                                    occupantConsumer.accept(occupant);
-                                });
-                                occupantSvg.visibleProperty().bind(occupantsO.map(occupants -> occupants.contains(occupant)));
-                                occupantSvg.setRotate(negatedTileRotation);
-                                group.getChildren().add(occupantSvg);
-                            });
+                    List<Node> potentialOccupantsNodes = placedTile.potentialOccupants()
+                        .stream()
+                        .map(occupant -> getOccupantNode(
+                            placedTile.placer(), occupant,
+                            occupantsO, occupantConsumer, negatedTileRotation
+                        ))
+                        .toList();
+
+                    group.getChildren().addAll(potentialOccupantsNodes);
                 });
             }
         }
+
         scrollPane.setHvalue(.5);
         scrollPane.setVvalue(.5);
 
         scrollPane.setContent(grid);
         return scrollPane;
+    }
+
+    private static Node getCancelledAnimalNode(
+            Animal animal, ObservableValue<Set<Animal>> cancelledAnimalsO,
+            double negatedTileRotation
+    ) {
+        ImageView cancelledAnimalView = new ImageView();
+        cancelledAnimalView.visibleProperty().bind(cancelledAnimalsO.map(
+                cancelledAnimals -> cancelledAnimals.contains(animal)
+        ));
+        cancelledAnimalView.setId(STR."marker_\{animal.id()}");
+        cancelledAnimalView.getStyleClass().add("marker");
+        cancelledAnimalView.setFitHeight(ImageLoader.MARKER_FIT_SIZE);
+        cancelledAnimalView.setFitWidth(ImageLoader.MARKER_FIT_SIZE);
+        cancelledAnimalView.setRotate(negatedTileRotation);
+        return cancelledAnimalView;
+    }
+
+    private static Node getOccupantNode(
+            PlayerColor playerColor, Occupant occupant,
+            ObservableValue<Set<Occupant>> occupantsO,
+            Consumer<Occupant> occupantConsumer,
+            double negatedTileRotation
+    ) {
+        Node occupantSvg = Icon.newFor(playerColor, occupant.kind());
+        occupantSvg.setId(STR."\{occupant.kind().toString().toLowerCase()}_\{occupant.zoneId()}");
+        occupantSvg.setOnMouseClicked((e) -> {
+            e.consume();
+            occupantConsumer.accept(occupant);
+        });
+        occupantSvg.visibleProperty().bind(occupantsO.map(occupants -> occupants.contains(occupant)));
+        occupantSvg.setRotate(negatedTileRotation);
+        return occupantSvg;
     }
 
     /**

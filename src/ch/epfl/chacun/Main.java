@@ -19,6 +19,9 @@ import java.util.stream.Collectors;
 
 public final class Main extends Application {
 
+    private final static int APP_WIDTH = 1440;
+    private final static int APP_HEIGHT = 1080;
+
     public static void main(String[] args) {
         launch(args);
     }
@@ -73,7 +76,6 @@ public final class Main extends Application {
         GameState gameState = GameState.initial(playerColors, tileDecks, textMaker);
         SimpleObjectProperty<GameState> gameStateO = new SimpleObjectProperty<>(gameState);
 
-
         ObservableValue<List<MessageBoard.Message>> observableMessagesO = gameStateO.map(
                 gState -> gState.messageBoard().messages()
         );
@@ -94,7 +96,6 @@ public final class Main extends Application {
         SimpleObjectProperty<List<String>> actionsO = new SimpleObjectProperty<>(List.of());
 
         Consumer<Occupant> onOccupantClick = occupant -> {
-            // todo handle things
             GameState currentGameState = gameStateO.getValue();
             if (currentGameState.nextAction() == GameState.Action.OCCUPY_TILE) {
                 assert currentGameState.board().lastPlacedTile() != null;
@@ -103,7 +104,12 @@ public final class Main extends Application {
                 ActionEncoder.StateAction stateAction = ActionEncoder.withNewOccupant(currentGameState, occupant);
                 saveState(stateAction, gameStateO, actionsO);
             } else if (currentGameState.nextAction() == GameState.Action.RETAKE_PAWN) {
-                // todo check owner stuff etc
+                // todo this code is duplicated from ActionEncoder
+                // ask an assistant
+                if (occupant.kind() != Occupant.Kind.PAWN) return;
+                PlayerColor currentPlayer = gameState.currentPlayer();
+                PlayerColor occupantPlacer = gameState.board().tileWithId(Zone.tileId(occupant.zoneId())).placer();
+                if (currentPlayer != occupantPlacer) return;
                 ActionEncoder.StateAction stateAction = ActionEncoder.withOccupantRemoved(currentGameState, occupant);
                 saveState(stateAction, gameStateO, actionsO);
             }
@@ -135,6 +141,8 @@ public final class Main extends Application {
             if (!currentGameState.board().canAddTile(placedTile)) return;
             ActionEncoder.StateAction stateAction = ActionEncoder.withPlacedTile(currentGameState, placedTile);
             saveState(stateAction, gameStateO, actionsO);
+
+            nextRotationO.setValue(Rotation.NONE);
         };
 
         ObservableValue<Set<Occupant>> visibleOccupants = gameStateO.map(gState -> {
@@ -146,9 +154,9 @@ public final class Main extends Application {
         });
 
         Node boardNode = BoardUI.create(
-                Board.REACH, gameStateO, nextRotationO, visibleOccupants, highlightedTilesO,
-                // consumers
-                onRotationClick, onPosClick, onOccupantClick
+            Board.REACH, gameStateO, nextRotationO, visibleOccupants, highlightedTilesO,
+            // consumers
+            onRotationClick, onPosClick, onOccupantClick
         );
 
         // actions and decks border pane
@@ -166,8 +174,8 @@ public final class Main extends Application {
         mainBorderPane.setCenter(boardNode);
         mainBorderPane.setRight(sideBorderPane);
 
-        primaryStage.setWidth(1440);
-        primaryStage.setHeight(1080);
+        primaryStage.setWidth(APP_WIDTH);
+        primaryStage.setHeight(APP_HEIGHT);
 
         primaryStage.setScene(new Scene(mainBorderPane));
         primaryStage.setTitle("ChaCuN");

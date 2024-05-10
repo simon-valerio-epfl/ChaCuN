@@ -78,7 +78,7 @@ public final class DecksUI {
         HBox hBox = new HBox(normalNode, menhirNode);
 
         VBox vBox = new VBox(hBox, stackPane);
-        vBox.getStylesheets().add("/decks.css");
+        vBox.getStylesheets().add("decks.css");
         hBox.setId("decks");
 
         return vBox;
