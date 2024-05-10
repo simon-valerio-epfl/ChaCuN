@@ -344,6 +344,12 @@ public final class Board {
                 );
     }
 
+    public boolean couldPlaceTileAtPos(Tile tile, Pos pos) {
+        return insertionPositions().contains(pos) &&
+                Rotation.ALL.stream()
+                        .anyMatch(rotation -> canAddTile(new PlacedTile(tile, null, rotation, pos)));
+    }
+
     /**
      * Checks if the board has at least one tile, to prevent
      * unwanted operations on an empty board

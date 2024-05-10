@@ -60,11 +60,10 @@ public final class PlayersUI {
         ObservableValue<List<PlayerColor>> players = gameStateO.map(GameState::players);
 
         Function<List<PlayerColor>, Boolean> addPlayersNodes = (newPlayers) -> {
+            vBox.getChildren().clear();
             System.out.println("rerender players");
             System.out.println(newPlayers.stream().map(e -> textMaker.playerName(e)).collect(Collectors.joining()));
             newPlayers
-                    .stream()
-                    .skip(vBox.getChildren().size())
                     .forEach(playerColor -> {
                         String name = textMaker.playerName(playerColor);
 

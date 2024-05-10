@@ -78,8 +78,8 @@ public final class Main extends Application {
         String gameName = "androzGame";
         String mySuperName = "Androz" + new Random().nextInt(1000);
         WSClient wsClient = new WSClient(
-            gameName,
-            mySuperName
+                gameName,
+                mySuperName
         );
 
         Parameters parameters = getParameters();
@@ -154,17 +154,17 @@ public final class Main extends Application {
             if (!isOwnerCurrentPlayerO.getValue()) return;
             GameState currentGameState = gameStateO.getValue();
             Board board = currentGameState.board();
-            int tileId = Zone.tileId(occupant.zoneId());
+            int tileId = occupant != null ? Zone.tileId(occupant.zoneId()) : -1;
             switch (currentGameState.nextAction()) {
                 case OCCUPY_TILE -> {
                     assert board.lastPlacedTile() != null;
-                    if (tileId != board.lastPlacedTile().id()) return;
+                    if (tileId != board.lastPlacedTile().id() && occupant != null) return;
                     saveStateAndDispatch(ActionEncoder.withNewOccupant(currentGameState, occupant), gameStateO, actionsO, wsClient);
                 }
                 case RETAKE_PAWN -> {
                     if (
-                            (occupant.kind() != Occupant.Kind.PAWN)
-                                    || (currentGameState.currentPlayer() != board.tileWithId(tileId).placer())
+                            occupant != null &&
+                                    (occupant.kind() != Occupant.Kind.PAWN || (currentGameState.currentPlayer() != board.tileWithId(tileId).placer()))
                     ) return;
                     saveStateAndDispatch(ActionEncoder.withOccupantRemoved(currentGameState, occupant), gameStateO, actionsO, wsClient);
                 }

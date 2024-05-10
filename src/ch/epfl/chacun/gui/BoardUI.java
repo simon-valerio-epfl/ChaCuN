@@ -91,7 +91,7 @@ public final class BoardUI {
         ObservableValue<Set<Animal>> cancelledAnimalsO = boardO.map(Board::cancelledAnimals);
         // the fringe only exists when the next action is to place a tile
         ObservableValue<Set<Pos>> fringeTilesO = gameStateO.map(
-                state -> state.nextAction() == GameState.Action.PLACE_TILE
+                state -> (state.nextAction() == GameState.Action.PLACE_TILE && isOwnerCurrentPlayerO.getValue())
                         // important to understand
                         // we can not use boardO.getValue() here!
                         // because this map may be triggered before boardO gets updated!
@@ -148,6 +148,8 @@ public final class BoardUI {
                     if (!isInFringeO.getValue()) return new CellData(Color.TRANSPARENT);
 
                     PlayerColor currentPlayer = gameStateO.getValue().currentPlayer();
+                    assert currentPlayer != null;
+
 
                     // if the mouse is currently on this tile (in the fringe) we display it normally
                     // if it can be placed there with its current position, and with a white veil otherwise
@@ -155,16 +157,18 @@ public final class BoardUI {
                         PlacedTile willBePlacedTile = new PlacedTile(
                                 gameStateO.getValue().tileToPlace(), currentPlayer, rotationO.getValue(), pos
                         );
-                        return new CellData(willBePlacedTile,
-                                boardO.getValue().canAddTile(willBePlacedTile) ? Color.TRANSPARENT : Color.WHITE
-                        );
+                        boolean canBePlaced = boardO.getValue().canAddTile(willBePlacedTile);
+                        return new CellData(willBePlacedTile, canBePlaced ? Color.TRANSPARENT : Color.WHITE);
                     }
+
+                    boolean couldBePlaced = boardO.getValue().couldPlaceTileAtPos(gameStateO.getValue().tileToPlace(), pos);
+
                     // finally, if the tile is in the fringe but the mouse is not on it,
                     // we display it with a veil of the current player's color
-                    return new CellData(ColorMap.fillColor(currentPlayer));
+                    return new CellData(ColorMap.fillColor(currentPlayer).deriveColor(0, 1, 1, couldBePlaced ? 1 : .5));
                     // these arguments are the sensibility of the code,
                     // every time one of them changes, the code is re-executed
-                }, isInFringeO, group.hoverProperty(), rotationO, darkVeilEnabledO, placedTileO);
+                }, isInFringeO, group.hoverProperty(), rotationO, darkVeilEnabledO, placedTileO, isOwnerCurrentPlayerO);
 
                 // we bind the graphical properties of the group to the cell data's values
                 group.rotateProperty().bind(cellDataO.map(cellData -> cellData.tileRotation().degreesCW()));
