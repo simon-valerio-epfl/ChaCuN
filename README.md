@@ -6,6 +6,8 @@ L'énoncé se trouve [ici](https://cs108.epfl.ch/archive/24/p/00_introduction.ht
 
 Les fonctionnalités et API décrites ci-dessous correspondent à des rendus bonus.
 
+![demo](./demo.jpg)
+
 ## Mode multijoueurs
 
 Notre version de ChaCuN permet de joueur à plusieurs, d'échanger des messages directement dans le jeu, et contient plusieurs améliorations graphiques.
