@@ -60,6 +60,7 @@ public final class BoardUI {
      * @param rotationO         the observable value of the current rotation of the tile to be placed
      * @param occupantsO        the observable value of the set containing the occupants on the board to show
      * @param highlightedTilesO the observable value of the set containing the tiles to highlight
+     * @param isLocalPlayerCurrentPlayerO the observable value of the boolean that tells if the local player is the current player
      * @param rotationConsumer  the consumer that will be called when the player rotates the tile to be placed (right click)
      * @param posConsumer       the consumer that will be called when the player places the tile (left click)
      * @param occupantConsumer  the consumer that will be called when the player clicks on an occupant

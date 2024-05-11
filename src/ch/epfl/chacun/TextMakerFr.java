@@ -34,6 +34,10 @@ final public class TextMakerFr implements TextMaker {
 
     private final ObservableValue<Map<PlayerColor, String>> namesO;
 
+    /**
+     * Creates a new TextMakerFr
+     * @param namesO the observable map of player colors to player names
+     */
     public TextMakerFr(ObservableValue<Map<PlayerColor, String>> namesO) {
         this.namesO = namesO;
     }

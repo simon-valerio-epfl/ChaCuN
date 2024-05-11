@@ -40,7 +40,7 @@ public final class ActionsUI {
      * @param actionsO the observable list of all actions since the start of the game
      * @param handler  an event handler whose method has to be applied when the player
      *                 inserts a new action in the field
-     * @param isLocalPlayerCurrentPlayerO the observable value of the boolean that tells if the owner of the game is the current player
+     * @param isLocalPlayerCurrentPlayerO the observable value of the boolean that tells if the local player is the current player
      * @return a node containing the last actions of the game state and a field where one may insert a new action
      */
     public static Node create(
