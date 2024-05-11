@@ -29,8 +29,8 @@ public final class Main extends Application {
 
     private void saveState(
             ActionEncoder.StateAction stateAction,
-            SimpleObjectProperty<GameState> gameStateO,
-            SimpleObjectProperty<List<String>> actionsO
+            ObjectProperty<GameState> gameStateO,
+            ObjectProperty<List<String>> actionsO
     ) {
         gameStateO.setValue(stateAction.gameState());
         List<String> newActions = new ArrayList<>(actionsO.getValue());
@@ -40,8 +40,8 @@ public final class Main extends Application {
 
     private void saveStateAndDispatch(
             ActionEncoder.StateAction stateAction,
-            SimpleObjectProperty<GameState> gameStateO,
-            SimpleObjectProperty<List<String>> actionsO,
+            ObjectProperty<GameState> gameStateO,
+            ObjectProperty<List<String>> actionsO,
             WSClient wsClient
     ) {
         saveState(stateAction, gameStateO, actionsO);
@@ -92,15 +92,15 @@ public final class Main extends Application {
 
         TileDecks tileDecks = getShuffledTileDecks((long) gameId.hashCode());
 
-        SimpleObjectProperty<Map<PlayerColor, String>> playerNamesO = new SimpleObjectProperty<>(new TreeMap<>());
+        ObjectProperty<Map<PlayerColor, String>> playerNamesO = new SimpleObjectProperty<>(new TreeMap<>());
         ObservableValue<List<PlayerColor>> playerColorsO = playerNamesO.map(map -> new ArrayList<>(map.keySet()));
         playerNamesO.setValue(getPlayersMap(localPlayerName));
 
         TextMaker textMaker = new TextMakerFr(playerNamesO);
 
         GameState gameState = GameState.initial(playerColorsO.getValue(), tileDecks, textMaker);
-        SimpleObjectProperty<GameState> gameStateO = new SimpleObjectProperty<>(gameState);
-        SimpleObjectProperty<List<String>> actionsO = new SimpleObjectProperty<>(List.of());
+        ObjectProperty<GameState> gameStateO = new SimpleObjectProperty<>(gameState);
+        ObjectProperty<List<String>> actionsO = new SimpleObjectProperty<>(List.of());
 
         wsClient.setOnGamePlayerJoin(newPlayerNames -> {
             playerNamesO.setValue(getPlayersMap(newPlayerNames));
@@ -185,7 +185,7 @@ public final class Main extends Application {
         Node actionsNode = ActionsUI.create(actionsO, onEnteredAction, isLocalPlayerCurrentPlayerO);
         Node messagesChatNode = MessageBoardChatUI.create(wsClient::sendMessage);
 
-        SimpleObjectProperty<Rotation> nextRotationO = new SimpleObjectProperty<>(Rotation.NONE);
+        ObjectProperty<Rotation> nextRotationO = new SimpleObjectProperty<>(Rotation.NONE);
         Consumer<Rotation> onRotationClick = r -> {
             nextRotationO.setValue(nextRotationO.getValue().add(r));
         };
