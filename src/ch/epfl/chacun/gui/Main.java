@@ -105,17 +105,14 @@ public final class Main extends Application {
             playerNamesO.setValue(getPlayersMap(newPlayerNames));
             gameStateO.setValue(gameStateO.getValue().withPlayers(playerColorsO.getValue()));
         });
-        wsClient.setOnGameChatMessage(message -> {
-            gameStateO.setValue(gameStateO.getValue().withGameChatMessage(message));
+        wsClient.setOnGameChatMessage((username, content) -> {
+            String displayMessage = STR."\{username}: \{content}";
+            gameStateO.setValue(gameStateO.getValue().withGameChatMessage(displayMessage));
         });
         wsClient.setOnPlayerAction(action -> {
-            System.out.println("Received" + action);
             ActionEncoder.StateAction stateAction = ActionEncoder.decodeAndApply(gameStateO.getValue(), action);
-            if (stateAction == null) {
-                // todo server what have you done bro?
-                return;
-            }
-            saveState(stateAction, gameStateO, actionsO);
+            if (stateAction == null) throw new IllegalStateException(STR."Invalid action: \{action}");
+            else saveState(stateAction, gameStateO, actionsO);
         });
 
         ObservableValue<List<MessageBoard.Message>> observableMessagesO = gameStateO.map(
