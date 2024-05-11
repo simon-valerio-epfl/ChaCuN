@@ -57,12 +57,12 @@ public final class PlayersUI {
         vBox.getStylesheets().add("players.css");
         vBox.setId("players");
 
-        ObservableValue<List<PlayerColor>> players = gameStateO.map(GameState::players);
+        ObservableValue<List<PlayerColor>> players = gameStateO.map(gState ->
+            gState.players().stream().sorted().toList()
+        );
 
         Function<List<PlayerColor>, Boolean> addPlayersNodes = (newPlayers) -> {
             vBox.getChildren().clear();
-            System.out.println("rerender players");
-            System.out.println(newPlayers.stream().map(e -> textMaker.playerName(e)).collect(Collectors.joining()));
             newPlayers
                     .forEach(playerColor -> {
                         String name = textMaker.playerName(playerColor);
