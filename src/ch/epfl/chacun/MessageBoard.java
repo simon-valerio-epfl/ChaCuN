@@ -135,6 +135,11 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         return new MessageBoard(textMaker, newMessages);
     }
 
+    /**
+     * Returns a new message board with the given message added
+     * @param message the message to add
+     * @return a new message board with the given message added
+     */
     public MessageBoard withNewGameChatMessage(String message) {
         return withNewMessage(
                 message,

@@ -446,10 +446,20 @@ public record GameState(
         return new GameState(players, tileDecks, null, newBoard, Action.END_GAME, newMessageBoard);
     }
 
+    /**
+     * Returns a new game state with the given players list as new players
+     * @param players the new players list
+     * @return a new game state with the given players list as new players
+     */
     public GameState withPlayers(List<PlayerColor> players) {
         return new GameState(players, tileDecks, tileToPlace, board, nextAction, messageBoard);
     }
 
+    /**
+     * Returns a new game state with the given chat message added to the message board
+     * @param message the chat message to add
+     * @return a new game state with the given chat message added to the message board
+     */
     public GameState withNewGameChatMessage(String message) {
         return new GameState(players, tileDecks, tileToPlace, board, nextAction, messageBoard.withNewGameChatMessage(message));
     }
