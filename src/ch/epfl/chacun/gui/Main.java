@@ -78,7 +78,6 @@ public final class Main extends Application {
         Parameters parameters = getParameters();
         int randomTwoDigits = new Random().nextInt(100);
         String localPlayerName = parameters.getNamed().get("player") + randomTwoDigits;
-        Preconditions.checkArgument(localPlayerName != null);
         String gameId = parameters.getNamed().get("game");
 
         WSClient wsClient = new WSClient(

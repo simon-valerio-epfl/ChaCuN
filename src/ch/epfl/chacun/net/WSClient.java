@@ -13,6 +13,14 @@ import java.util.function.Consumer;
 
 public final class WSClient implements WebSocket.Listener {
 
+    private enum WSAction {
+        GAMEJOIN_ACCEPT,
+        GAMEJOIN_NEWCOMER,
+        GAMEACTION,
+        GAMEMSG,
+        PING
+    }
+
     private final String gameName;
     private final String username;
     private WebSocket ws;
@@ -48,27 +56,20 @@ public final class WSClient implements WebSocket.Listener {
         String[] messageParts = message.split("\\.");
         String action = messageParts[0];
         String data = messageParts[1];
-        switch (action) {
-            case "GAMEJOIN_ACCEPT":
-                onGameJoinAccept.accept(data);
-                break;
-            case "GAMEJOIN_NEWCOMER":
-                onGamePlayerJoin.accept(data);
-                break;
-            case "GAMEACTION":
-                onPlayerAction.accept(data);
-                break;
-            case "GAMEMSG":
+        WSAction wsAction = WSAction.valueOf(action);
+        switch (wsAction) {
+            case GAMEJOIN_ACCEPT -> onGameJoinAccept.accept(data);
+            case GAMEJOIN_NEWCOMER -> onGamePlayerJoin.accept(data);
+            case GAMEACTION -> onPlayerAction.accept(data);
+            case GAMEMSG -> {
                 // data = {username=content}
                 // data is encoded with encodeURI
                 String content = java.net.URLDecoder.decode(data, StandardCharsets.UTF_8);
                 String username = content.split("=")[0];
                 String chatMessage = java.net.URLDecoder.decode(content.split("=")[1], StandardCharsets.UTF_8);
                 onGameChatMessage.accept(username, chatMessage);
-                break;
-            case "PING":
-                acknowledgePing();
-                break;
+            }
+            case PING -> acknowledgePing();
         }
     }
 
