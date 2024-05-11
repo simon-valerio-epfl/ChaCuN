@@ -75,24 +75,21 @@ public final class Main extends Application {
     @Override
     public void start(Stage primaryStage) {
 
-        String gameName = "androzGame";
-        String mySuperName = "Androz" + new Random().nextInt(1000);
+        Parameters parameters = getParameters();
+        String localPlayerName = parameters.getNamed().get("player");
+        Preconditions.checkArgument(localPlayerName != null);
+        String gameId = parameters.getNamed().get("game");
+
         WSClient wsClient = new WSClient(
-                gameName,
-                mySuperName
+            gameId,
+            localPlayerName
         );
 
-        Parameters parameters = getParameters();
-
-        TileDecks tileDecks = getShuffledTileDecks((long) gameName.hashCode());
-
-        List<String> players = parameters.getUnnamed();
-        int playersSize = players.size();
-        Preconditions.checkArgument(playersSize >= 2 && playersSize <= 5);
+        TileDecks tileDecks = getShuffledTileDecks((long) gameId.hashCode());
 
         SimpleObjectProperty<Map<PlayerColor, String>> playerNamesO = new SimpleObjectProperty<>(new TreeMap<>());
         ObservableValue<List<PlayerColor>> playerColorsO = playerNamesO.map(map -> new ArrayList<>(map.keySet()));
-        playerNamesO.setValue(getPlayersMap(mySuperName));
+        playerNamesO.setValue(getPlayersMap(localPlayerName));
 
         TextMaker textMaker = new TextMakerFr(playerNamesO);
 
@@ -138,23 +135,24 @@ public final class Main extends Application {
                 }
         );
 
-        ObservableValue<String> ownerPlayerColorO = playerNamesO.map(playerName -> {
-            PlayerColor owner = null;
+        ObservableValue<String> localPlayerColorO = playerNamesO.map(playerName -> {
+            PlayerColor local = null;
             for (Map.Entry<PlayerColor, String> entry : playerName.entrySet()) {
-                if (entry.getValue().equals(mySuperName)) {
-                    owner = entry.getKey();
+                if (entry.getValue().equals(localPlayerName)) {
+                    local = entry.getKey();
                     break;
                 }
             }
-            return owner.toString();
+            assert local != null;
+            return local.toString();
         });
 
-        ObservableValue<Boolean> isOwnerCurrentPlayerO = gameStateO.map(
-                gState -> gState.currentPlayer() == PlayerColor.valueOf(ownerPlayerColorO.getValue())
+        ObservableValue<Boolean> isLocalPlayerCurrentPlayerO = gameStateO.map(
+                gState -> gState.currentPlayer() == PlayerColor.valueOf(localPlayerColorO.getValue())
         );
 
         Consumer<Occupant> onOccupantClick = occupant -> {
-            if (!isOwnerCurrentPlayerO.getValue()) return;
+            if (!isLocalPlayerCurrentPlayerO.getValue()) return;
             GameState currentGameState = gameStateO.getValue();
             Board board = currentGameState.board();
             int tileId = occupant != null ? Zone.tileId(occupant.zoneId()) : -1;
@@ -182,7 +180,7 @@ public final class Main extends Application {
         Node playersNode = PlayersUI.create(gameStateO, new TextMakerFr(playerNamesO));
         Node messagesNode = MessageBoardUI.create(observableMessagesO, highlightedTilesO);
         Node decksNode = DecksUI.create(tileToPlaceO, leftNormalTilesO, leftMenhirTilesO, textToDisplayO, onOccupantClick);
-        Node actionsNode = ActionsUI.create(actionsO, onEnteredAction, isOwnerCurrentPlayerO);
+        Node actionsNode = ActionsUI.create(actionsO, onEnteredAction, isLocalPlayerCurrentPlayerO);
         Node messagesChatNode = MessageBoardChatUI.create((msg) -> {
             wsClient.sendMessage(msg);
         });
@@ -193,7 +191,7 @@ public final class Main extends Application {
         };
 
         Consumer<Pos> onPosClick = pos -> {
-            if (!isOwnerCurrentPlayerO.getValue()) return;
+            if (!isLocalPlayerCurrentPlayerO.getValue()) return;
             GameState currentGameState = gameStateO.getValue();
             if (currentGameState.nextAction() != GameState.Action.PLACE_TILE) return;
             Tile tileToPlace = currentGameState.tileToPlace();
@@ -215,7 +213,7 @@ public final class Main extends Application {
         });
 
         Node boardNode = BoardUI.create(
-                Board.REACH, gameStateO, nextRotationO, visibleOccupants, highlightedTilesO, isOwnerCurrentPlayerO,
+                Board.REACH, gameStateO, nextRotationO, visibleOccupants, highlightedTilesO, isLocalPlayerCurrentPlayerO,
                 // consumers
                 onRotationClick, onPosClick, onOccupantClick
         );

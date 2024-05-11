@@ -47,6 +47,8 @@ Lorsqu'un joueur souhaite envoyer un message (via l'entrée supplémentaire situ
 
 Vous et les autres joueurs recevez en réponse ⬇️ `GAMEMSG.username=content` où `username=content` est TODO.
 
+Pour cela, une classe `MessageBoardChatUI` a été ajoutée.
+
 ### Amélioration de l'affichage des tuiles
 
 Les parties sont assez longues car il faut un certain de temps de réflexion avant de placer une tuile. Pour aider les joueurs, nous avons ajouté des informations sur les tuiles qui permettent de savoir si elles peuvent être placées à un endroit donné.

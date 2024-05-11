@@ -344,6 +344,13 @@ public final class Board {
                 );
     }
 
+    /**
+     * Returns whether the given tile can be placed on the board at the given position
+     * with any rotation
+     * @param tile the tile to test
+     * @param pos the position to test
+     * @return whether the given tile can be placed on the board at the given position with any rotation
+     */
     public boolean couldPlaceTileAtPos(Tile tile, Pos pos) {
         return insertionPositions().contains(pos) &&
                 Rotation.ALL.stream().anyMatch(rotation -> canAddTile(new PlacedTile(tile, null, rotation, pos)));

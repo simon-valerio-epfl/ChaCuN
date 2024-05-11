@@ -71,7 +71,7 @@ public final class BoardUI {
             ObservableValue<Rotation> rotationO,
             ObservableValue<Set<Occupant>> occupantsO,
             ObservableValue<Set<Integer>> highlightedTilesO,
-            ObservableValue<Boolean> isOwnerCurrentPlayerO,
+            ObservableValue<Boolean> isLocalPlayerCurrentPlayerO,
 
             Consumer<Rotation> rotationConsumer,
             Consumer<Pos> posConsumer,
@@ -91,7 +91,7 @@ public final class BoardUI {
         ObservableValue<Set<Animal>> cancelledAnimalsO = boardO.map(Board::cancelledAnimals);
         // the fringe only exists when the next action is to place a tile
         ObservableValue<Set<Pos>> fringeTilesO = gameStateO.map(
-                state -> (state.nextAction() == GameState.Action.PLACE_TILE && isOwnerCurrentPlayerO.getValue())
+                state -> (state.nextAction() == GameState.Action.PLACE_TILE && isLocalPlayerCurrentPlayerO.getValue())
                         // important to understand
                         // we can not use boardO.getValue() here!
                         // because this map may be triggered before boardO gets updated!
@@ -169,7 +169,7 @@ public final class BoardUI {
                     return new CellData(ColorMap.fillColor(currentPlayer).deriveColor(0, 1, 1, couldBePlaced ? 1 : .5));
                     // these arguments are the sensibility of the code,
                     // every time one of them changes, the code is re-executed
-                }, isInFringeO, group.hoverProperty(), rotationO, darkVeilEnabledO, placedTileO, isOwnerCurrentPlayerO);
+                }, isInFringeO, group.hoverProperty(), rotationO, darkVeilEnabledO, placedTileO, isLocalPlayerCurrentPlayerO);
 
                 // we bind the graphical properties of the group to the cell data's values
                 group.rotateProperty().bind(cellDataO.map(cellData -> cellData.tileRotation().degreesCW()));
