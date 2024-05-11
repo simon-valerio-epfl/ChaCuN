@@ -1,4 +1,4 @@
-# ChaCuN (cs108)
+# ChaCuN (CS-108)
 
 Ce projet est une version électronique du jeu Chasseurs et cueilleurs au Néolithique, abrégé **ChaCuN**, pour le cours CS-108 à l'EPFL.
 
@@ -8,13 +8,11 @@ Les fonctionnalités et API décrites ci-dessous correspondent à des rendus bon
 
 ![demo](./demo.jpg)
 
-## Mode multijoueurs
+## Mode multijoueur
 
 Notre version de ChaCuN permet de joueur à plusieurs, d'échanger des messages directement dans le jeu, et contient plusieurs améliorations graphiques.
 
 L'objectif n'est pas d'ajouter de nouvelles règles mais de rendre les parties de ChaCuN beaucoup plus agréables à jouer en pratique.
-
-### Client Websocket
 
 Toutes les communications utilisées pour jouer à plusieurs fonctionnent par Websocket. Le client est situé dans le sous-paquetage `ch.epfl.chacun.net`.
 
