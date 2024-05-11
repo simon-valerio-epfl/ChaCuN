@@ -6,6 +6,7 @@ import javafx.application.Platform;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 
@@ -20,6 +21,7 @@ public final class WSClient implements WebSocket.Listener {
     private Consumer<String> onGameJoinAccept;
     private Consumer<String> onGamePlayerJoin;
     private Consumer<String> onPlayerAction;
+    private Consumer<String> onGameChatMessage;
 
     public WSClient(String gameName, String username) {
         this.gameName = gameName;
@@ -28,6 +30,7 @@ public final class WSClient implements WebSocket.Listener {
         this.onGameJoinAccept = (data) -> {};
         this.onGamePlayerJoin = (data) -> {};
         this.onPlayerAction = (data) -> {};
+        this.onGameChatMessage = (data) -> {};
     }
 
     private static String connectURI(String gameName, String username) {
@@ -53,6 +56,16 @@ public final class WSClient implements WebSocket.Listener {
                 break;
             case "GAMEACTION":
                 onPlayerAction.accept(data);
+                break;
+            case "GAMEMSG":
+                // data = {username=content}
+                // data is encoded with encodeURI
+                String content = java.net.URLDecoder.decode(data, StandardCharsets.UTF_8);
+                String username = content.split("=")[0];
+                String chatMessage = content.split("=")[1];
+                String chatMessageDisplay = STR."\{username}: \{chatMessage}";
+                onGameChatMessage.accept(chatMessageDisplay);
+                break;
             case "PING":
                 acknowledgePing();
                 break;
@@ -69,6 +82,10 @@ public final class WSClient implements WebSocket.Listener {
 
     public void setOnPlayerAction(Consumer<String> onPlayerAction) {
         this.onPlayerAction = onPlayerAction;
+    }
+
+    public void setOnGameChatMessage(Consumer<String> onGameChatMessage) {
+        this.onGameChatMessage = onGameChatMessage;
     }
 
     public void connect() {
@@ -100,6 +117,10 @@ public final class WSClient implements WebSocket.Listener {
 
     public void sendAction(String message) {
         ws.sendText(STR."GAMEACTION.\{message}", true);
+    }
+
+    public void sendMessage(String message) {
+        ws.sendText(STR."GAMEMSG.\{java.net.URLEncoder.encode(message, StandardCharsets.UTF_8)}", true);
     }
 
     public void dispatchGameStarted() {

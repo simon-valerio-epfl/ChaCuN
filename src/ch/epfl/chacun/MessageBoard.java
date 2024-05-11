@@ -135,6 +135,15 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         return new MessageBoard(textMaker, newMessages);
     }
 
+    public MessageBoard withNewGameChatMessage(String message) {
+        return withNewMessage(
+                message,
+                0,
+                Set.of(),
+                Set.of()
+        );
+    }
+
     /**
      * Returns a map matching the scorers to the points
      * they got from the messages on the message board

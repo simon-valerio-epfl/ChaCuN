@@ -108,6 +108,9 @@ public final class Main extends Application {
             playerNamesO.setValue(getPlayersMap(newPlayerNames));
             gameStateO.setValue(gameStateO.getValue().withPlayers(playerColorsO.getValue()));
         });
+        wsClient.setOnGameChatMessage(message -> {
+            gameStateO.setValue(gameStateO.getValue().withNewGameChatMessage(message));
+        });
         wsClient.setOnPlayerAction(action -> {
             System.out.println("Received" + action);
             ActionEncoder.StateAction stateAction = ActionEncoder.decodeAndApply(gameStateO.getValue(), action);
@@ -180,6 +183,9 @@ public final class Main extends Application {
         Node messagesNode = MessageBoardUI.create(observableMessagesO, highlightedTilesO);
         Node decksNode = DecksUI.create(tileToPlaceO, leftNormalTilesO, leftMenhirTilesO, textToDisplayO, onOccupantClick);
         Node actionsNode = ActionsUI.create(actionsO, onEnteredAction, isOwnerCurrentPlayerO);
+        Node messagesChatNode = MessageBoardChatUI.create((msg) -> {
+            wsClient.sendMessage(msg);
+        });
 
         SimpleObjectProperty<Rotation> nextRotationO = new SimpleObjectProperty<>(Rotation.NONE);
         Consumer<Rotation> onRotationClick = r -> {
@@ -216,7 +222,7 @@ public final class Main extends Application {
 
         // actions and decks border pane
         VBox actionsAndDecksBox = new VBox();
-        actionsAndDecksBox.getChildren().addAll(actionsNode, decksNode);
+        actionsAndDecksBox.getChildren().addAll(messagesChatNode, actionsNode, decksNode);
 
         // side border pane
         BorderPane sideBorderPane = new BorderPane();

@@ -450,4 +450,8 @@ public record GameState(
         return new GameState(players, tileDecks, tileToPlace, board, nextAction, messageBoard);
     }
 
+    public GameState withNewGameChatMessage(String message) {
+        return new GameState(players, tileDecks, tileToPlace, board, nextAction, messageBoard.withNewGameChatMessage(message));
+    }
+
 }

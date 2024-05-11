@@ -161,7 +161,8 @@ public final class BoardUI {
                         return new CellData(willBePlacedTile, canBePlaced ? Color.TRANSPARENT : Color.WHITE);
                     }
 
-                    boolean couldBePlaced = boardO.getValue().couldPlaceTileAtPos(gameStateO.getValue().tileToPlace(), pos);
+                    boolean couldBePlaced = gameStateO.getValue().tileToPlace() != null
+                            && boardO.getValue().couldPlaceTileAtPos(gameStateO.getValue().tileToPlace(), pos);
 
                     // finally, if the tile is in the fringe but the mouse is not on it,
                     // we display it with a veil of the current player's color

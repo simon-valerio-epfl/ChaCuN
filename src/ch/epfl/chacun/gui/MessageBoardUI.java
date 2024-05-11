@@ -5,6 +5,9 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 
@@ -39,8 +42,6 @@ public final class MessageBoardUI {
             ObjectProperty<Set<Integer>> tileIds
     ) {
         VBox vBox = new VBox();
-
-        // todo scrollbar
 
         ScrollPane scrollPane = new ScrollPane(vBox);
         scrollPane.getStylesheets().add("message-board.css");
