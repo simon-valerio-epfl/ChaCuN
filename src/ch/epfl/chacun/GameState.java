@@ -460,8 +460,8 @@ public record GameState(
      * @param message the chat message to add
      * @return a new game state with the given chat message added to the message board
      */
-    public GameState withNewGameChatMessage(String message) {
-        return new GameState(players, tileDecks, tileToPlace, board, nextAction, messageBoard.withNewGameChatMessage(message));
+    public GameState withGameChatMessage(String message) {
+        return new GameState(players, tileDecks, tileToPlace, board, nextAction, messageBoard.withGameChatMessage(message));
     }
 
 }

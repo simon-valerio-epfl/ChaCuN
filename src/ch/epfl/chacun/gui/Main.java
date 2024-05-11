@@ -106,7 +106,7 @@ public final class Main extends Application {
             gameStateO.setValue(gameStateO.getValue().withPlayers(playerColorsO.getValue()));
         });
         wsClient.setOnGameChatMessage(message -> {
-            gameStateO.setValue(gameStateO.getValue().withNewGameChatMessage(message));
+            gameStateO.setValue(gameStateO.getValue().withGameChatMessage(message));
         });
         wsClient.setOnPlayerAction(action -> {
             System.out.println("Received" + action);

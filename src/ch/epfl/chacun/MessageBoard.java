@@ -140,7 +140,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
      * @param message the message to add
      * @return a new message board with the given message added
      */
-    public MessageBoard withNewGameChatMessage(String message) {
+    public MessageBoard withGameChatMessage(String message) {
         return withNewMessage(
                 message,
                 0,

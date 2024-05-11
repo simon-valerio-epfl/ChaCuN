@@ -29,6 +29,10 @@ Une fois connecté, vous recevrez un message du serveur vous indiquant si vous a
 
 > La seed à utiliser pour mélanger les decks est le hash code de la chaîne de caractères représentant l'identifiant de partie.
 
+Une méthode publique à `GameState` a été ajouté, `withPlayers` qui permet de recréer un `GameState` avec des joueurs différents.
+
+Une valeur observable `isLocalPlayerCurrentPlayer` a été ajoutée à quelques classes du GUI pour savoir si le joueur local est celui qui doit jouer.
+
 ### Rester connecté
 
 Pour rester connecté, vous devez répondre au message de ⬇️ `PING` du serveur en renvoyant ⬆️ `PONG`.
@@ -47,7 +51,7 @@ Lorsqu'un joueur souhaite envoyer un message (via l'entrée supplémentaire situ
 
 Vous et les autres joueurs recevez en réponse ⬇️ `GAMEMSG.username=content` où `username=content` est TODO.
 
-Pour cela, une classe `MessageBoardChatUI` a été ajoutée.
+Pour cela, une classe `MessageBoardChatUI` a été ajoutée, une méthode publique `withGameChatMessage` à `MessageBoard` et à `GameState` permettant d'ajouter un message à la liste des messages.
 
 ### Amélioration de l'affichage des tuiles
 
