@@ -76,7 +76,8 @@ public final class Main extends Application {
     public void start(Stage primaryStage) {
 
         Parameters parameters = getParameters();
-        String localPlayerName = parameters.getNamed().get("player");
+        int randomTwoDigits = new Random().nextInt(100);
+        String localPlayerName = parameters.getNamed().get("player") + randomTwoDigits;
         Preconditions.checkArgument(localPlayerName != null);
         String gameId = parameters.getNamed().get("game");
 
@@ -178,9 +179,7 @@ public final class Main extends Application {
         Node messagesNode = MessageBoardUI.create(observableMessagesO, highlightedTilesO);
         Node decksNode = DecksUI.create(tileToPlaceO, leftNormalTilesO, leftMenhirTilesO, textToDisplayO, onOccupantClick);
         Node actionsNode = ActionsUI.create(actionsO, onEnteredAction, isLocalPlayerCurrentPlayerO);
-        Node messagesChatNode = MessageBoardChatUI.create((msg) -> {
-            wsClient.sendMessage(msg);
-        });
+        Node messagesChatNode = MessageBoardChatUI.create(wsClient::sendMessage);
 
         SimpleObjectProperty<Rotation> nextRotationO = new SimpleObjectProperty<>(Rotation.NONE);
         Consumer<Rotation> onRotationClick = r -> {

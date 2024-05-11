@@ -11,7 +11,7 @@ import javafx.scene.effect.BlendMode;
 import javafx.scene.effect.ColorInput;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.GridPane;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 
 import java.util.HashMap;
@@ -104,6 +104,8 @@ public final class BoardUI {
         for (int x = -reach; x <= reach; x++) {
             for (int y = -reach; y <= reach; y++) {
                 //each cell of the grid contains a tile
+
+                StackPane stackPane = new StackPane();
                 ImageView imageView = new ImageView();
                 imageView.setFitWidth(ImageLoader.NORMAL_TILE_FIT_SIZE);
                 imageView.setFitHeight(ImageLoader.NORMAL_TILE_FIT_SIZE);
@@ -114,6 +116,9 @@ public final class BoardUI {
 
                 Group group = new Group(imageView);
                 group.setEffect(blend);
+
+                stackPane.getChildren().add(group);
+
                 Pos pos = new Pos(x, y);
                 // here we handle the mouse interactions
                 group.setOnMouseClicked((e) -> {
@@ -151,15 +156,16 @@ public final class BoardUI {
                     PlayerColor currentPlayer = gameStateO.getValue().currentPlayer();
                     assert currentPlayer != null;
 
-
                     // if the mouse is currently on this tile (in the fringe) we display it normally
                     // if it can be placed there with its current position, and with a white veil otherwise
                     if (group.isHover()) {
-                        PlacedTile willBePlacedTile = new PlacedTile(
-                                gameStateO.getValue().tileToPlace(), currentPlayer, rotationO.getValue(), pos
+                        Tile willBePlacedTile = gameStateO.getValue().tileToPlace();
+                        if (willBePlacedTile == null) return new CellData(Color.TRANSPARENT);
+                        PlacedTile wouldBePlacedTile = new PlacedTile(
+                            willBePlacedTile, currentPlayer, rotationO.getValue(), pos
                         );
-                        boolean canBePlaced = boardO.getValue().canAddTile(willBePlacedTile);
-                        return new CellData(willBePlacedTile, canBePlaced ? Color.TRANSPARENT : Color.WHITE);
+                        boolean canBePlaced = boardO.getValue().canAddTile(wouldBePlacedTile);
+                        return new CellData(wouldBePlacedTile, canBePlaced ? Color.TRANSPARENT : Color.WHITE);
                     }
 
                     boolean couldBePlaced = gameStateO.getValue().tileToPlace() != null
@@ -178,10 +184,21 @@ public final class BoardUI {
                 blend.topInputProperty().bind(cellDataO.map(CellData::blendTopInput));
 
                 // we add range and position in order to translate our tile from the left corner to the center
-                grid.add(group, x + reach, y + reach);
+                grid.add(stackPane, x + reach, y + reach);
                 // when a tile is placed, we add the animals and the occupants on it
                 placedTileO.addListener((_, oldPlacedTile, placedTile) -> {
                     if (oldPlacedTile != null || placedTile == null) return;
+
+                    ImageView effect = new ImageView(new Image("effect.png"));
+                    effect.setFitWidth(ImageLoader.NORMAL_TILE_FIT_SIZE);
+                    effect.setFitHeight(ImageLoader.NORMAL_TILE_FIT_SIZE);
+                    stackPane.getChildren().add(effect);
+
+                    ObservableValue<Integer> lastPlacedTileIdO = boardO.map(b -> b.lastPlacedTile().id());
+                    lastPlacedTileIdO.addListener((__, oldId, newId) -> {
+                        // this is not optimized, unfortunately javafx does not provide a good way to remove a listener
+                        stackPane.getChildren().remove(effect);
+                    });
 
                     double negatedTileRotation = placedTile.rotation().negated().degreesCW();
 

@@ -23,6 +23,8 @@ Il communique avec le serveur hébergé à **wss://cs108-chacun-ws-server.sys.po
 Il est possible de rejoindre une partie en se connectant au serveur via cet endpoint:
 `wss://cs108-chacun-ws-server.sys.polysource.ch?username=USERNAME&gameId=GAMEID`.
 
+C'est ce que fait le client lorsqu'il est lancé, en lisant le paramètre `--player` et `--game`.
+
 Une fois connecté, vous recevrez un message du serveur vous indiquant si vous avez bien rejoint la partie, suivi des pseudos des autres joueurs triés dans l'ordre d'arrivée (le vôtre sera donc à la fin).
 
 ⬇️ `GAMEJOIN_ACCEPT.Username1,Username2,Username3`
@@ -60,3 +62,6 @@ Les parties sont assez longues car il faut un certain de temps de réflexion ava
 - ajout d'une méthode publique `boolean couldPlaceTileAtPos` qui permet d'afficher à l'utilisateur s'il existe une rotation quelconque qui permettrait de placer une tuile à une position donnée
 - l'opacité des positions d'insertions sans rotation possible est réduite pour indiquer à l'utilisateur qu'il ne peut pas placer de tuile à cet endroit
 
+Le jeu affiche aussi quelle tuile vient d'être placée par un joueur. C'est très utile quand le jeu est gros (souvent de + de 100 cartes) et que l'on joue en mode multijoueur.
+
+![demo2](./demo2.jpg)

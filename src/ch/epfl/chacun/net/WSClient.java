@@ -63,7 +63,7 @@ public final class WSClient implements WebSocket.Listener {
                 // data is encoded with encodeURI
                 String content = java.net.URLDecoder.decode(data, StandardCharsets.UTF_8);
                 String username = content.split("=")[0];
-                String chatMessage = content.split("=")[1];
+                String chatMessage = java.net.URLDecoder.decode(content.split("=")[1], StandardCharsets.UTF_8);
                 onGameChatMessage.accept(username, chatMessage);
                 break;
             case "PING":
