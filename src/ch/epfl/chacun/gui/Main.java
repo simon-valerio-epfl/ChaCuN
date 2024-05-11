@@ -76,9 +76,14 @@ public final class Main extends Application {
     public void start(Stage primaryStage) {
 
         Parameters parameters = getParameters();
+        boolean debug = parameters.getUnnamed().contains("debug");
+
         int randomTwoDigits = new Random().nextInt(100);
-        String localPlayerName = parameters.getNamed().get("player") + randomTwoDigits;
+        String localPlayerName = debug
+                ? parameters.getNamed().get("player") + randomTwoDigits
+                : parameters.getNamed().get("player");
         String gameId = parameters.getNamed().get("game");
+
 
         WSClient wsClient = new WSClient(
             gameId,
