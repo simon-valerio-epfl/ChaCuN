@@ -158,10 +158,8 @@ public final class Main extends Application {
                 onRotationClick, onPosClick, onOccupantClick
         );
 
-        // todo: pk pas  VBox actionsAndDecksBox = new VBox(actionsNode, decksNode);
         // actions and decks border pane
-        VBox actionsAndDecksBox = new VBox();
-        actionsAndDecksBox.getChildren().addAll(actionsNode, decksNode);
+        VBox actionsAndDecksBox = new VBox(actionsNode, decksNode);
 
         // side border pane
         BorderPane sideBorderPane = new BorderPane();
