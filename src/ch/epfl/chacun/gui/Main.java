@@ -146,7 +146,6 @@ public final class Main extends Application {
 
         ObservableValue<Set<Occupant>> visibleOccupants = gameStateO.map(gState -> {
             Set<Occupant> occupants = new HashSet<>(gState.board().occupants());
-            // todo: Valerio a pas compris pk ici les lastTilePotentialOccupants sont assignés au current player
             if (gState.nextAction() == GameState.Action.OCCUPY_TILE) {
                 occupants.addAll(gState.lastTilePotentialOccupants());
             }
