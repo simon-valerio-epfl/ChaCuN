@@ -87,12 +87,20 @@ public final class ActionsUI {
      */
     private static String textRepresentation(List<String> actions) {
         StringJoiner sj = new StringJoiner(", ");
-        int startingIdx = Math.max(0, actions.size() - NUMBER_OF_ACTIONS);
-        List<String> lastActions = actions.subList(startingIdx, actions.size());
+        int actionSize = actions.size();
+        int startingIdx = Math.max(0, actionSize - NUMBER_OF_ACTIONS);
+        List<String> lastActions = actions.subList(startingIdx, actionSize);
         for (int i = 0; i < lastActions.size(); i++) {
             sj.add(STR."\{startingIdx + i + 1}:\{lastActions.get(i)}");
         }
         return sj.toString();
+        // todo choose smth
+        /*ch
+            int actionSize = actions.size();
+            return IntStream.range(Math.max(0, actionSize - NUMBER_OF_ACTIONS), actionSize)
+                    .mapToObj(i -> STR."\{i + 1}:\{actions.get(i)}")
+                    .collect(Collectors.joining(", "));
+         */
     }
 
 }
