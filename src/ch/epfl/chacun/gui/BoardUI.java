@@ -115,10 +115,11 @@ public final class BoardUI {
                 Pos pos = new Pos(x, y);
                 // here we handle the mouse interactions
                 group.setOnMouseClicked((e) -> {
+                    if ((e.isStillSincePress())){
                     switch (e.getButton()) {
                         case SECONDARY -> rotationConsumer.accept(e.isAltDown() ? Rotation.RIGHT : Rotation.LEFT);
                         case PRIMARY -> posConsumer.accept(pos);
-                    }
+                    }}
                 });
 
                 // cell data does not show anything to the screen, it calculates and takes some values from the tile,

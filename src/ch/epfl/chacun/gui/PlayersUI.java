@@ -52,10 +52,10 @@ public final class PlayersUI {
         vBox.getStylesheets().add("players.css");
         vBox.setId("players");
 
+        List<PlayerColor> players = gameStateO.getValue().players();
         // for each player color, create a text flow
-        PlayerColor.ALL.forEach(playerColor -> {
+        players.forEach(playerColor -> {
             String name = textMaker.playerName(playerColor);
-            if (name == null) return;
 
             TextFlow textFlow = new TextFlow();
             textFlow.getStyleClass().add("player");
@@ -66,8 +66,6 @@ public final class PlayersUI {
                 if (newValue) textFlow.getStyleClass().add("current");
                 else textFlow.getStyleClass().remove("current");
             });
-            // todo check null --> currentplayer should trigger listener
-            if (gameStateO.getValue().currentPlayer() == playerColor) textFlow.getStyleClass().add("current");
 
             Circle circle = new Circle(5);
             circle.setFill(ColorMap.fillColor(playerColor));

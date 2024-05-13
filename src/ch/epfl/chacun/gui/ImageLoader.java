@@ -54,7 +54,7 @@ public final class ImageLoader {
      */
     private static Image imageForTile(int tileId, int pixelSize) {
         // the ids of the tiles to charge have 2 digits
-        return new Image(FormatProcessor.FMT."\{pixelSize}/%02d\{tileId}.jpg");
+        return new Image(FormatProcessor.FMT."/\{pixelSize}/%02d\{tileId}.jpg");
     }
 
     /**
