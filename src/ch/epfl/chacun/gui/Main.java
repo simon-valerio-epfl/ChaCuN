@@ -28,8 +28,8 @@ public final class Main extends Application {
 
     private void saveState(
             ActionEncoder.StateAction stateAction,
-            SimpleObjectProperty<GameState> gameStateO,
-            SimpleObjectProperty<List<String>> actionsO
+            ObjectProperty<GameState> gameStateO,
+            ObjectProperty<List<String>> actionsO
     ) {
         gameStateO.setValue(stateAction.gameState());
         List<String> newActions = new ArrayList<>(actionsO.getValue());
@@ -74,7 +74,7 @@ public final class Main extends Application {
         TextMaker textMaker = new TextMakerFr(playersNames);
 
         GameState gameState = GameState.initial(playerColors, tileDecks, textMaker);
-        SimpleObjectProperty<GameState> gameStateO = new SimpleObjectProperty<>(gameState);
+        ObjectProperty<GameState> gameStateO = new SimpleObjectProperty<>(gameState);
 
         ObservableValue<List<MessageBoard.Message>> observableMessagesO = gameStateO.map(
                 gState -> gState.messageBoard().messages()
@@ -93,7 +93,7 @@ public final class Main extends Application {
                 }
         );
 
-        SimpleObjectProperty<List<String>> actionsO = new SimpleObjectProperty<>(List.of());
+        ObjectProperty<List<String>> actionsO = new SimpleObjectProperty<>(List.of());
 
         Consumer<Occupant> onOccupantClick = occupant -> {
             GameState currentGameState = gameStateO.getValue();
@@ -101,13 +101,15 @@ public final class Main extends Application {
             int tileId = Zone.tileId(occupant.zoneId());
             switch (currentGameState.nextAction()) {
                 case OCCUPY_TILE -> {
-                    if (occupant != null && tileId != board.lastPlacedTile().id()) return;
+                    assert board.lastPlacedTile() != null;
+                    if (tileId != board.lastPlacedTile().id()) return;
                     saveState(ActionEncoder.withNewOccupant(currentGameState, occupant), gameStateO, actionsO);
                 }
                 case RETAKE_PAWN -> {
-                    // todo or
-                    if (occupant.kind() != Occupant.Kind.PAWN) return;
-                    if (currentGameState.currentPlayer() != board.tileWithId(tileId).placer()) return;
+                    if (
+                            (occupant.kind() != Occupant.Kind.PAWN)
+                                    || (currentGameState.currentPlayer() != board.tileWithId(tileId).placer())
+                    ) return;
                     saveState(ActionEncoder.withOccupantRemoved(currentGameState, occupant), gameStateO, actionsO);
                 }
             }
@@ -123,7 +125,7 @@ public final class Main extends Application {
         Node decksNode = DecksUI.create(tileToPlaceO, leftNormalTilesO, leftMenhirTilesO, textToDisplayO, onOccupantClick);
         Node actionsNode = ActionsUI.create(actionsO, onEnteredAction);
 
-        SimpleObjectProperty<Rotation> nextRotationO = new SimpleObjectProperty<>(Rotation.NONE);
+        ObjectProperty<Rotation> nextRotationO = new SimpleObjectProperty<>(Rotation.NONE);
         Consumer<Rotation> onRotationClick = r -> {
             nextRotationO.setValue(nextRotationO.getValue().add(r));
         };
