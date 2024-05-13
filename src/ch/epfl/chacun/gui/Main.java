@@ -98,17 +98,18 @@ public final class Main extends Application {
         Consumer<Occupant> onOccupantClick = occupant -> {
             GameState currentGameState = gameStateO.getValue();
             Board board = currentGameState.board();
-            int tileId = Zone.tileId(occupant.zoneId());
+            int tileId = occupant != null ? Zone.tileId(occupant.zoneId()) : -1;
             switch (currentGameState.nextAction()) {
+                // todo, mettre les conditions dans un case when?
                 case OCCUPY_TILE -> {
                     assert board.lastPlacedTile() != null;
                     if (tileId != board.lastPlacedTile().id()) return;
                     saveState(ActionEncoder.withNewOccupant(currentGameState, occupant), gameStateO, actionsO);
                 }
                 case RETAKE_PAWN -> {
-                    if (
-                            (occupant.kind() != Occupant.Kind.PAWN)
-                                    || (currentGameState.currentPlayer() != board.tileWithId(tileId).placer())
+                    if (occupant != null &&
+                            (occupant.kind() != Occupant.Kind.PAWN ||
+                                    (currentGameState.currentPlayer() != board.tileWithId(tileId).placer()))
                     ) return;
                     saveState(ActionEncoder.withOccupantRemoved(currentGameState, occupant), gameStateO, actionsO);
                 }
@@ -116,8 +117,8 @@ public final class Main extends Application {
         };
 
         Consumer<String> onEnteredAction = action -> {
-            ActionEncoder.StateAction newSt = ActionEncoder.decodeAndApply(gameStateO.getValue(), action);
-            if (newSt != null) saveState(newSt, gameStateO, actionsO);
+            ActionEncoder.StateAction newState = ActionEncoder.decodeAndApply(gameStateO.getValue(), action);
+            if (newState != null) saveState(newState, gameStateO, actionsO);
         };
 
         Node playersNode = PlayersUI.create(gameStateO, new TextMakerFr(playersNames));
@@ -125,9 +126,10 @@ public final class Main extends Application {
         Node decksNode = DecksUI.create(tileToPlaceO, leftNormalTilesO, leftMenhirTilesO, textToDisplayO, onOccupantClick);
         Node actionsNode = ActionsUI.create(actionsO, onEnteredAction);
 
-        ObjectProperty<Rotation> nextRotationO = new SimpleObjectProperty<>(Rotation.NONE);
-        Consumer<Rotation> onRotationClick = r -> {
-            nextRotationO.setValue(nextRotationO.getValue().add(r));
+        SimpleObjectProperty<Rotation> nextRotationO = new SimpleObjectProperty<>(Rotation.NONE);
+        Consumer<Rotation> onRotationClick = newRotation -> {
+            nextRotationO.setValue(nextRotationO.getValue().add(newRotation));
+
         };
 
         Consumer<Pos> onPosClick = pos -> {
@@ -145,6 +147,7 @@ public final class Main extends Application {
 
         ObservableValue<Set<Occupant>> visibleOccupants = gameStateO.map(gState -> {
             Set<Occupant> occupants = new HashSet<>(gState.board().occupants());
+            // todo: Valerio a pas compris pk ici les lastTilePotentialOccupants sont assignés au current player
             if (gState.nextAction() == GameState.Action.OCCUPY_TILE) {
                 occupants.addAll(gState.lastTilePotentialOccupants());
             }
@@ -157,14 +160,15 @@ public final class Main extends Application {
                 onRotationClick, onPosClick, onOccupantClick
         );
 
+        // todo: pk pas  VBox actionsAndDecksBox = new VBox(actionsNode, decksNode);
         // actions and decks border pane
         VBox actionsAndDecksBox = new VBox();
         actionsAndDecksBox.getChildren().addAll(actionsNode, decksNode);
 
         // side border pane
         BorderPane sideBorderPane = new BorderPane();
-        sideBorderPane.setCenter(messagesNode);
         sideBorderPane.setTop(playersNode);
+        sideBorderPane.setCenter(messagesNode);
         sideBorderPane.setBottom(actionsAndDecksBox);
 
         // main border pane
