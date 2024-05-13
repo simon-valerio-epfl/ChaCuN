@@ -124,8 +124,4 @@ public final class WSClient implements WebSocket.Listener {
         ws.sendText(STR."GAMEMSG.\{java.net.URLEncoder.encode(message, StandardCharsets.UTF_8)}", true);
     }
 
-    public void dispatchGameStarted() {
-        ws.sendText("gameStarted", true);
-    }
-
 }
