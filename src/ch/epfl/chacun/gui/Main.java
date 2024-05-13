@@ -103,7 +103,7 @@ public final class Main extends Application {
                 // todo, mettre les conditions dans un case when?
                 case OCCUPY_TILE -> {
                     assert board.lastPlacedTile() != null;
-                    if (tileId != board.lastPlacedTile().id()) return;
+                    if (tileId != board.lastPlacedTile().id() && occupant != null) return;
                     saveState(ActionEncoder.withNewOccupant(currentGameState, occupant), gameStateO, actionsO);
                 }
                 case RETAKE_PAWN -> {
@@ -126,10 +126,9 @@ public final class Main extends Application {
         Node decksNode = DecksUI.create(tileToPlaceO, leftNormalTilesO, leftMenhirTilesO, textToDisplayO, onOccupantClick);
         Node actionsNode = ActionsUI.create(actionsO, onEnteredAction);
 
-        SimpleObjectProperty<Rotation> nextRotationO = new SimpleObjectProperty<>(Rotation.NONE);
+        ObjectProperty<Rotation> nextRotationO = new SimpleObjectProperty<>(Rotation.NONE);
         Consumer<Rotation> onRotationClick = newRotation -> {
             nextRotationO.setValue(nextRotationO.getValue().add(newRotation));
-
         };
 
         Consumer<Pos> onPosClick = pos -> {
