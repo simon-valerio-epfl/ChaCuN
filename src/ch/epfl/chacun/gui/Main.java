@@ -86,8 +86,8 @@ public final class Main extends Application {
 
 
         WSClient wsClient = new WSClient(
-            gameId,
-            localPlayerName
+                gameId,
+                localPlayerName
         );
 
         TileDecks tileDecks = getShuffledTileDecks((long) gameId.hashCode());
@@ -96,20 +96,21 @@ public final class Main extends Application {
         ObservableValue<List<PlayerColor>> playerColorsO = playerNamesO.map(map -> new ArrayList<>(map.keySet()));
         playerNamesO.setValue(getPlayersMap(localPlayerName));
 
-        TextMaker textMaker = new TextMakerFr(playerNamesO);
+        ObservableValue<TextMaker> textMakerO = playerNamesO.map(TextMakerFr::new);
 
-        GameState gameState = GameState.initial(playerColorsO.getValue(), tileDecks, textMaker);
+        GameState gameState = GameState.initial(playerColorsO.getValue(), tileDecks, textMakerO.getValue());
         ObjectProperty<GameState> gameStateO = new SimpleObjectProperty<>(gameState);
         ObjectProperty<List<String>> actionsO = new SimpleObjectProperty<>(List.of());
 
         wsClient.setOnGamePlayerJoin(newPlayerNames -> {
             playerNamesO.setValue(getPlayersMap(newPlayerNames));
-            gameStateO.setValue(gameStateO.getValue().withPlayers(playerColorsO.getValue()));
+            gameStateO.setValue(
+                    gameStateO.getValue()
+                            .withPlayers(playerColorsO.getValue())
+                            .withTextMaker(textMakerO.getValue())
+            );
         });
-        wsClient.setOnGameJoinAccept(newPlayerNames -> {
-            playerNamesO.setValue(getPlayersMap(newPlayerNames));
-            gameStateO.setValue(gameStateO.getValue().withPlayers(playerColorsO.getValue()));
-        });
+
         wsClient.setOnGameChatMessage((username, content) -> {
             String displayMessage = STR."\{username}: \{content}";
             gameStateO.setValue(gameStateO.getValue().withGameChatMessage(displayMessage));
@@ -131,8 +132,8 @@ public final class Main extends Application {
         ObservableValue<Integer> leftMenhirTilesO = tileDecksO.map(tDecks -> tDecks.menhirTiles().size());
         ObservableValue<String> textToDisplayO = gameStateO.map(gState ->
                 switch (gState.nextAction()) {
-                    case GameState.Action.OCCUPY_TILE -> textMaker.clickToOccupy();
-                    case GameState.Action.RETAKE_PAWN -> textMaker.clickToUnoccupy();
+                    case GameState.Action.OCCUPY_TILE -> textMakerO.getValue().clickToOccupy();
+                    case GameState.Action.RETAKE_PAWN -> textMakerO.getValue().clickToUnoccupy();
                     default -> "";
                 }
         );
@@ -179,7 +180,7 @@ public final class Main extends Application {
             if (newSt != null) saveStateAndDispatch(newSt, gameStateO, actionsO, wsClient);
         };
 
-        Node playersNode = PlayersUI.create(gameStateO, new TextMakerFr(playerNamesO));
+        Node playersNode = PlayersUI.create(gameStateO, textMakerO);
         Node messagesNode = MessageBoardUI.create(observableMessagesO, highlightedTilesO);
         Node decksNode = DecksUI.create(tileToPlaceO, leftNormalTilesO, leftMenhirTilesO, textToDisplayO, onOccupantClick);
         Node actionsNode = ActionsUI.create(actionsO, onEnteredAction, isLocalPlayerCurrentPlayerO);

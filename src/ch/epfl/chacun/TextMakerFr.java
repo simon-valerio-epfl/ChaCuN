@@ -32,14 +32,14 @@ final public class TextMakerFr implements TextMaker {
             Animal.Kind.TIGER, "tigre"
     );
 
-    private final ObservableValue<Map<PlayerColor, String>> namesO;
+    private final Map<PlayerColor, String> names;
 
     /**
      * Creates a new TextMakerFr
-     * @param namesO the observable map of player colors to player names
+     * @param names the map of player colors to player names
      */
-    public TextMakerFr(ObservableValue<Map<PlayerColor, String>> namesO) {
-        this.namesO = namesO;
+    public TextMakerFr(Map<PlayerColor, String> names) {
+        this.names = names;
     }
 
     private String pluralizeGameItems(GameItem item, int count) {
@@ -107,7 +107,7 @@ final public class TextMakerFr implements TextMaker {
 
     @Override
     public String playerName(PlayerColor playerColor) {
-        return namesO.getValue().getOrDefault(playerColor, null);
+        return names.getOrDefault(playerColor, null);
     }
 
     @Override

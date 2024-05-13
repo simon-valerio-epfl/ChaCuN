@@ -464,4 +464,13 @@ public record GameState(
         return new GameState(players, tileDecks, tileToPlace, board, nextAction, messageBoard.withGameChatMessage(message));
     }
 
+    /**
+     * Returns a new game state with the given chat message added to the message board
+     * @param textMaker the text maker to generate the message
+     * @return a new game state with the given chat message added to the message board
+     */
+    public GameState withTextMaker(TextMaker textMaker) {
+        return new GameState(players, tileDecks, tileToPlace, board, nextAction, messageBoard.withTextMaker(textMaker));
+    }
+
 }

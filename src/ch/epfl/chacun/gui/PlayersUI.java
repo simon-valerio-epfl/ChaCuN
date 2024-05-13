@@ -41,13 +41,13 @@ public final class PlayersUI {
      * their points and available occupants, with the current player highlighted
      *
      * @param gameStateO the observable current state of a game
-     * @param textMaker  the text maker used to generate the text for the players' names and points
+     * @param textMakerO  the observable value of the text maker used to generate the text for the players' names and points
      * @return a graphical node containing the occupants of the game with their names, their colours,
      * their points and available occupants, with the current player highlighted
      */
     public static Node create(
             ObservableValue<GameState> gameStateO,
-            TextMaker textMaker
+            ObservableValue<TextMaker> textMakerO
     ) {
 
         ObservableValue<Map<PlayerColor, Integer>> pointsO = gameStateO.map(gState -> gState.messageBoard().points());
@@ -65,7 +65,7 @@ public final class PlayersUI {
             vBox.getChildren().clear();
             newPlayers
                     .forEach(playerColor -> {
-                        String name = textMaker.playerName(playerColor);
+                        String name = textMakerO.getValue().playerName(playerColor);
 
                         if (name == null) return;
 
@@ -85,7 +85,11 @@ public final class PlayersUI {
                         Circle circle = new Circle(5);
                         circle.setFill(ColorMap.fillColor(playerColor));
 
-                        ObservableValue<String> pointsTextO = pointsO.map(points -> STR." \{name} : \{textMaker.points(points.getOrDefault(playerColor, 0))}\n");
+                        ObservableValue<String> pointsTextO = pointsO.map(points ->
+                                STR." \{name} : \{
+                                    textMakerO.getValue().points(points.getOrDefault(playerColor, 0))
+                                }\n"
+                        );
                         ObservableValue<Map<Occupant.Kind, Integer>> occupantsO = gameStateO
                                 .map(gState -> Map.of(
                                         Occupant.Kind.PAWN, gState.freeOccupantsCount(playerColor, Occupant.Kind.PAWN),

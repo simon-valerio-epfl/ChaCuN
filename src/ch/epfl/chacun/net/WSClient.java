@@ -58,7 +58,10 @@ public final class WSClient implements WebSocket.Listener {
         String data = messageParts[1];
         WSAction wsAction = WSAction.valueOf(action);
         switch (wsAction) {
-            case GAMEJOIN_ACCEPT -> onGameJoinAccept.accept(data);
+            case GAMEJOIN_ACCEPT -> {
+                onGameJoinAccept.accept(data);
+                onGamePlayerJoin.accept(data);
+            }
             case GAMEJOIN_NEWCOMER -> onGamePlayerJoin.accept(data);
             case GAMEACTION -> onPlayerAction.accept(data);
             case GAMEMSG -> {
