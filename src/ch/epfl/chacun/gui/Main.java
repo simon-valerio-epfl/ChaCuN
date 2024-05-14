@@ -163,7 +163,7 @@ public final class Main extends Application {
             switch (currentGameState.nextAction()) {
                 case OCCUPY_TILE -> {
                     assert board.lastPlacedTile() != null;
-                    if (tileId != board.lastPlacedTile().id() && occupant != null) return;
+                    if (occupant != null && tileId != board.lastPlacedTile().id()) return;
                     saveStateAndDispatch(ActionEncoder.withNewOccupant(currentGameState, occupant), gameStateO, actionsO, wsClient);
                 }
                 case RETAKE_PAWN -> {
