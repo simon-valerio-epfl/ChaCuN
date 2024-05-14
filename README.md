@@ -31,7 +31,7 @@ Une fois connecté, vous recevrez un message du serveur vous indiquant si vous a
 
 > La seed à utiliser pour mélanger les decks est le hash code de la chaîne de caractères représentant l'identifiant de partie.
 
-Une méthode publique à `GameState` a été ajouté, `withPlayers` qui permet de recréer un `GameState` avec des joueurs différents, et une méthode `withTextMaker` qui permet de remplacer le `TextMaker` par un autre avec les nouveaux noms. Ainsi, le `GameState` reste immuable. De même, une valeur observable du `GameState` est passée à `PlayersUI`.
+Une méthode publique à `GameState` a été ajouté, `withPlayers` qui permet de recréer un `GameState` avec des joueurs différents, et une méthode `withTextMaker` qui permet de remplacer le `TextMaker` par un autre avec les nouveaux noms. Ainsi, le `GameState` reste immuable. De même, une valeur observable du `TextMaker` est passée à `PlayersUI`.
 
 Une valeur observable `isLocalPlayerCurrentPlayer` a été ajoutée à quelques classes du GUI pour savoir si le joueur local est celui qui doit jouer.
 
