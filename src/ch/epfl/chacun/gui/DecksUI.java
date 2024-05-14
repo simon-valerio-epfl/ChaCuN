@@ -56,7 +56,7 @@ public final class DecksUI {
         view.setFitHeight(ImageLoader.LARGE_TILE_FIT_SIZE);
         view.setFitWidth(ImageLoader.LARGE_TILE_FIT_SIZE);
         // Text, occupy tile (only visible if textToDisplay is not empty,
-        // meaning that the player does not want to do some action) ..todo?
+        // meaning that the player does not want to do some action)
         Text text = new Text();
         text.setOnMouseClicked(_ -> onOccupantClick.accept(null));
         text.textProperty().bind(textToDisplay);

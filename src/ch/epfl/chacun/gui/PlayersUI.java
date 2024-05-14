@@ -78,9 +78,6 @@ public final class PlayersUI {
                             if (newValue) textFlow.getStyleClass().add("current");
                             else textFlow.getStyleClass().remove("current");
                         });
-                        // todo check null --> currentplayer should trigger listener
-                        if (gameStateO.getValue().currentPlayer() == playerColor)
-                            textFlow.getStyleClass().add("current");
 
                         Circle circle = new Circle(5);
                         circle.setFill(ColorMap.fillColor(playerColor));

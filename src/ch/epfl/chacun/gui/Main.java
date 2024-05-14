@@ -35,7 +35,8 @@ public final class Main extends Application {
         gameStateO.setValue(stateAction.gameState());
         List<String> newActions = new ArrayList<>(actionsO.getValue());
         newActions.add(stateAction.action());
-        actionsO.setValue(newActions);
+        // make the actions immutable, every object stored in an ObjectProperty should be immutable
+        actionsO.setValue(Collections.unmodifiableList(newActions));
     }
 
     private void saveStateAndDispatch(

@@ -48,9 +48,6 @@ public final class ActionsUI {
             Consumer<String> handler,
             ObservableValue<Boolean> isLocalPlayerCurrentPlayerO
     ) {
-        HBox hbox = new HBox();
-        hbox.setId("actions");
-        hbox.getStylesheets().add("/actions.css");
 
         Text text = new Text();
         text.textProperty().bind(actionsO.map(ActionsUI::textRepresentation));
@@ -67,7 +64,9 @@ public final class ActionsUI {
         });
         textField.disableProperty().bind(isLocalPlayerCurrentPlayerO.map(v -> !v));
 
-        hbox.getChildren().addAll(text, textField);
+        HBox hbox = new HBox(text, textField);
+        hbox.setId("actions");
+        hbox.getStylesheets().add("/actions.css");
         return hbox;
     }
 
