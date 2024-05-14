@@ -34,7 +34,8 @@ public final class Main extends Application {
         gameStateO.setValue(stateAction.gameState());
         List<String> newActions = new ArrayList<>(actionsO.getValue());
         newActions.add(stateAction.action());
-        actionsO.setValue(newActions);
+        // make the actions immutable, every object stored in an ObjectProperty should be immutable
+        actionsO.setValue(Collections.unmodifiableList(newActions));
     }
 
     private TileDecks getShuffledTileDecks(Long seed) {
@@ -98,6 +99,7 @@ public final class Main extends Application {
         Consumer<Occupant> onOccupantClick = occupant -> {
             GameState currentGameState = gameStateO.getValue();
             Board board = currentGameState.board();
+            // todo on peut faire mieux ?
             int tileId = occupant != null ? Zone.tileId(occupant.zoneId()) : -1;
             switch (currentGameState.nextAction()) {
                 // todo, mettre les conditions dans un case when?

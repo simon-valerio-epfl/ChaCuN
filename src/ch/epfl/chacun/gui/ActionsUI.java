@@ -43,9 +43,6 @@ public final class ActionsUI {
      * @return a node containing the last actions of the game state and a field where one may insert a new action
      */
     public static Node create(ObservableValue<List<String>> actionsO, Consumer<String> handler) {
-        HBox hbox = new HBox();
-        hbox.setId("actions");
-        hbox.getStylesheets().add("/actions.css");
 
         Text text = new Text();
         text.textProperty().bind(actionsO.map(ActionsUI::textRepresentation));
@@ -61,7 +58,10 @@ public final class ActionsUI {
             textField.clear();
         });
 
-        hbox.getChildren().addAll(text, textField);
+        HBox hbox = new HBox(text, textField);
+        hbox.setId("actions");
+        hbox.getStylesheets().add("/actions.css");
+
         return hbox;
     }
 

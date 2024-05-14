@@ -40,8 +40,6 @@ public final class MessageBoardUI {
     ) {
         VBox vBox = new VBox();
 
-        // todo scrollbar
-
         ScrollPane scrollPane = new ScrollPane(vBox);
         scrollPane.getStylesheets().add("message-board.css");
         scrollPane.setId("message-board");
