@@ -105,7 +105,7 @@ public final class Main extends Application {
                 // todo, mettre les conditions dans un case when?
                 case OCCUPY_TILE -> {
                     assert board.lastPlacedTile() != null;
-                    if (tileId != board.lastPlacedTile().id() && occupant != null) return;
+                    if (occupant != null && tileId != board.lastPlacedTile().id()) return;
                     saveState(ActionEncoder.withNewOccupant(currentGameState, occupant), gameStateO, actionsO);
                 }
                 case RETAKE_PAWN -> {

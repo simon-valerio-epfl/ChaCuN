@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * This class represents the graphical representation
@@ -86,21 +87,10 @@ public final class ActionsUI {
      * @return the textual representation of the last indexed actions
      */
     private static String textRepresentation(List<String> actions) {
-        StringJoiner sj = new StringJoiner(", ");
         int actionSize = actions.size();
-        int startingIdx = Math.max(0, actionSize - NUMBER_OF_ACTIONS);
-        List<String> lastActions = actions.subList(startingIdx, actionSize);
-        for (int i = 0; i < lastActions.size(); i++) {
-            sj.add(STR."\{startingIdx + i + 1}:\{lastActions.get(i)}");
-        }
-        return sj.toString();
-        // todo choose smth
-        /*ch
-            int actionSize = actions.size();
-            return IntStream.range(Math.max(0, actionSize - NUMBER_OF_ACTIONS), actionSize)
-                    .mapToObj(i -> STR."\{i + 1}:\{actions.get(i)}")
-                    .collect(Collectors.joining(", "));
-         */
+        return IntStream.range(Math.max(0, actionSize - NUMBER_OF_ACTIONS), actionSize)
+                .mapToObj(i -> STR."\{i + 1}:\{actions.get(i)}")
+                .collect(Collectors.joining(", "));
     }
 
 }
