@@ -148,6 +148,8 @@ public final class BoardUI {
                     if (!isInFringeO.getValue()) return new CellData(Color.TRANSPARENT);
 
                     PlayerColor currentPlayer = gameStateO.getValue().currentPlayer();
+                    // todo do we have to check this?
+                    if (currentPlayer == null) return new CellData(Color.TRANSPARENT);
 
                     // if the mouse is currently on this tile (in the fringe) we display it normally
                     // if it can be placed there with its current position, and with a white veil otherwise

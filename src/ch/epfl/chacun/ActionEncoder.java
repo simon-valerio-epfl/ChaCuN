@@ -89,7 +89,6 @@ public final class ActionEncoder {
      */
     public static StateAction withPlacedTile(GameState gameState, PlacedTile tile) {
         List<Pos> fringeIndexes = fringeIndexes(gameState);
-        //todo: check if the tile is in the fringe?
         int indexToEncode = fringeIndexes.indexOf(tile.pos()); // a number between 0 and 189
         int rotationToEncode = tile.rotation().ordinal(); // a number between 0 and 3
         int toEncode = indexToEncode << WITH_PLACED_TILE_IDX_SHIFT | rotationToEncode;

@@ -145,11 +145,11 @@ public final class Main extends Application {
         };
 
         ObservableValue<Set<Occupant>> visibleOccupants = gameStateO.map(gState -> {
-            Set<Occupant> occupants = new HashSet<>(gState.board().occupants());
             if (gState.nextAction() == GameState.Action.OCCUPY_TILE) {
+                Set<Occupant> occupants = new HashSet<>(gState.board().occupants());
                 occupants.addAll(gState.lastTilePotentialOccupants());
-            }
-            return occupants;
+                return occupants;
+            } else return gState.board().occupants();
         });
 
         Node boardNode = BoardUI.create(
