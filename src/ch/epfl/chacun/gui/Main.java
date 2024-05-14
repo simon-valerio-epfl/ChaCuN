@@ -177,8 +177,8 @@ public final class Main extends Application {
         };
 
         Consumer<String> onEnteredAction = action -> {
-            ActionEncoder.StateAction newSt = ActionEncoder.decodeAndApply(gameStateO.getValue(), action);
-            if (newSt != null) saveStateAndDispatch(newSt, gameStateO, actionsO, wsClient);
+            ActionEncoder.StateAction newState = ActionEncoder.decodeAndApply(gameStateO.getValue(), action);
+            if (newState != null) saveStateAndDispatch(newState, gameStateO, actionsO, wsClient);
         };
 
         Node playersNode = PlayersUI.create(gameStateO, textMakerO);
