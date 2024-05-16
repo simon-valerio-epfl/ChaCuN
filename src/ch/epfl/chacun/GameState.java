@@ -1,5 +1,7 @@
 package ch.epfl.chacun;
 
+import ch.epfl.chacun.sound.SoundManager;
+
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -22,7 +24,8 @@ public record GameState(
         Tile tileToPlace,
         Board board,
         Action nextAction,
-        MessageBoard messageBoard
+        MessageBoard messageBoard,
+        SoundManager.Sound nextSound
 ) {
 
     /**
@@ -68,6 +71,17 @@ public record GameState(
         //Preconditions.checkArgument(players.size() >= MIN_PLAYER_COUNT);
 
         Preconditions.checkArgument(tileToPlace == null ^ nextAction == Action.PLACE_TILE);
+    }
+
+    public GameState(
+            List<PlayerColor> players,
+            TileDecks tileDecks,
+            Tile tileToPlace,
+            Board board,
+            Action nextAction,
+            MessageBoard messageBoard
+    ) {
+        this(players, tileDecks, tileToPlace, board, nextAction, messageBoard, SoundManager.Sound.SILENT);
     }
 
     /**
@@ -269,6 +283,7 @@ public record GameState(
     public GameState withPlacedTile(PlacedTile tile) {
         Preconditions.checkArgument(nextAction == Action.PLACE_TILE && tile.occupant() == null);
 
+
         MessageBoard newMessageBoard = messageBoard;
         // places the tile on the board
         Board newBoard = board.withNewTile(tile);
@@ -301,8 +316,9 @@ public record GameState(
             }
         }
 
-        return new GameState(players, tileDecks, null, newBoard, Action.OCCUPY_TILE, newMessageBoard)
-                .withTurnFinishedIfOccupationImpossible();
+        return new GameState(
+                players, tileDecks, null, newBoard, Action.OCCUPY_TILE, newMessageBoard, SoundManager.Sound.PLACED_TILE
+        ).withTurnFinishedIfOccupationImpossible();
     }
 
     /**
@@ -334,6 +350,8 @@ public record GameState(
         Preconditions.checkArgument(board.lastPlacedTile() != null);
 
         MessageBoard newMessageBoard = messageBoard;
+        Map<PlayerColor, Integer> currentPoints = messageBoard.points();
+
         // the tile has already been added to the board previously
         Board newBoard = board;
         TileDecks newTileDecks = tileDecks;
@@ -364,7 +382,7 @@ public record GameState(
                 newMessageBoard = newMessageBoard.withClosedForestWithMenhir(currentPlayer(), forestClosedMenhir);
                 return new GameState(players, newTileDecks.withTopTileDrawn(Tile.Kind.MENHIR),
                         newTileDecks.topTile(Tile.Kind.MENHIR),
-                        newBoard, Action.PLACE_TILE, newMessageBoard
+                        newBoard, Action.PLACE_TILE, newMessageBoard, SoundManager.Sound.MENHIR_CLOSED
                 );
             }
         }
@@ -376,13 +394,17 @@ public record GameState(
         if (newTileDecks.deckSize(Tile.Kind.NORMAL) > 0) {
             List<PlayerColor> newPlayers = new LinkedList<>(players);
             Collections.rotate(newPlayers, -1);
+
+            SoundManager.Sound nextSound = newMessageBoard.points().equals(currentPoints) ? null : SoundManager.Sound.GAINED_POINTS;
+
             return new GameState(newPlayers, newTileDecks.withTopTileDrawn(Tile.Kind.NORMAL),
                     newTileDecks.topTile(Tile.Kind.NORMAL),
-                    newBoard, Action.PLACE_TILE, newMessageBoard
+                    newBoard, Action.PLACE_TILE, newMessageBoard,
+                    nextSound
             );
         } else {
             return new GameState(players, newTileDecks, null, newBoard, Action.END_GAME, newMessageBoard)
-                    .withFinalPointsCounted();
+                            .withFinalPointsCounted();
         }
 
     }
@@ -448,6 +470,7 @@ public record GameState(
 
     /**
      * Returns a new game state with the given players list as new players
+     *
      * @param players the new players list
      * @return a new game state with the given players list as new players
      */
@@ -457,6 +480,7 @@ public record GameState(
 
     /**
      * Returns a new game state with the given chat message added to the message board
+     *
      * @param message the chat message to add
      * @return a new game state with the given chat message added to the message board
      */
@@ -466,6 +490,7 @@ public record GameState(
 
     /**
      * Returns a new game state with the given chat message added to the message board
+     *
      * @param textMaker the text maker to generate the message
      * @return a new game state with the given chat message added to the message board
      */

@@ -2,6 +2,7 @@ package ch.epfl.chacun.gui;
 
 import ch.epfl.chacun.*;
 import ch.epfl.chacun.net.WSClient;
+import ch.epfl.chacun.sound.SoundManager;
 import javafx.application.Application;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -39,14 +40,17 @@ public final class Main extends Application {
         actionsO.setValue(Collections.unmodifiableList(newActions));
     }
 
-    private void saveStateAndDispatch(
+    private void saveStateDispatchPlaySound(
             ActionEncoder.StateAction stateAction,
             ObjectProperty<GameState> gameStateO,
             ObjectProperty<List<String>> actionsO,
-            WSClient wsClient
+            WSClient wsClient,
+            SoundManager soundManager
     ) {
+        SoundManager.Sound sound = stateAction.gameState().nextSound();
         saveState(stateAction, gameStateO, actionsO);
         wsClient.sendAction(stateAction.action());
+        if (sound != null) soundManager.play(sound);
     }
 
     private TileDecks getShuffledTileDecks(Long seed) {
@@ -75,6 +79,8 @@ public final class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+
+        SoundManager soundManager = new SoundManager();
 
         Parameters parameters = getParameters();
         boolean debug = parameters.getUnnamed().contains("debug");
@@ -164,21 +170,21 @@ public final class Main extends Application {
                 case OCCUPY_TILE -> {
                     assert board.lastPlacedTile() != null;
                     if (occupant != null && tileId != board.lastPlacedTile().id()) return;
-                    saveStateAndDispatch(ActionEncoder.withNewOccupant(currentGameState, occupant), gameStateO, actionsO, wsClient);
+                    saveStateDispatchPlaySound(ActionEncoder.withNewOccupant(currentGameState, occupant), gameStateO, actionsO, wsClient, soundManager);
                 }
                 case RETAKE_PAWN -> {
                     if (
                             occupant != null &&
                                     (occupant.kind() != Occupant.Kind.PAWN || (currentGameState.currentPlayer() != board.tileWithId(tileId).placer()))
                     ) return;
-                    saveStateAndDispatch(ActionEncoder.withOccupantRemoved(currentGameState, occupant), gameStateO, actionsO, wsClient);
+                    saveStateDispatchPlaySound(ActionEncoder.withOccupantRemoved(currentGameState, occupant), gameStateO, actionsO, wsClient, soundManager);
                 }
             }
         };
 
         Consumer<String> onEnteredAction = action -> {
             ActionEncoder.StateAction newState = ActionEncoder.decodeAndApply(gameStateO.getValue(), action);
-            if (newState != null) saveStateAndDispatch(newState, gameStateO, actionsO, wsClient);
+            if (newState != null) saveStateDispatchPlaySound(newState, gameStateO, actionsO, wsClient, soundManager);
         };
 
         Node playersNode = PlayersUI.create(gameStateO, textMakerO);
@@ -202,7 +208,7 @@ public final class Main extends Application {
                     nextRotationO.getValue(), pos
             );
             if (!currentGameState.board().canAddTile(placedTile)) return;
-            saveStateAndDispatch(ActionEncoder.withPlacedTile(currentGameState, placedTile), gameStateO, actionsO, wsClient);
+            saveStateDispatchPlaySound(ActionEncoder.withPlacedTile(currentGameState, placedTile), gameStateO, actionsO, wsClient, soundManager);
             nextRotationO.setValue(Rotation.NONE);
         };
 

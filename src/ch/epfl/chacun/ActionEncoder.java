@@ -95,6 +95,7 @@ public final class ActionEncoder {
         int toEncode = indexToEncode << WITH_PLACED_TILE_IDX_SHIFT | rotationToEncode;
         // our action will have 7 bits at most
         return new StateAction(gameState.withPlacedTile(tile), Base32.encodeBits10(toEncode));
+
     }
 
     /**
