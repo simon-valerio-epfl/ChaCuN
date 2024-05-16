@@ -85,15 +85,16 @@ public final class ActionsUI {
         StringBuilder sb = new StringBuilder(input.length());
         for (int i = 0; i < input.length(); i++) {
             String verify = input.substring(i, i+1);
-            if (Base32.isValid(verify)) sb.append(verify);
+            if (Base32.isValid(verify))
+                sb.append(verify);
         }
         return sb.toString();
-
-        return  input.toUpperCase()
+//TODO ask Fabrice
+    /*    return  input.toUpperCase()
                 .chars()
                 .mapToObj(Character::toString)
                 .filter(Base32::isValid)
-                .collect(Collectors.joining());
+                .collect(Collectors.joining()); */
     }
 
     /**
