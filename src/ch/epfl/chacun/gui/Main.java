@@ -7,10 +7,18 @@ import javafx.application.Application;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 
 import java.util.*;
@@ -80,6 +88,39 @@ public final class Main extends Application {
     @Override
     public void start(Stage primaryStage) {
 
+        Text title = new Text("ChaCuN Lobby");
+        title.getStyleClass().add("title");
+
+        VBox vBox = new VBox(title);
+        vBox.getStyleClass().add("container");
+        for (int i = 0; i < 5; i++) {
+            TextField field = new TextField("Pedro");
+            field.setDisable(true);
+            Circle circle = new Circle(15);
+            circle.setFill(Color.RED);
+            HBox hBox = new HBox(field, circle);
+            hBox.setSpacing(15);
+            hBox.setAlignment(Pos.CENTER);
+            vBox.getChildren().add(hBox);
+            hBox.setAlignment(Pos.CENTER_LEFT);
+        }
+        vBox.getStylesheets().add("lobby.css");
+
+        Text seedTitle  = new Text("Seed");
+        TextField seedField = new TextField();
+        VBox seedBox = new VBox(seedTitle, seedField);
+        Text gameTitle  = new Text("ID Partie");
+        TextField gameField = new TextField("123456");
+        gameField.setDisable(true);
+        VBox gameBox = new VBox(gameTitle, gameField);
+
+        HBox seedAndGameId = new HBox(seedBox, gameBox);
+        seedAndGameId.setSpacing(15);
+
+        Button button = new Button("Start Game");
+        vBox.getChildren().addAll(seedAndGameId, button);
+
+        /*
         SoundManager soundManager = new SoundManager();
 
         Parameters parameters = getParameters();
@@ -251,6 +292,11 @@ public final class Main extends Application {
         gameStateO.setValue(gameStateO.getValue().withStartingTilePlaced());
 
         wsClient.connect();
+         */
+
+        primaryStage.setScene(new Scene(vBox));
+        primaryStage.setTitle("ChaCuN");
+        primaryStage.show();
 
     }
 }

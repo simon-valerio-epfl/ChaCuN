@@ -1,0 +1,9 @@
+.title {
+    -fx-font-size: 250%;
+}
+
+.container {
+    -fx-spacing: 20;
+    -fx-padding: 20;
+    -fx-font-size: 180%;
+}
