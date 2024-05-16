@@ -395,7 +395,8 @@ public record GameState(
             List<PlayerColor> newPlayers = new LinkedList<>(players);
             Collections.rotate(newPlayers, -1);
 
-            SoundManager.Sound nextSound = newMessageBoard.points().equals(currentPoints) ? null : SoundManager.Sound.GAINED_POINTS;
+            SoundManager.Sound nextSound = newMessageBoard.points().equals(currentPoints)
+                    ? nextSound() : SoundManager.Sound.GAINED_POINTS;
 
             return new GameState(newPlayers, newTileDecks.withTopTileDrawn(Tile.Kind.NORMAL),
                     newTileDecks.topTile(Tile.Kind.NORMAL),
