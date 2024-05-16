@@ -35,6 +35,10 @@ public final class ActionsUI {
     private final static int NUMBER_OF_ACTIONS = 4;
 
     /**
+     * The max number of characters of a valid Base32-action
+     */
+    private final static int MAX_ACTION_LENGTH = 2;
+    /**
      * Creates the node containing the last actions of the game state and
      * a field where one may insert a new action
      *
@@ -51,7 +55,12 @@ public final class ActionsUI {
         TextField textField = new TextField();
         textField.setId("action-field");
         textField.setTextFormatter(new TextFormatter<>(change -> {
-            change.setText(cleanupInput(change.getText()));
+            String action = change.getText();
+
+            change.setText(cleanupInput(action));
+            if (action.length() <= MAX_ACTION_LENGTH) {
+                change.setText(cleanupInput(action));
+            }
             return change;
         }));
         textField.setOnAction(_ -> {
@@ -73,7 +82,14 @@ public final class ActionsUI {
      * @return the valid formatted string
      */
     private static String cleanupInput(String input) {
-        return input.toUpperCase()
+        StringBuilder sb = new StringBuilder(input.length());
+        for (int i = 0; i < input.length(); i++) {
+            String verify = input.substring(i, i+1);
+            if (Base32.isValid(verify)) sb.append(verify);
+        }
+        return sb.toString();
+
+        return  input.toUpperCase()
                 .chars()
                 .mapToObj(Character::toString)
                 .filter(Base32::isValid)

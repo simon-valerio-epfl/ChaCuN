@@ -125,7 +125,9 @@ public final class Main extends Application {
 
         Node playersNode = PlayersUI.create(gameStateO, new TextMakerFr(playersNames));
         Node messagesNode = MessageBoardUI.create(observableMessagesO, highlightedTilesO);
-        Node decksNode = DecksUI.create(tileToPlaceO, leftNormalTilesO, leftMenhirTilesO, textToDisplayO, onOccupantClick);
+        Node decksNode = DecksUI.create(
+                tileToPlaceO, leftNormalTilesO, leftMenhirTilesO, textToDisplayO, onOccupantClick
+        );
         Node actionsNode = ActionsUI.create(actionsO, onEnteredAction);
 
         ObjectProperty<Rotation> nextRotationO = new SimpleObjectProperty<>(Rotation.NONE);
