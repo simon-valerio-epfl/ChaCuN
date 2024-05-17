@@ -35,10 +35,6 @@ public final class ActionsUI {
     private final static int NUMBER_OF_ACTIONS = 4;
 
     /**
-     * The max number of characters of a valid Base32-action
-     */
-    private final static int MAX_ACTION_LENGTH = 2;
-    /**
      * Creates the node containing the last actions of the game state and
      * a field where one may insert a new action
      *
@@ -78,10 +74,9 @@ public final class ActionsUI {
      */
     private static String cleanupInput(String input) {
         StringBuilder cleaned = new StringBuilder();
-        input.toUpperCase()
-                .chars()
-                .filter(c -> Base32.ALPHABET.indexOf(c) != -1)
-                .forEach(c -> cleaned.append((char) c));
+        input.toUpperCase().chars()
+            .filter(character -> Base32.ALPHABET.indexOf(character) != -1)
+            .forEach(character -> cleaned.append((char) character));
         return cleaned.toString();
     }
 
