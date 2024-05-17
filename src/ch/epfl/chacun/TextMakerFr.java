@@ -112,28 +112,17 @@ public final class TextMakerFr implements TextMaker {
      */
     private String earnMessage(Set<PlayerColor> scorers) {
         Preconditions.checkArgument(!scorers.isEmpty());
+        if (scorers.size() == 1)
+            return STR."\{playerName(scorers.stream().findFirst().get())} a remporté";
+
         List<String> sortedPlayerNames = scorers.stream()
                 .sorted()
                 .map(this::playerName)
                 .toList();
         //the players are now ordered
         String playersToString = itemsToString(sortedPlayerNames);
-        String a = STR."\{scorers.size() == 1 ? STR."\{playersToString} a" : STR."\{playersToString} ont"} remporté";
-
-    //TODO clean
-    if (scorers.size() == 1)
-        return STR."\{scorers.stream().map(this::playerName).findFirst()} a remporté";
-    else {
-        List<String> asortedPlayerNames = scorers.stream()
-                .sorted()
-                .map(this::playerName)
-                .toList();
-        //the players are now ordered
-        String aplayersToString = itemsToString(sortedPlayerNames);
         return STR."\{playersToString} ont remporté";
 
-
-    }
     }
 
     /**
