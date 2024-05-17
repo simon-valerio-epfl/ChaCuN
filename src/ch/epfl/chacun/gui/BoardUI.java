@@ -11,13 +11,11 @@ import javafx.scene.effect.BlendMode;
 import javafx.scene.effect.ColorInput;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.WritableImage;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -31,11 +29,6 @@ import java.util.function.Consumer;
  * @author Simon Lefort (371918)
  */
 public final class BoardUI {
-    /**
-     * This map is used to save in a cache the images that have already been loaded once,
-     * in order to avoid loading them again and again when they are needed to be shown.
-     */
-    private static final Map<Integer, Image> cachedImages = new HashMap<>();
 
     private static final double H_SCROLL_CENTER = .5;
     private static final double V_SCROLL_CENTER = .5;
@@ -79,10 +72,6 @@ public final class BoardUI {
 
         Preconditions.checkArgument(reach > 0);
 
-        ScrollPane scrollPane = new ScrollPane();
-        scrollPane.setId("board-scroll-pane");
-        scrollPane.getStylesheets().add("board.css");
-
         GridPane grid = new GridPane();
         grid.setId("board-grid");
 
@@ -90,12 +79,11 @@ public final class BoardUI {
         ObservableValue<Set<Animal>> cancelledAnimalsO = boardO.map(Board::cancelledAnimals);
         // the fringe only exists when the next action is to place a tile
         ObservableValue<Set<Pos>> fringeTilesO = gameStateO.map(
-                state -> state.nextAction() == GameState.Action.PLACE_TILE
-                        // important to understand
+                gState -> gState.nextAction() == GameState.Action.PLACE_TILE
                         // we can not use boardO.getValue() here!
                         // because this map may be triggered before boardO gets updated!
                         // therefore we would be using the old board
-                        ? state.board().insertionPositions()
+                        ? gState.board().insertionPositions()
                         : Set.of()
         );
 
@@ -114,24 +102,33 @@ public final class BoardUI {
                 group.setEffect(blend);
                 Pos pos = new Pos(x, y);
                 // here we handle the mouse interactions
-                group.setOnMouseClicked((e) -> {
-                    if ((e.isStillSincePress())){
-                    switch (e.getButton()) {
-                        case SECONDARY -> rotationConsumer.accept(e.isAltDown() ? Rotation.RIGHT : Rotation.LEFT);
-                        case PRIMARY -> posConsumer.accept(pos);
+                group.setOnMouseClicked((mouseEvent) -> {
+                    // to handle the case of a player wanting to scroll on the board without placing a tile
+                    if ((mouseEvent.isStillSincePress())){
+                    switch (mouseEvent.getButton()) {
+                        case SECONDARY ->
+                                // if the player right-clicks on a tile pressing the ALT key, the tile is rotated right,
+                                // otherwise it is rotated left
+                                rotationConsumer.accept(mouseEvent.isAltDown() ? Rotation.RIGHT : Rotation.LEFT);
+                        case PRIMARY ->
+                                // if the player left-clicks on a tile, the tile is placed
+                                posConsumer.accept(pos);
                     }}
                 });
 
-                // cell data does not show anything to the screen, it calculates and takes some values from the tile,
+                // cell data does not show anything to the screen, it takes and computes some values from the tile,
                 // which can thus be observed in the rest of the program
 
                 // we create the observables that will be used to calculate the cell data
-                ObservableValue<PlacedTile> placedTileO = boardO.map(b -> b.tileAt(pos));
+                ObservableValue<PlacedTile> placedTileO = boardO.map(board -> board.tileAt(pos));
                 ObservableValue<Boolean> isInFringeO = fringeTilesO.map(fringe -> fringe.contains(pos));
                 // if there are some tiles to highlight, we darken the others
-                ObservableValue<Boolean> darkVeilEnabledO = highlightedTilesO.map(h ->
-                        !h.isEmpty() && (placedTileO.getValue() == null || !h.contains(placedTileO.getValue().id()))
-                );
+                ObservableValue<Boolean> darkVeilEnabledO = highlightedTilesO.map(hTiles -> {
+                        PlacedTile currentPlacedTile = placedTileO.getValue();
+                        return !hTiles.isEmpty() && (
+                                currentPlacedTile == null || !hTiles.contains(currentPlacedTile.id())
+                        );
+                    });
 
                 // triggered when the fringe changes or when the mouse passes over the tile,
                 // the player rotates it, the tile's highlighting state changes or when the tile is placed
@@ -147,15 +144,14 @@ public final class BoardUI {
                     // else, if the tile is not placed yet, nor in the fringe, display it as an empty image
                     if (!isInFringeO.getValue()) return new CellData(Color.TRANSPARENT);
 
-                    PlayerColor currentPlayer = gameStateO.getValue().currentPlayer();
-                    // todo do we have to check this?
-                    if (currentPlayer == null) return new CellData(Color.TRANSPARENT);
+                    GameState currentGameState = gameStateO.getValue();
+                    PlayerColor currentPlayer = currentGameState.currentPlayer();
 
                     // if the mouse is currently on this tile (in the fringe) we display it normally
                     // if it can be placed there with its current position, and with a white veil otherwise
                     if (group.isHover()) {
                         PlacedTile willBePlacedTile = new PlacedTile(
-                                gameStateO.getValue().tileToPlace(), currentPlayer, rotationO.getValue(), pos
+                                currentGameState.tileToPlace(), currentPlayer, rotationO.getValue(), pos
                         );
                         return new CellData(willBePlacedTile,
                                 boardO.getValue().canAddTile(willBePlacedTile) ? Color.TRANSPARENT : Color.WHITE
@@ -175,14 +171,17 @@ public final class BoardUI {
 
                 // we add range and position in order to translate our tile from the left corner to the center
                 grid.add(group, x + reach, y + reach);
+
                 // when a tile is placed, we add the animals and the occupants on it
                 placedTileO.addListener((_, oldPlacedTile, placedTile) -> {
+                    // if the tile is already placed or is not yet, we do not have to add the animals and the occupants
                     if (oldPlacedTile != null || placedTile == null) return;
 
                     double negatedTileRotation = placedTile.rotation().negated().degreesCW();
 
                     // handle "jeton d'annulation", a marker that signals that an animal is cancelled
-                    List<Node> cancelledAnimalsNodes = placedTile.meadowZones().stream()
+                    List<Node> cancelledAnimalsNodes =
+                            placedTile.meadowZones().stream()
                             .flatMap(meadow -> meadow.animals().stream())
                             .map(animal -> getCancelledAnimalNode(animal, cancelledAnimalsO, negatedTileRotation))
                             .toList();
@@ -201,10 +200,13 @@ public final class BoardUI {
             }
         }
 
+        ScrollPane scrollPane = new ScrollPane(grid);
+
+        scrollPane.setId("board-scroll-pane");
+        scrollPane.getStylesheets().add("/board.css");
         scrollPane.setHvalue(H_SCROLL_CENTER);
         scrollPane.setVvalue(V_SCROLL_CENTER);
 
-        scrollPane.setContent(grid);
         return scrollPane;
     }
 
@@ -250,6 +252,24 @@ public final class BoardUI {
      * @param veilColor    the color of the veil that has to be applied to the tile
      */
     private record CellData(Image tileImage, Rotation tileRotation, Color veilColor) {
+
+        /**
+         * An empty image, graphically represented by a grey square
+         */
+        public static final Image EMPTY_IMAGE;
+
+        static {
+            WritableImage writableImage = new WritableImage(1, 1);
+            writableImage.getPixelWriter().setColor(0, 0, Color.gray(0.98));
+            EMPTY_IMAGE = writableImage;
+        }
+
+        /**
+         * This map is used to save in a cache the images that have already been loaded once,
+         * in order to avoid loading them again and again when they are needed to be shown.
+         */
+        private static final Map<Integer, Image> cachedImages = new HashMap<>();
+
         /**
          * This constructor creates a CellData object from a placed tile and a veil color,
          * computing its rotation and image from the placed tile (the image will have normal size).
@@ -271,7 +291,7 @@ public final class BoardUI {
          * @param veilColor the color of the veil that has to be applied to the tile
          */
         public CellData(Color veilColor) {
-            this(ImageLoader.EMPTY_IMAGE, Rotation.NONE, veilColor);
+            this(EMPTY_IMAGE, Rotation.NONE, veilColor);
         }
 
         /**

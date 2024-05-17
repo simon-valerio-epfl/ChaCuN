@@ -46,26 +46,29 @@ public final class DecksUI {
             ObservableValue<String> textToDisplay,
             Consumer<Occupant> onOccupantClick
     ) {
-        // Here we handle the next tile to place
-        StackPane stackPane = new StackPane();
-        stackPane.setId("next-tile");
+
 
         // ImageView of the next tile to place, which has to be shown in large size
         ImageView view = new ImageView();
-        view.imageProperty().bind(tileO.map(t -> ImageLoader.largeImageForTile(t.id())));
+        // we bind the graphical view of the tile to place to the tile itself
+        view.imageProperty().bind(tileO.map(tile -> ImageLoader.largeImageForTile(tile.id())));
         view.setFitHeight(ImageLoader.LARGE_TILE_FIT_SIZE);
         view.setFitWidth(ImageLoader.LARGE_TILE_FIT_SIZE);
+
         // Text, occupy tile (only visible if textToDisplay is not empty,
         // meaning that the player does not want to do some action)
         Text text = new Text();
-        text.setOnMouseClicked(_ -> onOccupantClick.accept(null));
         text.textProperty().bind(textToDisplay);
         // we make the text visible only when the message it contains is not empty
         text.visibleProperty().bind(text.textProperty().isNotEmpty());
         text.setWrappingWidth(WRAPPING_WIDTH * ImageLoader.LARGE_TILE_FIT_SIZE);
-        stackPane.getChildren().setAll(view, text);
-        // we bind the graphical view of the tile to place to the tile itself
-        view.imageProperty().bind(tileO.map(t -> ImageLoader.largeImageForTile(t.id())));
+
+        // Here we handle the next tile to place
+        StackPane stackPane = new StackPane(view, text);
+        stackPane.setId("next-tile");
+        // if the player clicks on the text, it means that he does not want to place or retake an occupant
+        stackPane.setOnMouseClicked(_ -> onOccupantClick.accept(null));
+
         // here we handle the decks containing the remaining cards
         Node normalNode = getDeckNode(Tile.Kind.NORMAL, leftNormalTilesO);
         Node menhirNode = getDeckNode(Tile.Kind.MENHIR, leftMenhirTilesO);

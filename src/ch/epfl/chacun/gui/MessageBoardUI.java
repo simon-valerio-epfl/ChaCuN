@@ -3,6 +3,7 @@ package ch.epfl.chacun.gui;
 import ch.epfl.chacun.MessageBoard;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.VBox;
@@ -44,6 +45,8 @@ public final class MessageBoardUI {
         scrollPane.getStylesheets().add("message-board.css");
         scrollPane.setId("message-board");
 
+        ObservableList<Node> messageNodes = vBox.getChildren();
+
         messagesO.addListener((_, oldValue, newValue) -> {
             newValue.stream()
                     // we know that the new message board will not modify any pre-existing message
@@ -51,14 +54,17 @@ public final class MessageBoardUI {
                     .forEach(message -> {
                         Text text = new Text(message.text());
                         text.setWrappingWidth(ImageLoader.LARGE_TILE_FIT_SIZE);
-                        // we bind the tiles related to a message whenever the mouse passes on it
-                        text.setOnMouseEntered(_ -> tileIds.setValue(message.tileIds()));
-                        // whenever the mouse exits a message, the highlighted tiles are reset
-                        // it will work when we pass from a message to another one because
-                        // the exiting event happens before the entering one
-                        text.setOnMouseExited(_ -> tileIds.setValue(Set.of()));
 
-                        vBox.getChildren().add(text);
+                        if (!message.tileIds().isEmpty()) {
+                            // we bind the tiles related to a message whenever the mouse passes on it
+                            text.setOnMouseEntered(_ -> tileIds.setValue(message.tileIds()));
+                            // whenever the mouse exits a message, the highlighted tiles are reset
+                            // it will work when we pass from a message to another one because
+                            // the exiting event happens before the entering one
+                            text.setOnMouseExited(_ -> tileIds.setValue(Set.of()));
+                        }
+
+                        messageNodes.add(text);
                     });
 
             scrollPane.layout();

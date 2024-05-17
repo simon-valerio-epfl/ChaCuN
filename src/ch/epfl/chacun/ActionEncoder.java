@@ -17,18 +17,18 @@ public final class ActionEncoder {
      * @author Valerio De Santis (373247)
      * @author Simon Lefort (371918)
      */
-    public static class IllegalActionException extends Exception {
-        /**
-         * Construct an IllegalActionException, with no message.
-         */
-        public IllegalActionException() {
-        }
+    private static class IllegalActionException extends Exception {
     }
+
+    /**
+     * The number of bits used to encode the choice of not placing an occupant.
+     */
+    private static final int WITH_NO_OCCUPANT_BITS = 0b11111;
 
     /**
      * The Base32-encoded action signaling that no occupant is to be placed.
      */
-    private static final int WITH_NO_OCCUPANT = 0b11111;
+    private static final String WITH_NO_OCCUPANT = Base32.encodeBits5(WITH_NO_OCCUPANT_BITS);
     // format: K-O-O-O
     /**
      * The length of a Base32-encoded action where an occupant is placed.
@@ -81,6 +81,16 @@ public final class ActionEncoder {
     }
 
     /**
+     * Creates a new list of occupants sorted by their zone ID
+     * @param gameState the game state to get the occupants from
+     * @return the list of occupants sorted by their zone ID
+     */
+    private static List<Occupant> sortedOccupants(GameState gameState) {
+        return gameState.board().occupants().stream()
+                .sorted(Comparator.comparingInt(Occupant::zoneId)).toList();
+    }
+
+    /**
      * Encode an action where the given tile is placed on the board of the given game state.
      *
      * @param gameState the initial game state
@@ -91,7 +101,7 @@ public final class ActionEncoder {
         List<Pos> fringeIndexes = fringeIndexes(gameState);
         int indexToEncode = fringeIndexes.indexOf(tile.pos()); // a number between 0 and 189
         int rotationToEncode = tile.rotation().ordinal(); // a number between 0 and 3
-        int toEncode = indexToEncode << WITH_PLACED_TILE_IDX_SHIFT | rotationToEncode;
+        int toEncode = (indexToEncode << WITH_PLACED_TILE_IDX_SHIFT) | rotationToEncode;
         // our action will have 7 bits at most
         return new StateAction(gameState.withPlacedTile(tile), Base32.encodeBits10(toEncode));
     }
@@ -106,10 +116,10 @@ public final class ActionEncoder {
     public static StateAction withNewOccupant(GameState gameState, Occupant occupant) {
         // if the occupant is null, we encode 11111, which means that there is no occupant to place
         if (occupant == null)
-            return new StateAction(gameState.withNewOccupant(null), Base32.encodeBits5(WITH_NO_OCCUPANT));
+            return new StateAction(gameState.withNewOccupant(null), WITH_NO_OCCUPANT);
         int kindToEncode = occupant.kind().ordinal(); // a number between 0 and 1
         int zoneToEncode = Zone.localId(occupant.zoneId());
-        int toEncode = kindToEncode << WITH_NEW_OCCUPANT_KIND_SHIFT | zoneToEncode;
+        int toEncode = (kindToEncode << WITH_NEW_OCCUPANT_KIND_SHIFT) | zoneToEncode;
         return new StateAction(gameState.withNewOccupant(occupant), Base32.encodeBits5(toEncode));
     }
 
@@ -122,9 +132,8 @@ public final class ActionEncoder {
      */
     public static StateAction withOccupantRemoved(GameState gameState, Occupant occupant) {
         if (occupant == null)
-            return new StateAction(gameState.withOccupantRemoved(null), Base32.encodeBits5(WITH_NO_OCCUPANT));
-        List<Occupant> occupants = gameState.board().occupants().stream()
-                .sorted(Comparator.comparingInt(Occupant::zoneId)).toList();
+            return new StateAction(gameState.withOccupantRemoved(null), WITH_NO_OCCUPANT);
+        List<Occupant> occupants = sortedOccupants(gameState);
         int indexToEncode = occupants.indexOf(occupant); // a number between 0 and 24
         return new StateAction(gameState.withOccupantRemoved(occupant), Base32.encodeBits5(indexToEncode));
     }
@@ -153,8 +162,8 @@ public final class ActionEncoder {
         if (!Base32.isValid(action)) throw new IllegalActionException();
         // we decode the parameters of the given action differently
         // depending on the next action of the initial game state
-        return switch (gameState.nextAction()) {
-            case PLACE_TILE -> { //
+        GameState newGameState = switch (gameState.nextAction()) {
+            case PLACE_TILE -> {
                 validateActionLength(action, WITH_PLACED_TILE_ACTION_LENGTH);
                 int decoded = Base32.decode(action);
                 int tileInFringeIdx = decoded >> WITH_PLACED_TILE_IDX_SHIFT;
@@ -162,39 +171,39 @@ public final class ActionEncoder {
                 Pos pos = getIndexOrThrows(fringeIndexes(gameState), tileInFringeIdx);
                 Tile tile = gameState.tileToPlace();
                 PlacedTile placedTile = new PlacedTile(
-                    tile, gameState.currentPlayer(), Rotation.ALL.get(rotationIdx), pos
+                        tile, gameState.currentPlayer(), Rotation.ALL.get(rotationIdx), pos
                 );
                 if (!gameState.board().canAddTile(placedTile)) throw new IllegalActionException();
-                yield new StateAction(gameState.withPlacedTile(placedTile), action);
+                yield gameState.withPlacedTile(placedTile);
             }
             case OCCUPY_TILE -> {
                 validateActionLength(action, WITH_NEW_OCCUPANT_ACTION_LENGTH);
+                if (action.equals(WITH_NO_OCCUPANT)) yield gameState.withNewOccupant(null);
                 int decoded = Base32.decode(action);
-                if (decoded == WITH_NO_OCCUPANT) yield new StateAction(gameState.withNewOccupant(null), action);
                 int kindIdx = decoded >> WITH_NEW_OCCUPANT_KIND_SHIFT;
                 int localId = decoded & WITH_NEW_OCCUPANT_ZONE_MASK;
                 Occupant.Kind kind = Occupant.Kind.ALL.get(kindIdx);
                 Occupant occupant = gameState.lastTilePotentialOccupants().stream()
-                    .filter(occ -> occ.kind() == kind && Zone.localId(occ.zoneId()) == localId)
-                    .findFirst()
-                    .orElseThrow(IllegalActionException::new);
-                yield new StateAction(gameState.withNewOccupant(occupant), action);
+                        .filter(occ -> occ.kind() == kind && Zone.localId(occ.zoneId()) == localId)
+                        .findFirst()
+                        .orElseThrow(IllegalActionException::new);
+                yield gameState.withNewOccupant(occupant);
             }
             case RETAKE_PAWN -> {
                 validateActionLength(action, WITH_OCCUPANT_REMOVED_ACTION_LENGTH);
+                if (action.equals(WITH_NO_OCCUPANT)) yield gameState.withOccupantRemoved(null);
                 int decoded = Base32.decode(action);
-                if (decoded == WITH_NO_OCCUPANT) yield new StateAction(gameState.withOccupantRemoved(null), action);
-                List<Occupant> occupants = gameState.board().occupants().stream()
-                    .sorted(Comparator.comparingInt(Occupant::zoneId)).toList();
+                List<Occupant> occupants = sortedOccupants(gameState);
                 Occupant occupant = getIndexOrThrows(occupants, decoded);
                 if (occupant.kind() != Occupant.Kind.PAWN) throw new IllegalActionException();
                 PlayerColor currentPlayer = gameState.currentPlayer();
                 PlayerColor occupantPlacer = gameState.board().tileWithId(Zone.tileId(occupant.zoneId())).placer();
                 if (currentPlayer != occupantPlacer) throw new IllegalActionException();
-                yield new StateAction(gameState.withOccupantRemoved(occupant), action);
+                yield gameState.withOccupantRemoved(occupant);
             }
             default -> throw new IllegalActionException();
         };
+        return new StateAction(newGameState, action);
     }
 
     /**

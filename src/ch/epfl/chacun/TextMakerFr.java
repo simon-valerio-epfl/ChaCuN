@@ -1,6 +1,5 @@
 package ch.epfl.chacun;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -94,7 +93,7 @@ public final class TextMakerFr implements TextMaker {
         Preconditions.checkArgument(!items.isEmpty());
         StringBuilder sb = new StringBuilder();
         int itemsSize = items.size();
-        for (int i = 0; i < itemsSize; i++) { // 0, 1
+        for (int i = 0; i < itemsSize; i++) {
             sb.append(items.get(i));
 
             boolean secondToLast = i == itemsSize - 2;

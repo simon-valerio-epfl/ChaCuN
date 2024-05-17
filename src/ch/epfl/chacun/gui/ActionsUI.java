@@ -8,6 +8,7 @@ import javafx.scene.control.TextFormatter;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
@@ -30,7 +31,7 @@ public final class ActionsUI {
     }
 
     /**
-     * The number of actions to represent on the screen
+     * The maximum number of actions to represent on the screen
      */
     private final static int NUMBER_OF_ACTIONS = 4;
 
@@ -46,12 +47,12 @@ public final class ActionsUI {
     public static Node create(ObservableValue<List<String>> actionsO, Consumer<String> handler) {
 
         Text text = new Text();
-        text.textProperty().bind(actionsO.map(ActionsUI::textRepresentation));
+        text.textProperty().bind(actionsO.map(ActionsUI::actionsTextRepresentation));
 
         TextField textField = new TextField();
         textField.setId("action-field");
         textField.setTextFormatter(new TextFormatter<>(change -> {
-            change.setText(cleanupInput(change.getText()));
+            change.setText(cleanInput(change.getText()));
             return change;
         }));
         textField.setOnAction(_ -> {
@@ -61,23 +62,9 @@ public final class ActionsUI {
 
         HBox hbox = new HBox(text, textField);
         hbox.setId("actions");
-        hbox.getStylesheets().add("/actions.css");
+        hbox.getStylesheets().add("actions.css");
 
         return hbox;
-    }
-
-    /**
-     * Converts a string to a standard format which is valid for the actions' graphical representation
-     *
-     * @param input the string to format
-     * @return the valid formatted string
-     */
-    private static String cleanupInput(String input) {
-        StringBuilder cleaned = new StringBuilder();
-        input.toUpperCase().chars()
-            .filter(character -> Base32.ALPHABET.indexOf(character) != -1)
-            .forEach(character -> cleaned.append((char) character));
-        return cleaned.toString();
     }
 
     /**
@@ -86,11 +73,26 @@ public final class ActionsUI {
      * @param actions the list of actions, whose last elements have to be shown
      * @return the textual representation of the last indexed actions
      */
-    private static String textRepresentation(List<String> actions) {
+    private static String actionsTextRepresentation(List<String> actions) {
         int actionSize = actions.size();
         return IntStream.range(Math.max(0, actionSize - NUMBER_OF_ACTIONS), actionSize)
                 .mapToObj(i -> STR."\{i + 1}:\{actions.get(i)}")
                 .collect(Collectors.joining(", "));
     }
+
+    /**
+     * Converts a string to a standard format which is valid for the actions' graphical representation
+     *
+     * @param input the string to format
+     * @return the valid formatted string
+     */
+    private static String cleanInput(String input) {
+        StringBuilder cleaned = new StringBuilder();
+        input.toUpperCase().chars()
+            .filter(character -> Base32.ALPHABET.indexOf(character) != -1)
+            .forEach(character -> cleaned.append((char) character));
+        return cleaned.toString();
+
+     }
 
 }

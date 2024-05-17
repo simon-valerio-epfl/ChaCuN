@@ -28,16 +28,6 @@ public final class ImageLoader {
      */
     public static final int MARKER_PIXEL_SIZE = 96;
     public static final int MARKER_FIT_SIZE = MARKER_PIXEL_SIZE / 2;
-    /**
-     * An empty image, graphically represented by a grey square
-     */
-    public static final Image EMPTY_IMAGE;
-
-    static {
-        WritableImage writableImage = new WritableImage(1, 1);
-        writableImage.getPixelWriter().setColor(0, 0, Color.gray(0.98));
-        EMPTY_IMAGE = writableImage;
-    }
 
     /**
      * This is a utility class and therefore is not instantiable

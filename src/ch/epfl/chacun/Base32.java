@@ -20,7 +20,11 @@ public final class Base32 {
     /**
      * A mask to get the 5 least significant bits
      */
-    private final static int MASK_5_BITS = 0b11111;
+    private final static int MASK_5_BITS = (int) Math.pow(2, 5) - 1;
+    /**
+     * A mask to get the 10 least significant bits
+     */
+    private final static int MASK_10_BITS = (int) Math.pow(2, 10) - 1;
     /**
      * The number of bits encoded by a Base32-character
      */
@@ -43,6 +47,8 @@ public final class Base32 {
      * @return the Base32-encoded string resulting of the 5 least significant bits of a given integer
      */
     public static String encodeBits5(int toEncode) {
+        // check if the integer is in the range of 5 bits
+        Preconditions.checkArgument((toEncode & ~MASK_5_BITS) == 0);
         return String.valueOf(ALPHABET.charAt(toEncode & MASK_5_BITS));
     }
 
@@ -53,7 +59,8 @@ public final class Base32 {
      * @return the Base32-encoded string resulting of the 10 least significant bits of a given integer
      */
     public static String encodeBits10(int toEncode) {
-        return encodeBits5(toEncode >> BASE_32_SYMBOL_BIT_SIZE) + encodeBits5(toEncode);
+        Preconditions.checkArgument((toEncode & ~MASK_10_BITS) == 0);
+        return encodeBits5(toEncode >> BASE_32_SYMBOL_BIT_SIZE) + encodeBits5(toEncode & MASK_5_BITS);
     }
 
     /**

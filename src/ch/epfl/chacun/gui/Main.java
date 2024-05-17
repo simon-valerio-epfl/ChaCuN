@@ -16,11 +16,15 @@ import java.util.function.Consumer;
 import java.util.random.RandomGenerator;
 import java.util.random.RandomGeneratorFactory;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public final class Main extends Application {
 
     private final static int WINDOW_WIDTH = 1440;
     private final static int WINDOW_HEIGHT = 1080;
+    private final static String WINDOW_NAME = "ChaCuN";
+    private final static int MINIMUM_PLAYERS = 2;
+    private final static int MAXIMUM_PLAYERS = 5;
 
     public static void main(String[] args) {
         launch(args);
@@ -64,7 +68,7 @@ public final class Main extends Application {
 
         List<String> players = parameters.getUnnamed();
         int playersSize = players.size();
-        Preconditions.checkArgument(playersSize >= 2 && playersSize <= 5);
+        Preconditions.checkArgument(playersSize >= MINIMUM_PLAYERS && playersSize <= MAXIMUM_PLAYERS);
 
         List<PlayerColor> playerColors = PlayerColor.ALL.subList(0, playersSize);
         Map<PlayerColor, String> playersNames = new TreeMap<>();
@@ -73,7 +77,6 @@ public final class Main extends Application {
         }
 
         TextMaker textMaker = new TextMakerFr(playersNames);
-
         GameState gameState = GameState.initial(playerColors, tileDecks, textMaker);
         ObjectProperty<GameState> gameStateO = new SimpleObjectProperty<>(gameState);
 
@@ -86,14 +89,13 @@ public final class Main extends Application {
         ObservableValue<TileDecks> tileDecksO = gameStateO.map(GameState::tileDecks);
         ObservableValue<Integer> leftNormalTilesO = tileDecksO.map(tDecks -> tDecks.normalTiles().size());
         ObservableValue<Integer> leftMenhirTilesO = tileDecksO.map(tDecks -> tDecks.menhirTiles().size());
-        ObservableValue<String> textToDisplayO = gameStateO.map(gState ->
-                switch (gState.nextAction()) {
-                    case GameState.Action.OCCUPY_TILE -> textMaker.clickToOccupy();
-                    case GameState.Action.RETAKE_PAWN -> textMaker.clickToUnoccupy();
-                    default -> "";
-                }
-        );
+        ObservableValue<String> textToDisplayO = gameStateO.map(gState -> switch (gState.nextAction()) {
+                case GameState.Action.OCCUPY_TILE -> textMaker.clickToOccupy();
+                case GameState.Action.RETAKE_PAWN -> textMaker.clickToUnoccupy();
+                default -> "";
+            });
 
+        ObjectProperty<Rotation> tileToPlaceRotationO = new SimpleObjectProperty<>(Rotation.NONE);
         ObjectProperty<List<String>> actionsO = new SimpleObjectProperty<>(List.of());
 
         Consumer<Occupant> onOccupantClick = occupant -> {
@@ -121,16 +123,8 @@ public final class Main extends Application {
             if (newState != null) saveState(newState, gameStateO, actionsO);
         };
 
-        Node playersNode = PlayersUI.create(gameStateO, new TextMakerFr(playersNames));
-        Node messagesNode = MessageBoardUI.create(observableMessagesO, highlightedTilesO);
-        Node decksNode = DecksUI.create(
-                tileToPlaceO, leftNormalTilesO, leftMenhirTilesO, textToDisplayO, onOccupantClick
-        );
-        Node actionsNode = ActionsUI.create(actionsO, onEnteredAction);
-
-        ObjectProperty<Rotation> nextRotationO = new SimpleObjectProperty<>(Rotation.NONE);
         Consumer<Rotation> onRotationClick = newRotation -> {
-            nextRotationO.setValue(nextRotationO.getValue().add(newRotation));
+            tileToPlaceRotationO.setValue(tileToPlaceRotationO.getValue().add(newRotation));
         };
 
         Consumer<Pos> onPosClick = pos -> {
@@ -139,26 +133,33 @@ public final class Main extends Application {
             Tile tileToPlace = currentGameState.tileToPlace();
             PlacedTile placedTile = new PlacedTile(
                     tileToPlace, currentGameState.currentPlayer(),
-                    nextRotationO.getValue(), pos
+                    tileToPlaceRotationO.getValue(), pos
             );
             if (!currentGameState.board().canAddTile(placedTile)) return;
             saveState(ActionEncoder.withPlacedTile(currentGameState, placedTile), gameStateO, actionsO);
-            nextRotationO.setValue(Rotation.NONE);
+            tileToPlaceRotationO.setValue(Rotation.NONE);
         };
 
         ObservableValue<Set<Occupant>> visibleOccupants = gameStateO.map(gState -> {
             if (gState.nextAction() == GameState.Action.OCCUPY_TILE) {
-                Set<Occupant> occupants = new HashSet<>(gState.board().occupants());
-                occupants.addAll(gState.lastTilePotentialOccupants());
-                return occupants;
+                return Stream.concat(
+                        gState.board().occupants().stream(),
+                        gState.lastTilePotentialOccupants().stream()
+                ).collect(Collectors.toSet());
             } else return gState.board().occupants();
         });
 
         Node boardNode = BoardUI.create(
-                Board.REACH, gameStateO, nextRotationO, visibleOccupants, highlightedTilesO,
+                Board.REACH, gameStateO, tileToPlaceRotationO, visibleOccupants, highlightedTilesO,
                 // consumers
                 onRotationClick, onPosClick, onOccupantClick
         );
+        Node playersNode = PlayersUI.create(gameStateO, new TextMakerFr(playersNames));
+        Node messagesNode = MessageBoardUI.create(observableMessagesO, highlightedTilesO);
+        Node decksNode = DecksUI.create(
+                tileToPlaceO, leftNormalTilesO, leftMenhirTilesO, textToDisplayO, onOccupantClick
+        );
+        Node actionsNode = ActionsUI.create(actionsO, onEnteredAction);
 
         // actions and decks border pane
         VBox actionsAndDecksBox = new VBox(actionsNode, decksNode);
@@ -178,7 +179,7 @@ public final class Main extends Application {
         primaryStage.setHeight(WINDOW_HEIGHT);
 
         primaryStage.setScene(new Scene(mainBorderPane));
-        primaryStage.setTitle("ChaCuN");
+        primaryStage.setTitle(WINDOW_NAME);
         primaryStage.show();
 
         gameStateO.setValue(gameStateO.getValue().withStartingTilePlaced());

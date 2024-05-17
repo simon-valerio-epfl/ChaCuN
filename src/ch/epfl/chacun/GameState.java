@@ -436,10 +436,8 @@ public record GameState(
 
         Map<PlayerColor, Integer> points = newMessageBoard.points();
         int maxCount = points.values().stream().max(Integer::compareTo).orElse(0);
-        Set<PlayerColor> winners = points.entrySet().stream()
-                // we keep the players with the maximum number of points
-                .filter(p -> p.getValue() == maxCount)
-                .map(Map.Entry::getKey)
+        Set<PlayerColor> winners = players.stream()
+                .filter(color -> points.getOrDefault(color, 0) == maxCount)
                 .collect(Collectors.toSet());
         newMessageBoard = newMessageBoard.withWinners(winners, maxCount);
         // the game is ended, and the winners are determined

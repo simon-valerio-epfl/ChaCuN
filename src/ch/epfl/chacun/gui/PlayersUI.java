@@ -67,24 +67,20 @@ public final class PlayersUI {
                 else textFlow.getStyleClass().remove("current");
             });
 
-            Circle circle = new Circle(5);
-            circle.setFill(ColorMap.fillColor(playerColor));
+            Circle circle = new Circle(5, ColorMap.fillColor(playerColor));
 
-            ObservableValue<String> pointsTextO = pointsO.map(points -> STR." \{name} : \{textMaker.points(points.getOrDefault(playerColor, 0))}\n");
-            ObservableValue<Map<Occupant.Kind, Integer>> occupantsO = gameStateO
-                    .map(gState -> Map.of(
-                            Occupant.Kind.PAWN, gState.freeOccupantsCount(playerColor, Occupant.Kind.PAWN),
-                            Occupant.Kind.HUT, gState.freeOccupantsCount(playerColor, Occupant.Kind.HUT)
-                    ));
+            ObservableValue<String> pointsTextO = pointsO.map(points ->
+                STR." \{name} : \{textMaker.points(points.getOrDefault(playerColor, 0))}\n"
+            );
 
             Text pointsText = new Text();
             pointsText.textProperty().bind(pointsTextO);
 
             textFlow.getChildren().addAll(circle, pointsText);
 
-            textFlow.getChildren().addAll(getOccupants(playerColor, Occupant.Kind.HUT, occupantsO));
+            textFlow.getChildren().addAll(getOccupants(playerColor, Occupant.Kind.HUT, gameStateO));
             textFlow.getChildren().add(new Text("   "));
-            textFlow.getChildren().addAll(getOccupants(playerColor, Occupant.Kind.PAWN, occupantsO));
+            textFlow.getChildren().addAll(getOccupants(playerColor, Occupant.Kind.PAWN, gameStateO));
 
             vBox.getChildren().add(textFlow);
 
@@ -99,13 +95,13 @@ public final class PlayersUI {
      *
      * @param playerColor the color of the player owning this list of occupants
      * @param kind        the kind of the occupants to represent
-     * @param occupantsO  the observable map of the number of used occupants
+     * @param gameStateO the observable current state of a game
      * @return a list of nodes representing each the occupants of a player,
      * with the opacity of each node bound to the number of used and available occupants
      */
     private static List<Node> getOccupants(
             PlayerColor playerColor, Occupant.Kind kind,
-            ObservableValue<Map<Occupant.Kind, Integer>> occupantsO
+            ObservableValue<GameState> gameStateO
     ) {
         List<Node> nodes = new ArrayList<>();
         for (int i = 0; i < Occupant.occupantsCount(kind); i++) {
@@ -113,7 +109,10 @@ public final class PlayersUI {
             // bind opacity to the number of used occupants
             int finalI = i;
             occupantNode.opacityProperty().bind(
-                    occupantsO.map(occupants -> occupants.get(kind) > finalI ? HELD_OCCUPANT_OPACITY : PLACED_OCCUPANT_OPACITY)
+                    gameStateO.map(gState ->
+                            gState.freeOccupantsCount(playerColor, kind) > finalI
+                                    ? HELD_OCCUPANT_OPACITY : PLACED_OCCUPANT_OPACITY
+                    )
             );
             nodes.add(occupantNode);
         }
