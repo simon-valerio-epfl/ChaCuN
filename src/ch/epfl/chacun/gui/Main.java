@@ -99,10 +99,8 @@ public final class Main extends Application {
         Consumer<Occupant> onOccupantClick = occupant -> {
             GameState currentGameState = gameStateO.getValue();
             Board board = currentGameState.board();
-            // todo on peut faire mieux ?
             int tileId = occupant != null ? Zone.tileId(occupant.zoneId()) : -1;
             switch (currentGameState.nextAction()) {
-                // todo, mettre les conditions dans un case when?
                 case OCCUPY_TILE -> {
                     assert board.lastPlacedTile() != null;
                     if (occupant != null && tileId != board.lastPlacedTile().id()) return;

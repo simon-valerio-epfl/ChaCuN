@@ -55,12 +55,7 @@ public final class ActionsUI {
         TextField textField = new TextField();
         textField.setId("action-field");
         textField.setTextFormatter(new TextFormatter<>(change -> {
-            String action = change.getText();
-
-            change.setText(cleanupInput(action));
-            if (action.length() <= MAX_ACTION_LENGTH) {
-                change.setText(cleanupInput(action));
-            }
+            change.setText(cleanupInput(change.getText()));
             return change;
         }));
         textField.setOnAction(_ -> {
@@ -82,19 +77,12 @@ public final class ActionsUI {
      * @return the valid formatted string
      */
     private static String cleanupInput(String input) {
-        StringBuilder sb = new StringBuilder(input.length());
-        for (int i = 0; i < input.length(); i++) {
-            String verify = input.substring(i, i+1);
-            if (Base32.isValid(verify))
-                sb.append(verify);
-        }
-        return sb.toString();
-//TODO ask Fabrice
-    /*    return  input.toUpperCase()
+        StringBuilder cleaned = new StringBuilder();
+        input.toUpperCase()
                 .chars()
-                .mapToObj(Character::toString)
-                .filter(Base32::isValid)
-                .collect(Collectors.joining()); */
+                .filter(c -> Base32.ALPHABET.indexOf(c) != -1)
+                .forEach(c -> cleaned.append((char) c));
+        return cleaned.toString();
     }
 
     /**

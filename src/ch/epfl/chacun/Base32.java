@@ -16,7 +16,7 @@ public final class Base32 {
     /**
      * The set of characters that compose Base32
      */
-    private final static String ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+    public final static String ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
     /**
      * A mask to get the 5 least significant bits
      */
