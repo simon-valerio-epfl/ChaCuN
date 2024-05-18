@@ -1,5 +1,7 @@
 package ch.epfl.chacun;
 
+import ch.epfl.chacun.audio.SoundManager;
+
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -13,6 +15,7 @@ import java.util.stream.Stream;
  * @param board        the board of the game, where the tiles can be placed
  * @param nextAction   the next action to be performed
  * @param messageBoard the message board of the game, containing the messages generated during the game
+ * @param nextSound    the sound to play when the game state is updated
  * @author Valerio De Santis (373247)
  * @author Simon Lefort (371918)
  */
@@ -22,7 +25,8 @@ public record GameState(
         Tile tileToPlace,
         Board board,
         Action nextAction,
-        MessageBoard messageBoard
+        MessageBoard messageBoard,
+        SoundManager.Sound nextSound
 ) {
 
     /**
@@ -52,9 +56,11 @@ public record GameState(
      * @param nextAction   the next action to be performed, must not be null
      * @param messageBoard the message board of the game,
      *                     containing the messages generated during the game, must not be null
+     * @param nextSound    the sound to play when the game state is updated, can be null
      * @throws NullPointerException     if any of the arguments is null, except tileToPlace
      * @throws IllegalArgumentException if there are not enough players or if the tileToPlace is null and
-     *                                  the next action is to place a tile, or if the tileToPlace is not null and the next action is not to place a tile.
+     *                                  the next action is to place a tile, or if the tileToPlace is not null and the
+     *                                  next action is not to place a tile.
      */
     public GameState {
 
@@ -65,9 +71,34 @@ public record GameState(
 
         Objects.requireNonNull(players);
         players = List.copyOf(players);
-        Preconditions.checkArgument(players.size() >= MIN_PLAYER_COUNT);
 
         Preconditions.checkArgument(tileToPlace == null ^ nextAction == Action.PLACE_TILE);
+    }
+
+    /**
+     * Constructs a new game state, with no tile to place, an empty board, and the start game action.
+     *
+     * @param players      the ordered list of the game players, must contain at least 2 players and not be null
+     * @param tileDecks    the tile decks of the game, containing the cards to place, must not be null
+     * @param tileToPlace  the tile to place on the board, may be null if no tile is to be placed
+     * @param board        the board of the game, where the tiles can be placed, must not be null
+     * @param nextAction   the next action to be performed, must not be null
+     * @param messageBoard the message board of the game,
+     *                     containing the messages generated during the game, must not be null
+     * @throws NullPointerException     if any of the arguments is null, except tileToPlace
+     * @throws IllegalArgumentException if there are not enough players or if the tileToPlace is null and
+     *                                  the next action is to place a tile, or if the tileToPlace is not null and the
+     *                                  next action is not to place a tile.
+     */
+    public GameState(
+            List<PlayerColor> players,
+            TileDecks tileDecks,
+            Tile tileToPlace,
+            Board board,
+            Action nextAction,
+            MessageBoard messageBoard
+    ) {
+        this(players, tileDecks, tileToPlace, board, nextAction, messageBoard, SoundManager.Sound.SILENT);
     }
 
     /**
@@ -301,8 +332,10 @@ public record GameState(
             }
         }
 
-        return new GameState(players, tileDecks, null, newBoard, Action.OCCUPY_TILE, newMessageBoard)
-                .withTurnFinishedIfOccupationImpossible();
+        return new GameState(
+                players, tileDecks, null, newBoard, Action.OCCUPY_TILE,
+                newMessageBoard, SoundManager.Sound.PLACED_TILE
+        ).withTurnFinishedIfOccupationImpossible();
     }
 
     /**
@@ -334,6 +367,8 @@ public record GameState(
         Preconditions.checkArgument(board.lastPlacedTile() != null);
 
         MessageBoard newMessageBoard = messageBoard;
+        Map<PlayerColor, Integer> currentPoints = messageBoard.points();
+
         // the tile has already been added to the board previously
         Board newBoard = board;
         TileDecks newTileDecks = tileDecks;
@@ -376,9 +411,13 @@ public record GameState(
         if (newTileDecks.deckSize(Tile.Kind.NORMAL) > 0) {
             List<PlayerColor> newPlayers = new LinkedList<>(players);
             Collections.rotate(newPlayers, -1);
+
+            SoundManager.Sound nextSound = newMessageBoard.points().equals(currentPoints)
+                    ? nextSound() : SoundManager.Sound.GAINED_POINTS;
+
             return new GameState(newPlayers, newTileDecks.withTopTileDrawn(Tile.Kind.NORMAL),
                     newTileDecks.topTile(Tile.Kind.NORMAL),
-                    newBoard, Action.PLACE_TILE, newMessageBoard
+                    newBoard, Action.PLACE_TILE, newMessageBoard, nextSound
             );
         } else {
             return new GameState(players, newTileDecks, null, newBoard, Action.END_GAME, newMessageBoard)
@@ -442,6 +481,36 @@ public record GameState(
         newMessageBoard = newMessageBoard.withWinners(winners, maxCount);
         // the game is ended, and the winners are determined
         return new GameState(players, tileDecks, null, newBoard, Action.END_GAME, newMessageBoard);
+    }
+
+    /**
+     * Returns a new game state with the given players list as new players
+     *
+     * @param players the new players list
+     * @return a new game state with the given players list as new players
+     */
+    public GameState withPlayers(List<PlayerColor> players) {
+        return new GameState(players, tileDecks, tileToPlace, board, nextAction, messageBoard);
+    }
+
+    /**
+     * Returns a new game state with the given chat message added to the message board
+     *
+     * @param message the chat message to add
+     * @return a new game state with the given chat message added to the message board
+     */
+    public GameState withGameChatMessage(String message) {
+        return new GameState(players, tileDecks, tileToPlace, board, nextAction, messageBoard.withGameChatMessage(message));
+    }
+
+    /**
+     * Returns a new game state with the given chat message added to the message board
+     *
+     * @param textMaker the text maker to generate the message
+     * @return a new game state with the given chat message added to the message board
+     */
+    public GameState withTextMaker(TextMaker textMaker) {
+        return new GameState(players, tileDecks, tileToPlace, board, nextAction, messageBoard.withTextMaker(textMaker));
     }
 
 }

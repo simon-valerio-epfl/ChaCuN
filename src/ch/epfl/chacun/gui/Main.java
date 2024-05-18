@@ -1,6 +1,8 @@
 package ch.epfl.chacun.gui;
 
 import ch.epfl.chacun.*;
+import ch.epfl.chacun.audio.SoundManager;
+import ch.epfl.chacun.net.WSClient;
 import javafx.application.Application;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -77,6 +79,24 @@ public final class Main extends Application {
         actionsO.setValue(Collections.unmodifiableList(newActions));
     }
 
+    private void saveStateDispatchPlaySound(
+            ActionEncoder.StateAction stateAction,
+            ObjectProperty<GameState> gameStateO,
+            ObjectProperty<Boolean> selfValidatedActionO,
+            ObjectProperty<GameState> previousGameStateO,
+            ObjectProperty<List<String>> actionsO,
+            WSClient wsClient,
+            SoundManager soundManager
+    ) {
+        SoundManager.Sound sound = stateAction.gameState().nextSound();
+        previousGameStateO.setValue(gameStateO.getValue());
+        saveState(stateAction, gameStateO, actionsO);
+        System.out.println(STR."Sending action: \{stateAction.action()}");
+        wsClient.sendAction(stateAction.action());
+        selfValidatedActionO.setValue(false);
+        if (sound != null) soundManager.play(sound);
+    }
+
     /**
      * Returns the shuffled tile decks, ensuring that the same seed always produces the same shuffled decks
      *
@@ -98,6 +118,15 @@ public final class Main extends Application {
         );
     }
 
+    private Map<PlayerColor, String> getPlayersMap(String playerNames) {
+        String[] names = playerNames.split(",");
+        Map<PlayerColor, String> playersMap = new TreeMap<>();
+        for (int i = 0; i < names.length; i++) {
+            playersMap.put(PlayerColor.ALL.get(i), names[i]);
+        }
+        return playersMap;
+    }
+
     /**
      * Starts the ChaCuN game, creating the graphical nodes representing its components
      * @param primaryStage the primary stage for this application, onto which
@@ -108,28 +137,31 @@ public final class Main extends Application {
     @Override
     public void start(Stage primaryStage) {
 
+        SoundManager soundManager = new SoundManager();
+
         Parameters parameters = getParameters();
-        Map<String, String> namedParameters = parameters.getNamed();
+        boolean debug = parameters.getUnnamed().contains("debug");
 
-        // passing the seed as a parameter is optional
-        Long seed = namedParameters.containsKey("seed") ? Long.parseUnsignedLong(namedParameters.get("seed")) : null;
-        TileDecks tileDecks = getShuffledTileDecks(seed);
-        // the anonymous parameters represent the names of the players
-        List<String> players = parameters.getUnnamed();
-        int playersSize = players.size();
-        Preconditions.checkArgument(playersSize >= MINIMUM_PLAYERS && playersSize <= MAXIMUM_PLAYERS);
+        int randomTwoDigits = new Random().nextInt(100);
+        String localPlayerName = debug
+                ? parameters.getNamed().get("player") + randomTwoDigits
+                : parameters.getNamed().get("player");
+        String gameName = parameters.getNamed().get("game");
 
-        // we take the first playersSize colors from the list of all colors associated them to the players
-        List<PlayerColor> playerColors = PlayerColor.ALL.subList(0, playersSize);
-        Map<PlayerColor, String> playersNames = new TreeMap<>();
-        for (int i = 0; i < playersSize; i++) {
-            playersNames.put(playerColors.get(i), players.get(i));
-        }
+        WSClient wsClient = new WSClient(gameName, localPlayerName);
+        TileDecks tileDecks = getShuffledTileDecks((long) gameName.hashCode());
+
+        ObjectProperty<Map<PlayerColor, String>> playerNamesO = new SimpleObjectProperty<>(new TreeMap<>());
+        ObservableValue<List<PlayerColor>> playerColorsO = playerNamesO.map(map -> new ArrayList<>(map.keySet()));
+        playerNamesO.setValue(getPlayersMap(localPlayerName));
+
         // we create the text maker (the messages will be in French)
         // and the initial game state, as well as the observable value of the latter
-        TextMaker textMaker = new TextMakerFr(playersNames);
-        GameState gameState = GameState.initial(playerColors, tileDecks, textMaker);
+        ObservableValue<TextMaker> textMakerO = playerNamesO.map(TextMakerFr::new);
+        GameState gameState = GameState.initial(playerColorsO.getValue(), tileDecks, textMakerO.getValue());
         ObjectProperty<GameState> gameStateO = new SimpleObjectProperty<>(gameState);
+        // used for rollback
+        ObjectProperty<GameState> previousGameStateO = new SimpleObjectProperty<>(gameState);
 
         ObservableValue<List<MessageBoard.Message>> observableMessagesO = gameStateO.map(
                 gState -> gState.messageBoard().messages()
@@ -141,8 +173,8 @@ public final class Main extends Application {
 
         // the text to display depends on the next action to do
         ObservableValue<String> textToDisplayO = gameStateO.map(gState -> switch (gState.nextAction()) {
-            case GameState.Action.OCCUPY_TILE -> textMaker.clickToOccupy();
-            case GameState.Action.RETAKE_PAWN -> textMaker.clickToUnoccupy();
+            case GameState.Action.OCCUPY_TILE -> textMakerO.getValue().clickToOccupy();
+            case GameState.Action.RETAKE_PAWN -> textMakerO.getValue().clickToUnoccupy();
             default -> "";
         });
 
@@ -151,8 +183,56 @@ public final class Main extends Application {
         // the list of actions done since the beginning of the game
         ObjectProperty<List<String>> actionsO = new SimpleObjectProperty<>(List.of());
 
+        ObservableValue<String> localPlayerColorO = playerNamesO.map(playerName -> {
+            PlayerColor local = null;
+            for (Map.Entry<PlayerColor, String> entry : playerName.entrySet()) {
+                if (entry.getValue().equals(localPlayerName)) {
+                    local = entry.getKey();
+                    break;
+                }
+            }
+            assert local != null;
+            return local.toString();
+        });
+
+        ObservableValue<Boolean> isLocalPlayerCurrentPlayerO = gameStateO.map(
+                gState -> gState.currentPlayer() == PlayerColor.valueOf(localPlayerColorO.getValue())
+        );
+
+        wsClient.setOnGamePlayersUpdate(newPlayerNames -> {
+            playerNamesO.setValue(getPlayersMap(newPlayerNames));
+            gameStateO.setValue(
+                    gameStateO.getValue()
+                            .withPlayers(playerColorsO.getValue())
+                            .withTextMaker(textMakerO.getValue())
+            );
+        });
+        wsClient.setOnGameChatMessage((username, content) -> {
+            String displayMessage = STR."\{username}: \{content}";
+            gameStateO.setValue(gameStateO.getValue().withGameChatMessage(displayMessage));
+        });
+        ObjectProperty<Boolean> selfValidatedActionO = new SimpleObjectProperty<>(true);
+        wsClient.setOnPlayerAction(action -> {
+            if (!selfValidatedActionO.getValue()) {
+                selfValidatedActionO.setValue(true);
+                System.out.println(STR."Server accepted action: \{action}");
+            }
+            else {
+                System.out.println(STR."Server received action: \{action}");
+                ActionEncoder.StateAction stateAction = ActionEncoder.decodeAndApply(gameStateO.getValue(), action);
+                if (stateAction == null) throw new IllegalStateException(STR."Invalid action: \{action}");
+                else saveState(stateAction, gameStateO, actionsO);
+            }
+        });
+        wsClient.setOnLocalPlayerActionReject(reason -> {
+            System.out.println(STR."Local player action rejected: \{reason}. Rollback needed.");
+            gameStateO.setValue(previousGameStateO.getValue());
+            actionsO.setValue(actionsO.getValue().subList(0, actionsO.getValue().size() - 1));
+        });
+
         // the consumer to handle the click on an occupant, or the click on the text to pass on the action
         Consumer<Occupant> onOccupantClick = occupant -> {
+            if (!isLocalPlayerCurrentPlayerO.getValue()) return;
             GameState currentGameState = gameStateO.getValue();
             Board board = currentGameState.board();
             // if the occupant is null, it means that the player does not want to place or retake an occupant
@@ -163,7 +243,15 @@ public final class Main extends Application {
                     // the occupant can only be placed on the last placed tile
                     if (occupant != null && tileId != board.lastPlacedTile().id()) return;
                     // we update the state of the game and the list of actions
-                    saveState(ActionEncoder.withNewOccupant(currentGameState, occupant), gameStateO, actionsO);
+                    saveStateDispatchPlaySound(
+                            ActionEncoder.withNewOccupant(currentGameState, occupant),
+                            gameStateO,
+                            selfValidatedActionO,
+                            previousGameStateO,
+                            actionsO,
+                            wsClient,
+                            soundManager
+                    );
                 }
                 case RETAKE_PAWN -> {
                     // the player can only retake a pawn, and he must be the one who placed it
@@ -172,7 +260,15 @@ public final class Main extends Application {
                                     (currentGameState.currentPlayer() != board.tileWithId(tileId).placer()))
                     ) return;
                     // we update the state of the game and the list of actions
-                    saveState(ActionEncoder.withOccupantRemoved(currentGameState, occupant), gameStateO, actionsO);
+                    saveStateDispatchPlaySound(
+                            ActionEncoder.withOccupantRemoved(currentGameState, occupant),
+                            gameStateO,
+                            selfValidatedActionO,
+                            previousGameStateO,
+                            actionsO,
+                            wsClient,
+                            soundManager
+                    );
                 }
             }
         };
@@ -183,7 +279,15 @@ public final class Main extends Application {
         Consumer<String> onEnteredAction = action -> {
             ActionEncoder.StateAction newState = ActionEncoder.decodeAndApply(gameStateO.getValue(), action);
             // the new state is null if the action is not valid
-            if (newState != null) saveState(newState, gameStateO, actionsO);
+            if (newState != null) saveStateDispatchPlaySound(
+                    newState,
+                    gameStateO,
+                    selfValidatedActionO,
+                    previousGameStateO,
+                    actionsO,
+                    wsClient,
+                    soundManager
+            );
         };
         // the consumers to handle the rotation and the position of the next tile to place
         Consumer<Rotation> onRotationClick = newRotation -> {
@@ -191,6 +295,7 @@ public final class Main extends Application {
         };
 
         Consumer<Pos> onPosClick = pos -> {
+            if (!isLocalPlayerCurrentPlayerO.getValue()) return;
             GameState currentGameState = gameStateO.getValue();
             // the player can only occupy a tile if it corresponds to the next action to do
             if (currentGameState.nextAction() != GameState.Action.PLACE_TILE) return;
@@ -201,7 +306,15 @@ public final class Main extends Application {
             );
             if (!currentGameState.board().canAddTile(placedTile)) return;
             // if the player can place the tile, we update the state of the game and the list of actions
-            saveState(ActionEncoder.withPlacedTile(currentGameState, placedTile), gameStateO, actionsO);
+            saveStateDispatchPlaySound(
+                    ActionEncoder.withPlacedTile(currentGameState, placedTile),
+                    gameStateO,
+                    selfValidatedActionO,
+                    previousGameStateO,
+                    actionsO,
+                    wsClient,
+                    soundManager
+            );
             // we reset the rotation of the following tile to place
             tileToPlaceRotationO.setValue(Rotation.NONE);
         };
@@ -223,20 +336,21 @@ public final class Main extends Application {
 
         // we create the graphical node representing the board of the game
         Node boardNode = BoardUI.create(
-                Board.REACH, gameStateO, tileToPlaceRotationO, visibleOccupants, highlightedTilesO,
+                Board.REACH, gameStateO, tileToPlaceRotationO, visibleOccupants, highlightedTilesO, isLocalPlayerCurrentPlayerO,
                 // consumers
                 onRotationClick, onPosClick, onOccupantClick
         );
         // we create the graphical nodes representing the players, the messages, the decks and the actions
-        Node playersNode = PlayersUI.create(gameStateO, new TextMakerFr(playersNames));
+        Node playersNode = PlayersUI.create(gameStateO, textMakerO);
         Node messagesNode = MessageBoardUI.create(observableMessagesO, highlightedTilesO);
         Node decksNode = DecksUI.create(
                 tileToPlaceO, leftNormalTilesO, leftMenhirTilesO, textToDisplayO, onOccupantClick
         );
-        Node actionsNode = ActionsUI.create(actionsO, onEnteredAction);
+        Node actionsNode = ActionsUI.create(actionsO, onEnteredAction, isLocalPlayerCurrentPlayerO);
+        Node messagesChatNode = MessageBoardChatUI.create(wsClient::sendChatMessage, textMakerO.getValue());
 
         // the box containing the actions and the tile decks
-        VBox actionsAndDecksBox = new VBox(actionsNode, decksNode);
+        VBox actionsAndDecksBox = new VBox(messagesChatNode, actionsNode, decksNode);
 
         // the right side border pane, containing the players, the messages and the actions and decks box
         BorderPane sideBorderPane = new BorderPane();
@@ -255,6 +369,9 @@ public final class Main extends Application {
 
         // we update the state of the game to place the starting tile, launching the game
         gameStateO.setValue(gameStateO.getValue().withStartingTilePlaced());
+
+        wsClient.connect();
+        wsClient.joinGame();
 
     }
 }

@@ -55,15 +55,16 @@ public final class BoardUI {
      * for a certain message when the player hovers over it. It also handles some graphical effects to
      * render the positions where a tile can be placed in the next turn and the mouse interactions.
      *
-     * @param reach             the reach of the board (the distance from the center to the borders),
-     *                          the board will be a square of size (2*range+1)²
-     * @param gameStateO        the observable value of the current game state
-     * @param rotationO         the observable value of the current rotation of the tile to be placed
-     * @param occupantsO        the observable value of the set containing the occupants on the board to show
-     * @param highlightedTilesO the observable value of the set containing the tiles to highlight
-     * @param rotationConsumer  the consumer that will be called when the player rotates the tile to be placed (right click)
-     * @param posConsumer       the consumer that will be called when the player places the tile (left click)
-     * @param occupantConsumer  the consumer that will be called when the player clicks on an occupant
+     * @param reach                       the reach of the board (the distance from the center to the borders),
+     *                                    the board will be a square of size (2*range+1)²
+     * @param gameStateO                  the observable value of the current game state
+     * @param rotationO                   the observable value of the current rotation of the tile to be placed
+     * @param occupantsO                  the observable value of the set containing the occupants on the board to show
+     * @param highlightedTilesO           the observable value of the set containing the tiles to highlight
+     * @param isLocalPlayerCurrentPlayerO the observable value of the boolean that is true if the local player is the current player
+     * @param rotationConsumer            the consumer that will be called when the player rotates the tile to be placed (right click)
+     * @param posConsumer                 the consumer that will be called when the player places the tile (left click)
+     * @param occupantConsumer            the consumer that will be called when the player clicks on an occupant
      * @return a graphical node representing the board of the game
      */
     public static Node create(
@@ -72,6 +73,7 @@ public final class BoardUI {
             ObservableValue<Rotation> rotationO,
             ObservableValue<Set<Occupant>> occupantsO,
             ObservableValue<Set<Integer>> highlightedTilesO,
+            ObservableValue<Boolean> isLocalPlayerCurrentPlayerO,
 
             Consumer<Rotation> rotationConsumer,
             Consumer<Pos> posConsumer,
@@ -151,7 +153,10 @@ public final class BoardUI {
                     if (isAlreadyPlaced) return new CellData(placedTile,
                             darkVeilEnabledO.getValue() ? Color.BLACK : Color.TRANSPARENT);
                     // else, if the tile is not placed yet, nor in the fringe, display it as an empty image
-                    if (!isInFringeO.getValue()) return new CellData(Color.TRANSPARENT);
+                    if (
+                            !isInFringeO.getValue()
+                                    || !isLocalPlayerCurrentPlayerO.getValue()
+                    ) return new CellData(Color.TRANSPARENT);
 
                     GameState currentGameState = gameStateO.getValue();
                     PlayerColor currentPlayer = currentGameState.currentPlayer();
@@ -168,10 +173,11 @@ public final class BoardUI {
                     }
                     // finally, if the tile is in the fringe but the mouse is not on it,
                     // we display it with a veil of the current player's color
+                    assert currentPlayer != null;
                     return new CellData(ColorMap.fillColor(currentPlayer));
                     // these arguments are the sensibility of the code,
                     // every time one of them changes, the code is re-executed
-                }, isInFringeO, group.hoverProperty(), rotationO, darkVeilEnabledO, placedTileO);
+                }, isInFringeO, group.hoverProperty(), rotationO, darkVeilEnabledO, placedTileO, isLocalPlayerCurrentPlayerO);
 
                 // we bind the graphical properties of the group to the cell data's values
                 group.rotateProperty().bind(cellDataO.map(cellData -> cellData.tileRotation().degreesCW()));
@@ -184,27 +190,30 @@ public final class BoardUI {
                 // when a tile is placed, we add the animals and the occupants on it
                 placedTileO.addListener((_, oldPlacedTile, placedTile) -> {
                     // if the tile is already placed or is not yet, we do not have to add the animals and the occupants
-                    if (oldPlacedTile != null || placedTile == null) return;
+                    if (oldPlacedTile == null && placedTile != null) {
+                        double negatedTileRotation = placedTile.rotation().negated().degreesCW();
 
-                    double negatedTileRotation = placedTile.rotation().negated().degreesCW();
+                        // handle "jeton d'annulation", a marker that signals that an animal is cancelled
+                        List<Node> cancelledAnimalsNodes =
+                                placedTile.meadowZones().stream()
+                                        .flatMap(meadow -> meadow.animals().stream())
+                                        .map(animal -> getCancelledAnimalNode(animal, cancelledAnimalsO, negatedTileRotation))
+                                        .toList();
+                        group.getChildren().addAll(cancelledAnimalsNodes);
+                        // here we handle the graphical representation of the occupants
+                        List<Node> potentialOccupantsNodes = placedTile.potentialOccupants()
+                                .stream()
+                                .map(occupant -> getOccupantNode(
+                                        placedTile.placer(), occupant,
+                                        occupantsO, occupantConsumer, negatedTileRotation
+                                ))
+                                .toList();
 
-                    // handle "jeton d'annulation", a marker that signals that an animal is cancelled
-                    List<Node> cancelledAnimalsNodes =
-                            placedTile.meadowZones().stream()
-                                    .flatMap(meadow -> meadow.animals().stream())
-                                    .map(animal -> getCancelledAnimalNode(animal, cancelledAnimalsO, negatedTileRotation))
-                                    .toList();
-                    group.getChildren().addAll(cancelledAnimalsNodes);
-                    // here we handle the graphical representation of the occupants
-                    List<Node> potentialOccupantsNodes = placedTile.potentialOccupants()
-                            .stream()
-                            .map(occupant -> getOccupantNode(
-                                    placedTile.placer(), occupant,
-                                    occupantsO, occupantConsumer, negatedTileRotation
-                            ))
-                            .toList();
+                        group.getChildren().addAll(potentialOccupantsNodes);
+                    } else if (oldPlacedTile != null && placedTile == null) { // rollback!
+                        group.getChildren().stream().skip(1).forEach(group.getChildren()::remove);
+                    }
 
-                    group.getChildren().addAll(potentialOccupantsNodes);
                 });
             }
         }

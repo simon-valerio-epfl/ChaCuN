@@ -294,4 +294,9 @@ public final class TextMakerFr implements TextMaker {
     public String clickToUnoccupy() {
         return "Cliquez sur le pion que vous désirez reprendre, ou ici pour ne pas en reprendre.";
     }
+
+    @Override
+    public String enterChatMessage() {
+        return "Entrez un message...";
+    }
 }

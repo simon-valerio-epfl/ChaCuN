@@ -147,4 +147,11 @@ public interface TextMaker {
      * @return le texte en question
      */
     String clickToUnoccupy();
+
+    /**
+     * Retourne un texte demandant au joueur actuel de rentrer un message dans le chat.
+     *
+     * @return le texte en question
+     */
+    String enterChatMessage();
 }
