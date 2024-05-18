@@ -18,6 +18,12 @@ import java.util.random.RandomGeneratorFactory;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * The main class of the game, it creates the GUI and all the logic used to play the game.
+ *
+ * @author Valerio De Santis (373247)
+ * @author Simon Lefort (371918)
+ */
 public final class Main extends Application {
 
     private final static int WINDOW_WIDTH = 1440;
@@ -26,10 +32,24 @@ public final class Main extends Application {
     private final static int MINIMUM_PLAYERS = 2;
     private final static int MAXIMUM_PLAYERS = 5;
 
+    /**
+     * The main method of the game, it launches the GUI.
+     *
+     * @param args the arguments of the game (the seed, named argument and the players, unnamed arguments)
+     */
     public static void main(String[] args) {
         launch(args);
     }
 
+    /**
+     * Saves the state of the game after an action has been performed.
+     *
+     * @param stateAction the state action to save
+     * @param gameStateO  the observable game state
+     * @param actionsO    the observable list of all actions since the start of the game
+     *
+     * Note: can also be used to dispatch the action to the server when the game is played online
+     */
     private void saveState(
             ActionEncoder.StateAction stateAction,
             ObjectProperty<GameState> gameStateO,
@@ -42,6 +62,12 @@ public final class Main extends Application {
         actionsO.setValue(Collections.unmodifiableList(newActions));
     }
 
+    /**
+     * Shuffles the tile decks and returns them.
+     *
+     * @param seed the seed to shuffle the tile decks, null if no seed is provided
+     * @return the shuffled tile decks
+     */
     private TileDecks getShuffledTileDecks(Long seed) {
         List<Tile> tiles = new ArrayList<>(Tiles.TILES);
         if (seed != null) {
