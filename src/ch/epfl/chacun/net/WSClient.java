@@ -16,7 +16,7 @@ public final class WSClient implements WebSocket.Listener {
     private enum WSAction {
         GAMEJOIN_ACCEPT,
         GAMEJOIN_NEWCOMER,
-        GAMEACTION,
+        GAMEACTION_ACCEPT,
         GAMEMSG,
         PING
     }
@@ -42,8 +42,8 @@ public final class WSClient implements WebSocket.Listener {
         this.onGameChatMessage = (msgUsername, msgContent) -> {};
     }
 
-    private static String connectURI(String gameName, String username) {
-        return STR."wss://cs108-chacun-multiplayer.sys.polysource.ch/?gameName=\{gameName}&username=\{username}";
+    private static String connectURI() {
+        return STR."wss://cs108-chacun-multiplayer-v2.sys.polysource.ch/";
     }
 
     private void acknowledgePing() {
@@ -63,7 +63,7 @@ public final class WSClient implements WebSocket.Listener {
                 onGamePlayerJoin.accept(data);
             }
             case GAMEJOIN_NEWCOMER -> onGamePlayerJoin.accept(data);
-            case GAMEACTION -> onPlayerAction.accept(data);
+            case GAMEACTION_ACCEPT -> onPlayerAction.accept(data);
             case GAMEMSG -> {
                 // data = {username=content}
                 // data is encoded with encodeURI
@@ -97,8 +97,12 @@ public final class WSClient implements WebSocket.Listener {
         ws = HttpClient
                 .newHttpClient()
                 .newWebSocketBuilder()
-                .buildAsync(URI.create(WSClient.connectURI(gameName, username)), this)
+                .buildAsync(URI.create(WSClient.connectURI()), this)
                 .join();
+    }
+
+    public void joinGame(String gameName, String username) {
+        ws.sendText(STR."GAMEJOIN.\{gameName},\{username}", true);
     }
 
     @Override
