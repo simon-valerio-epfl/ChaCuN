@@ -246,15 +246,11 @@ public final class Main extends Application {
         sideBorderPane.setBottom(actionsAndDecksBox);
 
         // main border pane
-        BorderPane mainBorderPane = new BorderPane();
-        mainBorderPane.setCenter(boardNode);
+        BorderPane mainBorderPane = new BorderPane(boardNode);
         mainBorderPane.setRight(sideBorderPane);
 
         // we set the size of the window and the title
-        primaryStage.setWidth(WINDOW_WIDTH);
-        primaryStage.setHeight(WINDOW_HEIGHT);
-
-        primaryStage.setScene(new Scene(mainBorderPane));
+        primaryStage.setScene(new Scene(mainBorderPane, WINDOW_WIDTH, WINDOW_HEIGHT));
         primaryStage.setTitle(WINDOW_NAME);
         primaryStage.show();
 
