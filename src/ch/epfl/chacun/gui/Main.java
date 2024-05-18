@@ -47,16 +47,10 @@ public final class Main extends Application {
     private final static int MAXIMUM_PLAYERS = 5;
 
     /**
-<<<<<<< HEAD
      * The main method of the game, it launches the GUI.
-     *
-     * @param args the arguments of the game (the seed, named argument and the players, unnamed arguments)
-=======
-     * The main method of the ChaCuN game, which launches the game
      *
      * @param args the arguments of the main method, the names of the players (minimum 2, maximum 5)
      *             and optionally the seed of the random generator used to shuffle the tiles
->>>>>>> 28f69d735f08a42482acb00a63224581c66410ea
      */
     public static void main(String[] args) {
         launch(args);
