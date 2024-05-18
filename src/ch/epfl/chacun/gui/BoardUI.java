@@ -29,9 +29,17 @@ import java.util.function.Consumer;
  * @author Simon Lefort (371918)
  */
 public final class BoardUI {
-
+    /**
+     * The center of the horizontal scroll bar
+     */
     private static final double H_SCROLL_CENTER = .5;
+    /**
+     * The center of the vertical scroll bar
+     */
     private static final double V_SCROLL_CENTER = .5;
+    /**
+     * The opacity of the veil that is applied to the tiles that are not highlighted
+     */
     private static final double VEIl_OPACITY = .5;
 
     /**
@@ -104,16 +112,17 @@ public final class BoardUI {
                 // here we handle the mouse interactions
                 group.setOnMouseClicked((mouseEvent) -> {
                     // to handle the case of a player wanting to scroll on the board without placing a tile
-                    if ((mouseEvent.isStillSincePress())){
-                    switch (mouseEvent.getButton()) {
-                        case SECONDARY ->
+                    if ((mouseEvent.isStillSincePress())) {
+                        switch (mouseEvent.getButton()) {
+                            case SECONDARY ->
                                 // if the player right-clicks on a tile pressing the ALT key, the tile is rotated right,
                                 // otherwise it is rotated left
-                                rotationConsumer.accept(mouseEvent.isAltDown() ? Rotation.RIGHT : Rotation.LEFT);
-                        case PRIMARY ->
+                                    rotationConsumer.accept(mouseEvent.isAltDown() ? Rotation.RIGHT : Rotation.LEFT);
+                            case PRIMARY ->
                                 // if the player left-clicks on a tile, the tile is placed
-                                posConsumer.accept(pos);
-                    }}
+                                    posConsumer.accept(pos);
+                        }
+                    }
                 });
 
                 // cell data does not show anything to the screen, it takes and computes some values from the tile,
@@ -124,11 +133,11 @@ public final class BoardUI {
                 ObservableValue<Boolean> isInFringeO = fringeTilesO.map(fringe -> fringe.contains(pos));
                 // if there are some tiles to highlight, we darken the others
                 ObservableValue<Boolean> darkVeilEnabledO = highlightedTilesO.map(hTiles -> {
-                        PlacedTile currentPlacedTile = placedTileO.getValue();
-                        return !hTiles.isEmpty() && (
-                                currentPlacedTile == null || !hTiles.contains(currentPlacedTile.id())
-                        );
-                    });
+                    PlacedTile currentPlacedTile = placedTileO.getValue();
+                    return !hTiles.isEmpty() && (
+                            currentPlacedTile == null || !hTiles.contains(currentPlacedTile.id())
+                    );
+                });
 
                 // triggered when the fringe changes or when the mouse passes over the tile,
                 // the player rotates it, the tile's highlighting state changes or when the tile is placed
@@ -182,9 +191,9 @@ public final class BoardUI {
                     // handle "jeton d'annulation", a marker that signals that an animal is cancelled
                     List<Node> cancelledAnimalsNodes =
                             placedTile.meadowZones().stream()
-                            .flatMap(meadow -> meadow.animals().stream())
-                            .map(animal -> getCancelledAnimalNode(animal, cancelledAnimalsO, negatedTileRotation))
-                            .toList();
+                                    .flatMap(meadow -> meadow.animals().stream())
+                                    .map(animal -> getCancelledAnimalNode(animal, cancelledAnimalsO, negatedTileRotation))
+                                    .toList();
                     group.getChildren().addAll(cancelledAnimalsNodes);
                     // here we handle the graphical representation of the occupants
                     List<Node> potentialOccupantsNodes = placedTile.potentialOccupants()

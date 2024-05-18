@@ -89,10 +89,10 @@ public final class ActionsUI {
     private static String cleanInput(String input) {
         StringBuilder cleaned = new StringBuilder();
         input.toUpperCase().chars()
-            .filter(character -> Base32.ALPHABET.indexOf(character) != -1)
-            .forEach(character -> cleaned.append((char) character));
+                .filter(character -> Base32.ALPHABET.indexOf(character) != -1)
+                .forEach(character -> cleaned.append((char) character));
         return cleaned.toString();
 
-     }
+    }
 
 }

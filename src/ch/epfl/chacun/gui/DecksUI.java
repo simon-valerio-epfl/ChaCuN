@@ -20,6 +20,9 @@ import java.util.function.Consumer;
  * @author Simon Lefort (371918)
  */
 public final class DecksUI {
+    /**
+     * The coefficient of the width of the text to display, as a fraction of the large tile size
+     */
     private final static double WRAPPING_WIDTH = 0.8;
 
     /**

@@ -68,6 +68,7 @@ public final class MessageBoardUI {
                     });
 
             scrollPane.layout();
+            // we scroll to the bottom of the message board
             scrollPane.setVvalue(1);
         });
 

@@ -12,7 +12,9 @@ import java.util.Map;
  * @author Simon Lefort (371918)
  */
 public final class ColorMap {
-
+    /**
+     * The factor to reduce the brightness of the stroke color
+     */
     private final static double STROKE_BRIGHTNESS_FACTOR = 0.6;
 
     /**
@@ -21,6 +23,12 @@ public final class ColorMap {
     private ColorMap() {
     }
 
+    /**
+     * Derives the stroke color for the given player color, modifying its brightness
+     *
+     * @param playerColor the player color
+     * @return the stroke color for the given player color
+     */
     private static Color deriveStrokePlayerColor(PlayerColor playerColor) {
         return fillColor(playerColor).deriveColor(0, 1, STROKE_BRIGHTNESS_FACTOR, 1);
     }
