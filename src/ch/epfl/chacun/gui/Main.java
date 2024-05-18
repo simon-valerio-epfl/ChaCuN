@@ -195,7 +195,6 @@ public final class Main extends Application {
             // the player can only occupy a tile if it corresponds to the next action to do
             if (currentGameState.nextAction() != GameState.Action.PLACE_TILE) return;
             Tile tileToPlace = currentGameState.tileToPlace();
-            // TODO Tile tileToPlace = tileToPlaceO.getValue();
             PlacedTile placedTile = new PlacedTile(
                     tileToPlace, currentGameState.currentPlayer(),
                     tileToPlaceRotationO.getValue(), pos
