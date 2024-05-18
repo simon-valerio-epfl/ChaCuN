@@ -106,8 +106,9 @@ public final class TextMakerFr implements TextMaker {
     }
 
     /**
-     *
-     * Alice, Edgar et Bruno ont remporté X points en tant qu'occupant-e-s majoritaires
+     * Orders the given set of player colors and returns a string representing them, telling they earned (some points)
+     * Example: Alice, Edgar et Bruno ont remporté (X points en tant qu'occupant-e-s majoritaires)
+     * @param scorers the set of player colors that scored
      */
     private String earnMessage(Set<PlayerColor> scorers) {
         Preconditions.checkArgument(!scorers.isEmpty());
@@ -125,9 +126,10 @@ public final class TextMakerFr implements TextMaker {
     }
 
     /**
-     * @param scorers
-     * @param points
-     * @return
+     * Returns a string representing the given set of player colors and the given points
+     * @param scorers the set of player colors that scored
+     * @param points the points they scored
+     * @return a string representing the given set of player colors and the given points
      */
     private String earnMessagePoints(Set<PlayerColor> scorers, int points) {
         // 10 points
@@ -136,9 +138,12 @@ public final class TextMakerFr implements TextMaker {
     }
 
     /**
-     * @param scorers
-     * @param points
-     * @return
+     * Returns a string representing the given set of player colors and the given points,
+     * telling they earned the points as majority occupants
+     * @param scorers the set of player colors that scored
+     * @param points the points they scored
+     * @return a string representing the given set of player colors and the given points,
+     *          telling they earned the points as majority occupants
      */
     private String earnMessageMajorityOccupants(Set<PlayerColor> scorers, int points) {
         Preconditions.checkArgument(!scorers.isEmpty());
@@ -165,9 +170,9 @@ public final class TextMakerFr implements TextMaker {
     }
 
     /**
-     *
-     * @param animals
-     * @return
+     * Returns a string representing the given map of animals and their counts
+     * @param animals the map of animals to represent as a string
+     * @return a string representing the given map of animals and their counts
      */
     private String animalsToString(Map<Animal.Kind, Integer> animals) {
         List<String> animalsList = animals.entrySet().stream()
@@ -182,6 +187,7 @@ public final class TextMakerFr implements TextMaker {
         return itemsToString(animalsList);
     }
 
+    
     @Override
     public String playerName(PlayerColor playerColor) {
         Preconditions.checkArgument(names.containsKey(playerColor));
