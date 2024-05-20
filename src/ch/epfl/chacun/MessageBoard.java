@@ -38,7 +38,9 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
      * @return a map linking the kinds of animals to their number
      */
     private Map<Animal.Kind, Integer> forMeadowAnimalCount(Set<Animal> animals) {
-        return animals.stream().collect(Collectors.groupingBy(Animal::kind, Collectors.summingInt(a -> 1)));
+        return animals.stream()
+                .filter(animal -> animal.kind() != Animal.Kind.TIGER)
+                .collect(Collectors.groupingBy(Animal::kind, Collectors.summingInt(a -> 1)));
     }
 
     /**
