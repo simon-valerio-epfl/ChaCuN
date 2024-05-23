@@ -70,8 +70,11 @@ public final class Main extends Application {
     private void saveState(
             ActionEncoder.StateAction stateAction,
             ObjectProperty<GameState> gameStateO,
-            ObjectProperty<List<String>> actionsO
+            ObjectProperty<List<String>> actionsO,
+            SoundManager soundManager
     ) {
+        SoundManager.Sound sound = stateAction.gameState().nextSound();
+        if (sound != null) soundManager.play(sound);
         gameStateO.setValue(stateAction.gameState());
         List<String> newActions = new ArrayList<>(actionsO.getValue());
         newActions.add(stateAction.action());
@@ -88,13 +91,11 @@ public final class Main extends Application {
             WSClient wsClient,
             SoundManager soundManager
     ) {
-        SoundManager.Sound sound = stateAction.gameState().nextSound();
         previousGameStateO.setValue(gameStateO.getValue());
-        saveState(stateAction, gameStateO, actionsO);
+        saveState(stateAction, gameStateO, actionsO, soundManager);
         System.out.println(STR."Sending action: \{stateAction.action()}");
         wsClient.sendAction(stateAction.action());
         selfValidatedActionO.setValue(false);
-        if (sound != null) soundManager.play(sound);
     }
 
     /**
@@ -221,7 +222,7 @@ public final class Main extends Application {
                 System.out.println(STR."Server received action: \{action}");
                 ActionEncoder.StateAction stateAction = ActionEncoder.decodeAndApply(gameStateO.getValue(), action);
                 if (stateAction == null) throw new IllegalStateException(STR."Invalid action: \{action}");
-                else saveState(stateAction, gameStateO, actionsO);
+                else saveState(stateAction, gameStateO, actionsO, soundManager);
             }
         });
         wsClient.setOnLocalPlayerActionReject(reason -> {
