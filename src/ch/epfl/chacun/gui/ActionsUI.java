@@ -33,7 +33,7 @@ public final class ActionsUI {
     /**
      * The maximum number of actions to represent on the screen
      */
-    private final static int NUMBER_OF_ACTIONS = 4;
+    private static final int NUMBER_OF_ACTIONS = 4;
 
     /**
      * Creates the node containing the last actions of the game state and

@@ -3,7 +3,6 @@ package ch.epfl.chacun.gui;
 import ch.epfl.chacun.PlayerColor;
 import javafx.scene.paint.Color;
 
-import java.util.Map;
 
 /**
  * This class provides utility methods to get colors for players
@@ -15,7 +14,7 @@ public final class ColorMap {
     /**
      * The factor to reduce the brightness of the stroke color
      */
-    private final static double STROKE_BRIGHTNESS_FACTOR = 0.6;
+    private static final double STROKE_BRIGHTNESS_FACTOR = 0.6;
 
     /**
      * This class is not instantiable

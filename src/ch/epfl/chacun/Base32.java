@@ -16,19 +16,19 @@ public final class Base32 {
     /**
      * The set of characters that compose Base32
      */
-    public final static String ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+    public static final String ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
     /**
      * A mask to get the 5 least significant bits
      */
-    private final static int MASK_5_BITS = (int) Math.pow(2, 5) - 1;
+    private static final int MASK_5_BITS = (int) Math.pow(2, 5) - 1;
     /**
      * A mask to get the 10 least significant bits
      */
-    private final static int MASK_10_BITS = (int) Math.pow(2, 10) - 1;
+    private static final int MASK_10_BITS = (int) Math.pow(2, 10) - 1;
     /**
      * The number of bits encoded by a Base32-character
      */
-    private final static int BASE_32_SYMBOL_BIT_SIZE = 5;
+    private static final int BASE_32_SYMBOL_BIT_SIZE = 5;
 
     /**
      * Checks if all the characters of the given string belong to the charset of Base32

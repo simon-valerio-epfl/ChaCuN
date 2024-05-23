@@ -32,7 +32,7 @@ public record GameState(
     /**
      * The minimum number of players in a game
      */
-    private final static int MIN_PLAYER_COUNT = 2;
+    private static final int MIN_PLAYER_COUNT = 2;
 
     /**
      * Represents the possible actions that can be performed in a game
