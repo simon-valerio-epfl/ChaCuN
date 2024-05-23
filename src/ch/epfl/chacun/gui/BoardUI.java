@@ -111,21 +111,6 @@ public final class BoardUI {
                 Group group = new Group(imageView);
                 group.setEffect(blend);
                 Pos pos = new Pos(x, y);
-                // here we handle the mouse interactions
-                group.setOnMouseClicked((mouseEvent) -> {
-                    // to handle the case of a player wanting to scroll on the board without placing a tile
-                    if ((mouseEvent.isStillSincePress())) {
-                        switch (mouseEvent.getButton()) {
-                            case SECONDARY ->
-                                // if the player right-clicks on a tile pressing the ALT key, the tile is rotated right,
-                                // otherwise it is rotated left
-                                    rotationConsumer.accept(mouseEvent.isAltDown() ? Rotation.RIGHT : Rotation.LEFT);
-                            case PRIMARY ->
-                                // if the player left-clicks on a tile, the tile is placed
-                                    posConsumer.accept(pos);
-                        }
-                    }
-                });
 
                 // cell data does not show anything to the screen, it takes and computes some values from the tile,
                 // which can thus be observed in the rest of the program
@@ -137,6 +122,22 @@ public final class BoardUI {
                 ObservableValue<Boolean> darkVeilEnabledO = highlightedTilesO.map(hTiles -> {
                     PlacedTile currentPlacedTile = placedTileO.getValue();
                     return !hTiles.isEmpty() && !hTiles.contains(currentPlacedTile.id());
+                });
+
+                // here we handle the mouse interactions
+                group.setOnMouseClicked((mouseEvent) -> {
+                    // to handle the case of a player wanting to scroll on the board without placing a tile
+                    if (mouseEvent.isStillSincePress() && isInFringeO.getValue()) {
+                        switch (mouseEvent.getButton()) {
+                            case SECONDARY ->
+                                // if the player right-clicks on a tile pressing the ALT key, the tile is rotated right,
+                                // otherwise it is rotated left
+                                    rotationConsumer.accept(mouseEvent.isAltDown() ? Rotation.RIGHT : Rotation.LEFT);
+                            case PRIMARY ->
+                                // if the player left-clicks on a tile, the tile is placed
+                                    posConsumer.accept(pos);
+                        }
+                    }
                 });
 
                 // triggered when the fringe changes or when the mouse passes over the tile,
