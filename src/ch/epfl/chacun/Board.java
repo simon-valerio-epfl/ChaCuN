@@ -19,16 +19,16 @@ public final class Board {
     /**
      * The maximum distance from the origin
      */
-    public final static int REACH = 12;
+    public static final int REACH = 12;
     // size represents the size of the board's columns and lines:
     // there are REACH numbers at the left and REACH numbers at the right
     // of the origin, and the matrix is a square
-    private final static int WIDTH = REACH * 2 + 1;
+    private static final int WIDTH = REACH * 2 + 1;
     /**
      * Represents an empty board, with no placed tiles, no ordered tile indexes,
      * no zone partitions and no cancelled animals
      */
-    public final static Board EMPTY = new Board(
+    public static final Board EMPTY = new Board(
             new PlacedTile[WIDTH * WIDTH],
             new int[0],
             ZonePartitions.EMPTY,

@@ -28,23 +28,23 @@ public final class Main extends Application {
     /**
      * The width of the window graphically showing the game, in pixels
      */
-    private final static int WINDOW_WIDTH = 1440;
+    private static final int WINDOW_WIDTH = 1440;
     /**
      * The height of the window graphically showing the game, in pixels
      */
-    private final static int WINDOW_HEIGHT = 1080;
+    private static final int WINDOW_HEIGHT = 1080;
     /**
      * The title of the window
      */
-    private final static String WINDOW_NAME = "ChaCuN";
+    private static final String WINDOW_NAME = "ChaCuN";
     /**
      * The minimum number of players allowed in the game
      */
-    private final static int MINIMUM_PLAYERS = 2;
+    private static final int MINIMUM_PLAYERS = 2;
     /**
      * The maximum number of players allowed in the game
      */
-    private final static int MAXIMUM_PLAYERS = 5;
+    private static final int MAXIMUM_PLAYERS = 5;
 
     /**
      * The main method of the game, it launches the GUI.

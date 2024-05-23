@@ -23,7 +23,7 @@ public final class DecksUI {
     /**
      * The coefficient of the width of the text to display, as a fraction of the large tile size
      */
-    private final static double WRAPPING_WIDTH = 0.8;
+    private static final double WRAPPING_WIDTH = 0.8;
 
     /**
      * This is a utility class, therefore it is not instantiable

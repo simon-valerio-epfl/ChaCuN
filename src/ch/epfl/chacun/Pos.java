@@ -13,7 +13,7 @@ public record Pos(int x, int y) {
     /**
      * The origin of the game's board.
      */
-    public final static Pos ORIGIN = new Pos(0, 0);
+    public static final Pos ORIGIN = new Pos(0, 0);
 
     /**
      * Returns the position obtained by translating this one by the given amount.

@@ -22,7 +22,7 @@ public record ZonePartitions(
     /**
      * Represents the empty zone partitions
      */
-    public final static ZonePartitions EMPTY = new ZonePartitions(
+    public static final ZonePartitions EMPTY = new ZonePartitions(
             new ZonePartition<>(),
             new ZonePartition<>(),
             new ZonePartition<>(),
@@ -35,7 +35,7 @@ public record ZonePartitions(
      * @author Valerio De Santis (373247)
      * @author Simon Lefort (371918)
      */
-    public final static class Builder {
+    public static final class Builder {
         private final ZonePartition.Builder<Zone.Forest> forests;
         private final ZonePartition.Builder<Zone.Meadow> meadows;
         private final ZonePartition.Builder<Zone.River> rivers;
