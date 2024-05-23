@@ -191,8 +191,7 @@ public final class BoardUI {
                     double negatedTileRotation = placedTile.rotation().negated().degreesCW();
 
                     // handle "jeton d'annulation", a marker that signals that an animal is cancelled
-                    List<Node> cancelledAnimalsNodes =
-                            placedTile.meadowZones().stream()
+                    List<Node> cancelledAnimalsNodes = placedTile.meadowZones().stream()
                                     .flatMap(meadow -> meadow.animals().stream())
                                     .map(animal -> getCancelledAnimalNode(animal, cancelledAnimalsO, negatedTileRotation))
                                     .toList();
