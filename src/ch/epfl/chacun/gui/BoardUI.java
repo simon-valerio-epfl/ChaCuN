@@ -251,7 +251,7 @@ public final class BoardUI {
         occupantSvg.setId(STR."\{occupantKind.toString().toLowerCase()}_\{occupant.zoneId()}");
         occupantSvg.setOnMouseClicked((event) -> {
             event.consume();
-            occupantConsumer.accept(occupant);
+            if (event.isStillSincePress()) occupantConsumer.accept(occupant);
         });
         occupantSvg.visibleProperty().bind(occupantsO.map(occupants -> occupants.contains(occupant)));
         occupantSvg.setRotate(negatedTileRotation);
