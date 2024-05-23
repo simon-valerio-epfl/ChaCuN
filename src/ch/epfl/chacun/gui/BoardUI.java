@@ -135,7 +135,6 @@ public final class BoardUI {
                 ObservableValue<Boolean> darkVeilEnabledO = highlightedTilesO.map(hTiles -> {
                     PlacedTile currentPlacedTile = placedTileO.getValue();
                     return !hTiles.isEmpty() && !hTiles.contains(currentPlacedTile.id());
-                    );
                 });
 
                 // triggered when the fringe changes or when the mouse passes over the tile,
