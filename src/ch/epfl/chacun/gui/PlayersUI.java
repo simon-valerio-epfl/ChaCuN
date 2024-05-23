@@ -27,6 +27,7 @@ public final class PlayersUI {
 
     private static final double PLACED_OCCUPANT_OPACITY = .1;
     private static final double HELD_OCCUPANT_OPACITY = 1;
+    private static final int PLAYER_CIRCLE_RADIUS = 5;
 
     /**
      * This class is not instantiable
@@ -89,7 +90,7 @@ public final class PlayersUI {
             });
             if (isCurrentPlayer.getValue()) textFlow.getStyleClass().add("current");
 
-            Circle circle = new Circle(5, ColorMap.fillColor(playerColor));
+            Circle circle = new Circle(PLAYER_CIRCLE_RADIUS, ColorMap.fillColor(playerColor));
 
             ObservableValue<String> pointsTextO = pointsO.map(points ->
                     STR." \{name} : \{textMaker.points(points.getOrDefault(playerColor, 0))}\n"

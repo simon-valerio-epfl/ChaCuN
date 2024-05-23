@@ -55,9 +55,10 @@ public final class MessageBoardUI {
                         Text text = new Text(message.text());
                         text.setWrappingWidth(ImageLoader.LARGE_TILE_FIT_SIZE);
 
-                        if (!message.tileIds().isEmpty()) {
+                        Set<Integer> hTileIds = message.tileIds();
+                        if (!hTileIds.isEmpty()) {
                             // we bind the tiles related to a message whenever the mouse passes on it
-                            text.setOnMouseEntered(_ -> tileIds.setValue(message.tileIds()));
+                            text.setOnMouseEntered(_ -> tileIds.setValue(hTileIds));
                             // whenever the mouse exits a message, the highlighted tiles are reset
                             // it will work when we pass from a message to another one because
                             // the exiting event happens before the entering one

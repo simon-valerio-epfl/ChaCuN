@@ -249,10 +249,11 @@ public final class BoardUI {
             Consumer<Occupant> occupantConsumer,
             double negatedTileRotation
     ) {
-        Node occupantSvg = Icon.newFor(playerColor, occupant.kind());
-        occupantSvg.setId(STR."\{occupant.kind().toString().toLowerCase()}_\{occupant.zoneId()}");
-        occupantSvg.setOnMouseClicked((e) -> {
-            e.consume();
+        Occupant.Kind occupantKind = occupant.kind();
+        Node occupantSvg = Icon.newFor(playerColor, occupantKind);
+        occupantSvg.setId(STR."\{occupantKind.toString().toLowerCase()}_\{occupant.zoneId()}");
+        occupantSvg.setOnMouseClicked((event) -> {
+            event.consume();
             occupantConsumer.accept(occupant);
         });
         occupantSvg.visibleProperty().bind(occupantsO.map(occupants -> occupants.contains(occupant)));
