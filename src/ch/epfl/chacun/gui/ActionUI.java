@@ -8,9 +8,7 @@ import javafx.scene.control.TextFormatter;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.StringJoiner;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -23,11 +21,11 @@ import java.util.stream.IntStream;
  * @author Valerio De Santis (373247)
  * @author Simon Lefort (371918)
  */
-public final class ActionsUI {
+public final class ActionUI {
     /**
      * This is a utility class, it's not instantiable
      */
-    private ActionsUI() {
+    private ActionUI() {
     }
 
     /**
@@ -47,7 +45,7 @@ public final class ActionsUI {
     public static Node create(ObservableValue<List<String>> actionsO, Consumer<String> handler) {
 
         Text text = new Text();
-        text.textProperty().bind(actionsO.map(ActionsUI::actionsTextRepresentation));
+        text.textProperty().bind(actionsO.map(ActionUI::actionsTextRepresentation));
 
         TextField textField = new TextField();
         textField.setId("action-field");
@@ -75,7 +73,8 @@ public final class ActionsUI {
      */
     private static String actionsTextRepresentation(List<String> actions) {
         int actionSize = actions.size();
-        return IntStream.range(Math.max(0, actionSize - NUMBER_OF_ACTIONS), actionSize)
+        int actionIdxFirst = Math.max(0, actionSize - NUMBER_OF_ACTIONS);
+        return IntStream.range(actionIdxFirst, actionSize)
                 .mapToObj(i -> STR."\{i + 1}:\{actions.get(i)}")
                 .collect(Collectors.joining(", "));
     }

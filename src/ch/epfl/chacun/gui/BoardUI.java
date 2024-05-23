@@ -134,8 +134,7 @@ public final class BoardUI {
                 // if there are some tiles to highlight, we darken the others
                 ObservableValue<Boolean> darkVeilEnabledO = highlightedTilesO.map(hTiles -> {
                     PlacedTile currentPlacedTile = placedTileO.getValue();
-                    return !hTiles.isEmpty() && (
-                            currentPlacedTile == null || !hTiles.contains(currentPlacedTile.id())
+                    return !hTiles.isEmpty() && !hTiles.contains(currentPlacedTile.id());
                     );
                 });
 
@@ -168,6 +167,10 @@ public final class BoardUI {
                     }
                     // finally, if the tile is in the fringe but the mouse is not on it,
                     // we display it with a veil of the current player's color
+
+                    // this can not be null because if we are at that point, the game state action is OCCUPY_TILE
+                    assert currentPlayer != null;
+
                     return new CellData(ColorMap.fillColor(currentPlayer));
                     // these arguments are the sensibility of the code,
                     // every time one of them changes, the code is re-executed

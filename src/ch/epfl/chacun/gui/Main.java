@@ -233,7 +233,7 @@ public final class Main extends Application {
         Node decksNode = DecksUI.create(
                 tileToPlaceO, leftNormalTilesO, leftMenhirTilesO, textToDisplayO, onOccupantClick
         );
-        Node actionsNode = ActionsUI.create(actionsO, onEnteredAction);
+        Node actionsNode = ActionUI.create(actionsO, onEnteredAction);
 
         // the box containing the actions and the tile decks
         VBox actionsAndDecksBox = new VBox(actionsNode, decksNode);
