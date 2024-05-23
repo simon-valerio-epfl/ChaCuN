@@ -347,7 +347,7 @@ public final class Main extends Application {
         Node decksNode = DecksUI.create(
                 tileToPlaceO, leftNormalTilesO, leftMenhirTilesO, textToDisplayO, onOccupantClick
         );
-        Node actionsNode = ActionsUI.create(actionsO, onEnteredAction, isLocalPlayerCurrentPlayerO);
+        Node actionsNode = ActionUI.create(actionsO, onEnteredAction, isLocalPlayerCurrentPlayerO);
         Node messagesChatNode = MessageBoardChatUI.create(wsClient::sendChatMessage, textMakerO.getValue());
 
         // the box containing the actions and the tile decks
