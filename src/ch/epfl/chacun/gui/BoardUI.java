@@ -208,12 +208,10 @@ public final class BoardUI {
                                         occupantsO, occupantConsumer, negatedTileRotation
                                 ))
                                 .toList();
-
                         group.getChildren().addAll(potentialOccupantsNodes);
                     } else if (oldPlacedTile != null && placedTile == null) { // rollback!
                         group.getChildren().stream().skip(1).forEach(group.getChildren()::remove);
                     }
-
                 });
             }
         }
