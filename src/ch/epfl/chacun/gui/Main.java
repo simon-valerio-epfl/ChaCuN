@@ -32,7 +32,7 @@ public final class Main extends Application {
     /**
      * The height of the window graphically showing the game, in pixels
      */
-    private final static int WINDOW_HEIGHT = 1080/ 2;
+    private final static int WINDOW_HEIGHT = 1080;
     /**
      * The title of the window
      */
