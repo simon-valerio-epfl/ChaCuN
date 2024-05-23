@@ -3,6 +3,8 @@ package ch.epfl.chacun.gui;
 import ch.epfl.chacun.PlayerColor;
 import javafx.scene.paint.Color;
 
+import java.util.Objects;
+
 
 /**
  * This class provides utility methods to get colors for players
@@ -39,6 +41,7 @@ public final class ColorMap {
      * @return the fill color for the given player color
      */
     public static Color fillColor(PlayerColor playerColor) {
+        Objects.requireNonNull(playerColor);
         return switch (playerColor) {
             case RED -> Color.RED;
             case BLUE -> Color.BLUE;
@@ -55,6 +58,7 @@ public final class ColorMap {
      * @return the stroke color for the given player color
      */
     public static Color strokeColor(PlayerColor playerColor) {
+        Objects.requireNonNull(playerColor);
         return switch (playerColor) {
             case RED, BLUE, PURPLE -> Color.WHITE;
             case GREEN, YELLOW -> deriveStrokePlayerColor(playerColor);
