@@ -15,7 +15,10 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 
 /**
@@ -193,9 +196,9 @@ public final class BoardUI {
 
                     // handle "jeton d'annulation", a marker that signals that an animal is cancelled
                     List<Node> cancelledAnimalsNodes = placedTile.meadowZones().stream()
-                                    .flatMap(meadow -> meadow.animals().stream())
-                                    .map(animal -> getCancelledAnimalNode(animal, cancelledAnimalsO, negatedTileRotation))
-                                    .toList();
+                            .flatMap(meadow -> meadow.animals().stream())
+                            .map(animal -> getCancelledAnimalNode(animal, cancelledAnimalsO, negatedTileRotation))
+                            .toList();
                     group.getChildren().addAll(cancelledAnimalsNodes);
                     // here we handle the graphical representation of the occupants
                     List<Node> potentialOccupantsNodes = placedTile.potentialOccupants()
