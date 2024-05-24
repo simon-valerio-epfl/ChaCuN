@@ -453,11 +453,11 @@ public final class Board {
             if (placedTile.occupant() != null && placedTile.occupant().kind() == Occupant.Kind.PAWN) {
                 Occupant occupant = placedTile.occupant();
                 Zone occupiedZone = placedTile.zoneWithId(occupant.zoneId());
-                if (occupiedZone instanceof Zone.Forest forest) {
-                    if (forests.contains(forestArea(forest))) newPlacedTiles[index] = placedTile.withNoOccupant();
-                } else if (occupiedZone instanceof Zone.River river) {
-                    if (rivers.contains(riverArea(river))) newPlacedTiles[index] = placedTile.withNoOccupant();
-                }
+                if (occupiedZone instanceof Zone.Forest forest && (forests.contains(forestArea(forest))))
+                    newPlacedTiles[index] = placedTile.withNoOccupant();
+                else if (occupiedZone instanceof Zone.River river && rivers.contains(riverArea(river)))
+                    newPlacedTiles[index] = placedTile.withNoOccupant();
+
             }
         }
         rivers.forEach(zonePartitionsBuilder::clearFishers);
