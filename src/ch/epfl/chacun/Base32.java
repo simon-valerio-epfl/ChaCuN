@@ -1,5 +1,7 @@
 package ch.epfl.chacun;
 
+import java.util.Objects;
+
 /**
  * This is a utility class containing useful methods to work with Base32
  *
@@ -38,6 +40,7 @@ public final class Base32 {
      * @return if all the characters of the given string belong to the charset of Base32
      */
     public static boolean isValid(String encoded) {
+        Objects.requireNonNull(encoded);
         return encoded.chars().allMatch(c -> ALPHABET.indexOf(c) != -1);
     }
 

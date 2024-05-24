@@ -228,16 +228,16 @@ public final class BoardUI {
             Animal animal, ObservableValue<Set<Animal>> cancelledAnimalsO,
             double negatedTileRotation
     ) {
-        ImageView cancelledAnimalView = new ImageView();
-        cancelledAnimalView.visibleProperty().bind(cancelledAnimalsO.map(
+        ImageView imageView = new ImageView();
+        imageView.visibleProperty().bind(cancelledAnimalsO.map(
                 cancelledAnimals -> cancelledAnimals.contains(animal)
         ));
-        cancelledAnimalView.setId(STR."marker_\{animal.id()}");
-        cancelledAnimalView.getStyleClass().add("marker");
-        cancelledAnimalView.setFitHeight(ImageLoader.MARKER_FIT_SIZE);
-        cancelledAnimalView.setFitWidth(ImageLoader.MARKER_FIT_SIZE);
-        cancelledAnimalView.setRotate(negatedTileRotation);
-        return cancelledAnimalView;
+        imageView.setId(STR."marker_\{animal.id()}");
+        imageView.getStyleClass().add("marker");
+        imageView.setFitHeight(ImageLoader.MARKER_FIT_SIZE);
+        imageView.setFitWidth(ImageLoader.MARKER_FIT_SIZE);
+        imageView.setRotate(negatedTileRotation);
+        return imageView;
     }
 
     private static Node getOccupantNode(
