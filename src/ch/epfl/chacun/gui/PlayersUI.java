@@ -25,10 +25,16 @@ import java.util.Map;
  */
 public final class PlayersUI {
     /**
-     * the opacity of an occupant when it is placed on the board
+     * The opacity of an occupant when it is placed on the board
      */
     private static final double PLACED_OCCUPANT_OPACITY = .1;
+    /**
+     * The opacity of an occupant when it is still held by the player
+     */
     private static final double HELD_OCCUPANT_OPACITY = 1;
+    /**
+     * The radius of the circle representing the colour of the player
+     */
     private static final int PLAYER_CIRCLE_RADIUS = 5;
 
     /**
