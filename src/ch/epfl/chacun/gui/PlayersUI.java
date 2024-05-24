@@ -24,7 +24,9 @@ import java.util.Map;
  * @author Simon Lefort (371918)
  */
 public final class PlayersUI {
-
+    /**
+     * the opacity of an occupant when it is placed on the board
+     */
     private static final double PLACED_OCCUPANT_OPACITY = .1;
     private static final double HELD_OCCUPANT_OPACITY = 1;
     private static final int PLAYER_CIRCLE_RADIUS = 5;
