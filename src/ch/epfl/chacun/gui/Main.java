@@ -91,10 +91,14 @@ public final class Main extends Application {
             Collections.shuffle(tiles, generator);
         } else Collections.shuffle(tiles);
         Map<Tile.Kind, List<Tile>> groupedTiles = tiles.stream().collect(Collectors.groupingBy(Tile::kind));
+        // we make it possible to play without menhir tiles. On the other hand,
+        // playing without normal tiles is not permitted
+        List<Tile> menhirTiles = groupedTiles.getOrDefault(Tile.Kind.MENHIR, List.of());
+        
         return new TileDecks(
                 groupedTiles.get(Tile.Kind.START),
                 groupedTiles.get(Tile.Kind.NORMAL),
-                groupedTiles.get(Tile.Kind.MENHIR)
+                menhirTiles
         );
     }
 
