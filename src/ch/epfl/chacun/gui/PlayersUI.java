@@ -79,7 +79,7 @@ public final class PlayersUI {
             Circle circle = new Circle(PLAYER_CIRCLE_RADIUS, ColorMap.fillColor(playerColor));
 
             ObservableValue<String> pointsTextO = pointsO.map(points ->
-                STR." \{name} : \{textMaker.points(points.getOrDefault(playerColor, 0))}\n"
+                    STR." \{name} : \{textMaker.points(points.getOrDefault(playerColor, 0))}\n"
             );
 
             Text pointsText = new Text();
@@ -104,7 +104,7 @@ public final class PlayersUI {
      *
      * @param playerColor the color of the player owning this list of occupants
      * @param kind        the kind of the occupants to represent
-     * @param gameStateO the observable current state of a game
+     * @param gameStateO  the observable current state of a game
      * @return a list of nodes representing each the occupants of a player,
      * with the opacity of each node bound to the number of used and available occupants
      */
