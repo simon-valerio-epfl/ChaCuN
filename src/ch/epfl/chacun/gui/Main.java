@@ -198,6 +198,7 @@ public final class Main extends Application {
 
         ObservableValue<Boolean> isLocalPlayerCurrentPlayerO = gameStateO.map(
                 gState -> gState.currentPlayer() == PlayerColor.valueOf(localPlayerColorO.getValue())
+                        && gState.players().size() > 1
         );
 
         wsClient.setOnGamePlayersUpdate(newPlayerNames -> {
