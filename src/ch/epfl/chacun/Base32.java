@@ -8,15 +8,10 @@ package ch.epfl.chacun;
  */
 public final class Base32 {
     /**
-     * This is a utility class. It is not instantiable
-     */
-    private Base32() {
-    }
-
-    /**
      * The set of characters that compose Base32
      */
     public static final String ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+
     /**
      * A mask to get the 5 least significant bits
      */
@@ -29,6 +24,12 @@ public final class Base32 {
      * The number of bits encoded by a Base32-character
      */
     private static final int BASE_32_SYMBOL_BIT_SIZE = 5;
+
+    /**
+     * This is a utility class. It is not instantiable
+     */
+    private Base32() {
+    }
 
     /**
      * Checks if all the characters of the given string belong to the charset of Base32

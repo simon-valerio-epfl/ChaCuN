@@ -285,6 +285,7 @@ public final class Main extends Application {
                             soundManager
                     );
                 }
+                default -> {}
             }
         };
         // the rotation of the next tile to place

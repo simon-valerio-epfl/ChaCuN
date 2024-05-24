@@ -291,6 +291,11 @@ public final class BoardUI {
      * @param veilColor    the color of the veil that has to be applied to the tile
      */
     private record CellData(Image tileImage, Rotation tileRotation, Color veilColor) {
+        /**
+         * This map is used to save in a cache the images that have already been loaded once,
+         * in order to avoid loading them again and again when they are needed to be shown.
+         */
+        private static final Map<Integer, Image> cachedImages = new HashMap<>();
 
         /**
          * An empty image, graphically represented by a grey square
@@ -302,12 +307,6 @@ public final class BoardUI {
             writableImage.getPixelWriter().setColor(0, 0, Color.gray(0.98));
             EMPTY_IMAGE = writableImage;
         }
-
-        /**
-         * This map is used to save in a cache the images that have already been loaded once,
-         * in order to avoid loading them again and again when they are needed to be shown.
-         */
-        private static final Map<Integer, Image> cachedImages = new HashMap<>();
 
         /**
          * This constructor creates a CellData object from a placed tile and a veil color,
