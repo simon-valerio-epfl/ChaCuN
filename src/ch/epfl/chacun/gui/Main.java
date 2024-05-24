@@ -178,6 +178,7 @@ public final class Main extends Application {
                     // we update the state of the game and the list of actions
                     saveState(ActionEncoder.withOccupantRemoved(currentGameState, occupant), gameStateO, actionsO);
                 }
+                default -> {}
             }
         };
         // the rotation of the next tile to place

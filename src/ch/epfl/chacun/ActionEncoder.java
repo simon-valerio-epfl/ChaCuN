@@ -12,15 +12,6 @@ import java.util.List;
  */
 public final class ActionEncoder {
     /**
-     * An exception to be thrown when an action is invalid for the given game state.
-     *
-     * @author Valerio De Santis (373247)
-     * @author Simon Lefort (371918)
-     */
-    private static class IllegalActionException extends Exception {
-    }
-
-    /**
      * The number of bits used to encode the choice of not placing an occupant.
      */
     private static final int WITH_NO_OCCUPANT_BITS = 0b11111;
@@ -29,6 +20,7 @@ public final class ActionEncoder {
      * The Base32-encoded action signaling that no occupant is to be placed.
      */
     private static final String WITH_NO_OCCUPANT = Base32.encodeBits5(WITH_NO_OCCUPANT_BITS);
+
     // format: K-O-O-O
     /**
      * The length of a Base32-encoded action where an occupant is placed.
@@ -60,7 +52,6 @@ public final class ActionEncoder {
      * The length of a Base32-encoded action where an occupant is removed.
      */
     private static final int WITH_OCCUPANT_REMOVED_ACTION_LENGTH = 1;
-
     /**
      * This class can not be instantiated.
      */
@@ -230,6 +221,13 @@ public final class ActionEncoder {
      * @param gameState the game state
      * @param action    the action
      */
-    public record StateAction(GameState gameState, String action) {
-    }
+    public record StateAction(GameState gameState, String action) {}
+
+    /**
+     * An exception to be thrown when an action is invalid for the given game state.
+     *
+     * @author Valerio De Santis (373247)
+     * @author Simon Lefort (371918)
+     */
+    private static class IllegalActionException extends Exception {}
 }

@@ -23,15 +23,15 @@ import java.util.stream.IntStream;
  */
 public final class ActionUI {
     /**
+     * The maximum number of actions to represent on the screen
+     */
+    private static final int NUMBER_OF_ACTIONS = 4;
+
+    /**
      * This is a utility class, it's not instantiable
      */
     private ActionUI() {
     }
-
-    /**
-     * The maximum number of actions to represent on the screen
-     */
-    private static final int NUMBER_OF_ACTIONS = 4;
 
     /**
      * Creates the node containing the last actions of the game state and

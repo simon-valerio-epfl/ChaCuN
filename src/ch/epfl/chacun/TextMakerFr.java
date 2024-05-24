@@ -13,6 +13,22 @@ import java.util.Set;
 public final class TextMakerFr implements TextMaker {
 
     /**
+     * A map associating each animal kind to its French name,
+     * ordered by the points they give, in descending order
+     */
+    private static final Map<Animal.Kind, String> animalFrenchNames = Map.of(
+            Animal.Kind.MAMMOTH, "mammouth",
+            Animal.Kind.AUROCHS, "auroch",
+            Animal.Kind.DEER, "cerf",
+            Animal.Kind.TIGER, "tigre"
+    );
+
+    /**
+     * A map associating each player to their name
+     */
+    private final Map<PlayerColor, String> names;
+
+    /**
      * Enum representing the different game items, with their French name
      *
      * @author Valerio De Santis (373247)
@@ -47,21 +63,6 @@ public final class TextMakerFr implements TextMaker {
             this.frenchName = frenchName;
         }
     }
-
-    /**
-     * A map associating each animal kind to its French name,
-     * ordered by the points they give, in descending order
-     */
-    private static final Map<Animal.Kind, String> animalFrenchNames = Map.of(
-            Animal.Kind.MAMMOTH, "mammouth",
-            Animal.Kind.AUROCHS, "auroch",
-            Animal.Kind.DEER, "cerf",
-            Animal.Kind.TIGER, "tigre"
-    );
-    /**
-     * A map associating each player to their name
-     */
-    private final Map<PlayerColor, String> names;
 
     /**
      * Creates a new TextMakerFr with the given player names
