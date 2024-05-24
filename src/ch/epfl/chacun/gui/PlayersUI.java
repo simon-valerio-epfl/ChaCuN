@@ -14,6 +14,7 @@ import javafx.scene.text.TextFlow;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * This class represents the graphical representation
@@ -54,6 +55,7 @@ public final class PlayersUI {
      */
     public static Node create(ObservableValue<GameState> gameStateO, TextMaker textMaker) {
 
+        Objects.requireNonNull(textMaker);
         ObservableValue<Map<PlayerColor, Integer>> pointsO = gameStateO.map(gState -> gState.messageBoard().points());
 
         // create a new vbox that will be used to align elements (like players)
