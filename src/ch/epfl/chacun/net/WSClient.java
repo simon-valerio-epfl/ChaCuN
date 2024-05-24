@@ -181,6 +181,7 @@ public final class WSClient implements WebSocket.Listener {
      * @param message the message to send
      */
     public void sendChatMessage(String message) {
+        Preconditions.checkArgument(!message.isEmpty());
         sendText(STR."GAMEMSG.\{java.net.URLEncoder.encode(message, StandardCharsets.UTF_8)}");
     }
 

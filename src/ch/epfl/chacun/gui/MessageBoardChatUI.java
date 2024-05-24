@@ -34,6 +34,7 @@ public final class MessageBoardChatUI {
         textField.setPromptText(textMaker.enterChatMessage());
 
         textField.setOnAction(e -> {
+            if (textField.getText().isBlank()) return;
             sendMessage.accept(textField.getText());
             textField.clear();
         });
