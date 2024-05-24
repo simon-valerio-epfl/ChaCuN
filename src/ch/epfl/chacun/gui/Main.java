@@ -86,14 +86,11 @@ public final class Main extends Application {
             ActionEncoder.StateAction stateAction,
             ObjectProperty<GameState> gameStateO,
             ObjectProperty<Boolean> selfValidatedActionO,
-            ObjectProperty<GameState> previousGameStateO,
             ObjectProperty<List<String>> actionsO,
             WSClient wsClient,
             SoundManager soundManager
     ) {
-        previousGameStateO.setValue(gameStateO.getValue());
         saveState(stateAction, gameStateO, actionsO, soundManager);
-        System.out.println(STR."Sending action: \{stateAction.action()}");
         wsClient.sendAction(stateAction.action());
         selfValidatedActionO.setValue(false);
     }
@@ -119,9 +116,9 @@ public final class Main extends Application {
         );
     }
 
-    private Map<PlayerColor, String> getPlayersMap(String playerNames) {
+    private SortedMap<PlayerColor, String> getPlayersMap(String playerNames) {
         String[] names = playerNames.split(",");
-        Map<PlayerColor, String> playersMap = new TreeMap<>();
+        SortedMap<PlayerColor, String> playersMap = new TreeMap<>();
         for (int i = 0; i < names.length; i++) {
             playersMap.put(PlayerColor.ALL.get(i), names[i]);
         }
@@ -152,7 +149,7 @@ public final class Main extends Application {
         WSClient wsClient = new WSClient(gameName, localPlayerName);
         TileDecks tileDecks = getShuffledTileDecks((long) gameName.hashCode());
 
-        ObjectProperty<Map<PlayerColor, String>> playerNamesO = new SimpleObjectProperty<>(new TreeMap<>());
+        ObjectProperty<SortedMap<PlayerColor, String>> playerNamesO = new SimpleObjectProperty<>(new TreeMap<>());
         ObservableValue<List<PlayerColor>> playerColorsO = playerNamesO.map(map -> new ArrayList<>(map.keySet()));
         playerNamesO.setValue(getPlayersMap(localPlayerName));
 
@@ -161,8 +158,6 @@ public final class Main extends Application {
         ObservableValue<TextMaker> textMakerO = playerNamesO.map(TextMakerFr::new);
         GameState gameState = GameState.initial(playerColorsO.getValue(), tileDecks, textMakerO.getValue());
         ObjectProperty<GameState> gameStateO = new SimpleObjectProperty<>(gameState);
-        // used for rollback
-        ObjectProperty<GameState> previousGameStateO = new SimpleObjectProperty<>(gameState);
 
         ObservableValue<List<MessageBoard.Message>> observableMessagesO = gameStateO.map(
                 gState -> gState.messageBoard().messages()
@@ -207,6 +202,14 @@ public final class Main extends Application {
                             .withPlayers(playerColorsO.getValue())
                             .withTextMaker(textMakerO.getValue())
             );
+            if (playerNamesO.getValue().size() == 1) {
+                gameStateO.setValue(gameStateO.getValue().withGameChatMessage(textMakerO.getValue().emptyGame(gameName)));
+            } else {
+                String lastPlayerName = playerNamesO.getValue().lastEntry().getValue();
+                if (!localPlayerName.equals(lastPlayerName)) {
+                    gameStateO.setValue(gameStateO.getValue().withGameChatMessage(textMakerO.getValue().playerJoined(lastPlayerName)));
+                }
+            }
         });
         wsClient.setOnGameChatMessage((username, content) -> {
             String displayMessage = STR."\{username}: \{content}";
@@ -216,10 +219,8 @@ public final class Main extends Application {
         wsClient.setOnPlayerAction(action -> {
             if (!selfValidatedActionO.getValue()) {
                 selfValidatedActionO.setValue(true);
-                System.out.println(STR."Server accepted action: \{action}");
             }
             else {
-                System.out.println(STR."Server received action: \{action}");
                 ActionEncoder.StateAction stateAction = ActionEncoder.decodeAndApply(gameStateO.getValue(), action);
                 if (stateAction == null) throw new IllegalStateException(STR."Invalid action: \{action}");
                 else saveState(stateAction, gameStateO, actionsO, soundManager);
@@ -227,8 +228,19 @@ public final class Main extends Application {
         });
         wsClient.setOnLocalPlayerActionReject(reason -> {
             System.out.println(STR."Local player action rejected: \{reason}. Rollback needed.");
-            gameStateO.setValue(previousGameStateO.getValue());
-            actionsO.setValue(actionsO.getValue().subList(0, actionsO.getValue().size() - 1));
+        });
+        wsClient.setOnGamePlayerLeave(_ -> {
+            // if the game is not started we do not care about resetting the game
+            if (actionsO.getValue().isEmpty()) return;
+            GameState newGameState = GameState
+                    .initial(playerColorsO.getValue(), tileDecks, textMakerO.getValue())
+                    .withGameChatMessage(textMakerO.getValue().gameLeaveReset());
+            gameStateO.setValue(newGameState);
+            actionsO.setValue(List.of());
+            gameStateO.setValue(newGameState.withStartingTilePlaced());
+        });
+        wsClient.setOnGameEnd(_ -> {
+            gameStateO.setValue(gameStateO.getValue().withGameChatMessage(textMakerO.getValue().gameEnded()));
         });
 
         // the consumer to handle the click on an occupant, or the click on the text to pass on the action
@@ -248,7 +260,6 @@ public final class Main extends Application {
                             ActionEncoder.withNewOccupant(currentGameState, occupant),
                             gameStateO,
                             selfValidatedActionO,
-                            previousGameStateO,
                             actionsO,
                             wsClient,
                             soundManager
@@ -265,7 +276,6 @@ public final class Main extends Application {
                             ActionEncoder.withOccupantRemoved(currentGameState, occupant),
                             gameStateO,
                             selfValidatedActionO,
-                            previousGameStateO,
                             actionsO,
                             wsClient,
                             soundManager
@@ -284,7 +294,6 @@ public final class Main extends Application {
                     newState,
                     gameStateO,
                     selfValidatedActionO,
-                    previousGameStateO,
                     actionsO,
                     wsClient,
                     soundManager
@@ -311,7 +320,6 @@ public final class Main extends Application {
                     ActionEncoder.withPlacedTile(currentGameState, placedTile),
                     gameStateO,
                     selfValidatedActionO,
-                    previousGameStateO,
                     actionsO,
                     wsClient,
                     soundManager

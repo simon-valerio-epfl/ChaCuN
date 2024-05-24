@@ -299,4 +299,24 @@ public final class TextMakerFr implements TextMaker {
     public String enterChatMessage() {
         return "Entrez un message...";
     }
+
+    @Override
+    public String gameLeaveReset() {
+        return "Un joueur a quitté la partie. Le plateau a été réinitialisé.";
+    }
+
+    @Override
+    public String playerJoined(String playerName) {
+        return STR."\{playerName} a rejoint la partie.";
+    }
+
+    @Override
+    public String emptyGame(String gameName) {
+        return STR."La partie est vide. En attente de nouveaux joueurs... (code de partie : \{gameName})";
+    }
+
+    @Override
+    public String gameEnded() {
+        return "La partie est terminée. Relancez le jeu pour rejouer !";
+    }
 }

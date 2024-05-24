@@ -21,11 +21,11 @@ public final class WSClient implements WebSocket.Listener {
 
     private enum WSAction {
         GAMEJOIN_ACCEPT,
-        GAMEJOIN_NEWCOMER,
         GAMELEAVE,
         GAMEACTION_ACCEPT,
         GAMEACTION_DENY,
         GAMEMSG,
+        GAMEEND,
         PING
     }
 
@@ -38,9 +38,11 @@ public final class WSClient implements WebSocket.Listener {
     private boolean connected = false;
 
     private Consumer<String> onGamePlayersUpdate;
+    private Consumer<String> onGamePlayerLeave;
     private Consumer<String> onPlayerAction;
     private Consumer<String> onLocalPlayerActionReject;
     private BiConsumer<String, String> onGameChatMessage;
+    private Consumer<String> onGameEnd;
 
     /**
      * Creates a new WebSocket client for the given game and player
@@ -56,6 +58,8 @@ public final class WSClient implements WebSocket.Listener {
         this.onPlayerAction = (data) -> {};
         this.onLocalPlayerActionReject = (data) -> {};
         this.onGameChatMessage = (msgUsername, msgContent) -> {};
+        this.onGameEnd = (data) -> {};
+        this.onGamePlayerLeave = (data) -> {};
     }
 
     private void acknowledgePing() {
@@ -64,13 +68,17 @@ public final class WSClient implements WebSocket.Listener {
     }
 
     private void handleMessage(String message) {
-        System.out.println(message);
+        System.out.println(STR."⬇\uFE0F \{message}");
         String[] messageParts = message.split("\\.");
         String action = messageParts[0];
         String data = messageParts[1];
         WSAction wsAction = WSAction.valueOf(action);
         switch (wsAction) {
-            case GAMEJOIN_ACCEPT, GAMEJOIN_NEWCOMER, GAMELEAVE -> this.onGamePlayersUpdate.accept(data);
+            case GAMEJOIN_ACCEPT -> this.onGamePlayersUpdate.accept(data);
+            case GAMELEAVE -> {
+                onGamePlayersUpdate.accept(data);
+                onGamePlayerLeave.accept(data);
+            }
             case GAMEACTION_ACCEPT -> onPlayerAction.accept(data);
             case GAMEACTION_DENY -> onLocalPlayerActionReject.accept(data);
             case GAMEMSG -> {
@@ -81,6 +89,7 @@ public final class WSClient implements WebSocket.Listener {
                 String chatMessage = java.net.URLDecoder.decode(content.split("=")[1], StandardCharsets.UTF_8);
                 onGameChatMessage.accept(username, chatMessage);
             }
+            case GAMEEND -> onGameEnd.accept(data);
             case PING -> acknowledgePing();
         }
     }
@@ -122,6 +131,25 @@ public final class WSClient implements WebSocket.Listener {
     }
 
     /**
+     * Sets the consumer to be called when the game ends
+     *
+     * @param onGameEnd the consumer to be called
+     */
+    public void setOnGameEnd(Consumer<String> onGameEnd) {
+        this.onGameEnd = onGameEnd;
+    }
+
+    public void setOnGamePlayerLeave(Consumer<String> onGamePlayerLeave) {
+        this.onGamePlayerLeave = onGamePlayerLeave;
+    }
+
+    private void sendText(String text) {
+        Preconditions.checkArgument(connected);
+        System.out.println(STR."\uD83D\uDD3A \{text}");
+        ws.sendText(text, true);
+    }
+
+    /**
      * Connects to the WebSocket server
      */
     public void connect() {
@@ -137,7 +165,7 @@ public final class WSClient implements WebSocket.Listener {
      * Joins the game
      */
     public void joinGame() {
-        ws.sendText(STR."GAMEJOIN.\{gameName},\{username}", true);
+        sendText(STR."GAMEJOIN.\{gameName},\{username}");
     }
 
     /**
@@ -145,7 +173,7 @@ public final class WSClient implements WebSocket.Listener {
      * @param message the base32 encoded action to send
      */
     public void sendAction(String message) {
-        ws.sendText(STR."GAMEACTION.\{message}", true);
+        sendText(STR."GAMEACTION.\{message}");
     }
 
     /**
@@ -153,7 +181,7 @@ public final class WSClient implements WebSocket.Listener {
      * @param message the message to send
      */
     public void sendChatMessage(String message) {
-        ws.sendText(STR."GAMEMSG.\{java.net.URLEncoder.encode(message, StandardCharsets.UTF_8)}", true);
+        sendText(STR."GAMEMSG.\{java.net.URLEncoder.encode(message, StandardCharsets.UTF_8)}");
     }
 
     @Override
