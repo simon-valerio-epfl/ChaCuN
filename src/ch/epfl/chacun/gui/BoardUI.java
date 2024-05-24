@@ -13,6 +13,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 
 import java.util.*;
@@ -41,6 +42,14 @@ public final class BoardUI {
      * The opacity of the veil that is applied to the tiles that are not highlighted
      */
     private static final double VEIl_OPACITY = .5;
+
+    private static final ImageView placedTileEffect;
+
+    static {
+        placedTileEffect = new ImageView(new Image("effect.png"));
+        placedTileEffect.setFitWidth(ImageLoader.NORMAL_TILE_FIT_SIZE);
+        placedTileEffect.setFitHeight(ImageLoader.NORMAL_TILE_FIT_SIZE);
+    }
 
     /**
      * This is a utility class and therefore is not instantiable
@@ -89,13 +98,18 @@ public final class BoardUI {
         ObservableValue<Set<Animal>> cancelledAnimalsO = boardO.map(Board::cancelledAnimals);
         // the fringe only exists when the next action is to place a tile
         ObservableValue<Set<Pos>> fringeTilesO = gameStateO.map(
-                gState -> gState.nextAction() == GameState.Action.PLACE_TILE
+                gState -> (
+                        gState.nextAction() == GameState.Action.PLACE_TILE
+                        && gState.players().size() > 1
+                    )
                         // we can not use boardO.getValue() here!
                         // because this map may be triggered before boardO gets updated!
                         // therefore we would be using the old board
                         ? gState.board().insertionPositions()
                         : Set.of()
         );
+
+        PlacedTileStackPaneCell lastPlacedTileStackPane = new PlacedTileStackPaneCell();
 
         for (int x = -reach; x <= reach; x++) {
             for (int y = -reach; y <= reach; y++) {
@@ -185,13 +199,22 @@ public final class BoardUI {
                 imageView.imageProperty().bind(cellDataO.map(CellData::tileImage));
                 blend.topInputProperty().bind(cellDataO.map(CellData::blendTopInput));
 
+                StackPane stackPane = new StackPane(group);
                 // we add range and position in order to translate our tile from the left corner to the center
-                grid.add(group, x + reach, y + reach);
+                grid.add(stackPane, x + reach, y + reach);
 
                 // when a tile is placed, we add the animals and the occupants on it
                 placedTileO.addListener((_, oldPlacedTile, placedTile) -> {
                     // if the tile is already placed or is not yet, we do not have to add the animals and the occupants
                     if (oldPlacedTile == null && placedTile != null) {
+
+                        stackPane.getChildren().add(placedTileEffect);
+                        StackPane lastPlacedTileStackPaneV = lastPlacedTileStackPane.placedTileStackPane;
+                        if (lastPlacedTileStackPaneV != null) {
+                            lastPlacedTileStackPaneV.getChildren().remove(placedTileEffect);
+                        }
+                        lastPlacedTileStackPane.placedTileStackPane = stackPane;
+
                         double negatedTileRotation = placedTile.rotation().negated().degreesCW();
 
                         // handle "jeton d'annulation", a marker that signals that an animal is cancelled
@@ -210,8 +233,6 @@ public final class BoardUI {
                                 ))
                                 .toList();
                         group.getChildren().addAll(potentialOccupantsNodes);
-                    } else if (oldPlacedTile != null && placedTile == null) { // rollback!
-                        group.getChildren().stream().skip(1).forEach(group.getChildren()::remove);
                     }
                 });
             }
@@ -325,5 +346,9 @@ public final class BoardUI {
                     0, 0, ImageLoader.NORMAL_TILE_FIT_SIZE, ImageLoader.NORMAL_TILE_FIT_SIZE, this.veilColor
             );
         }
+    }
+
+    private final static class PlacedTileStackPaneCell {
+        public StackPane placedTileStackPane;
     }
 }
