@@ -52,11 +52,11 @@ public final class DecksUI {
 
 
         // ImageView of the next tile to place, which has to be shown in large size
-        ImageView view = new ImageView();
+        ImageView imageView = new ImageView();
         // we bind the graphical view of the tile to place to the tile itself
-        view.imageProperty().bind(tileO.map(tile -> ImageLoader.largeImageForTile(tile.id())));
-        view.setFitHeight(ImageLoader.LARGE_TILE_FIT_SIZE);
-        view.setFitWidth(ImageLoader.LARGE_TILE_FIT_SIZE);
+        imageView.imageProperty().bind(tileO.map(tile -> ImageLoader.largeImageForTile(tile.id())));
+        imageView.setFitHeight(ImageLoader.LARGE_TILE_FIT_SIZE);
+        imageView.setFitWidth(ImageLoader.LARGE_TILE_FIT_SIZE);
 
         // Text, occupy tile (only visible if textToDisplay is not empty,
         // meaning that the player does not want to do some action)
@@ -67,7 +67,7 @@ public final class DecksUI {
         text.setWrappingWidth(WRAPPING_WIDTH * ImageLoader.LARGE_TILE_FIT_SIZE);
 
         // Here we handle the next tile to place
-        StackPane stackPane = new StackPane(view, text);
+        StackPane stackPane = new StackPane(imageView, text);
         stackPane.setId("next-tile");
         // if the player clicks on the text, it means that he does not want to place or retake an occupant
         stackPane.setOnMouseClicked(_ -> onOccupantClick.accept(null));
@@ -93,13 +93,13 @@ public final class DecksUI {
      * @return a node representing the deck
      */
     private static Node getDeckNode(Tile.Kind kind, ObservableValue<Integer> leftTiles) {
-        ImageView image = new ImageView();
-        image.setId(kind.toString());
-        image.setFitHeight(ImageLoader.NORMAL_TILE_FIT_SIZE);
-        image.setFitWidth(ImageLoader.NORMAL_TILE_FIT_SIZE);
+        ImageView imageView = new ImageView();
+        imageView.setId(kind.toString());
+        imageView.setFitHeight(ImageLoader.NORMAL_TILE_FIT_SIZE);
+        imageView.setFitWidth(ImageLoader.NORMAL_TILE_FIT_SIZE);
         Text text = new Text();
         text.textProperty().bind(leftTiles.map(String::valueOf));
-        return new StackPane(image, text);
+        return new StackPane(imageView, text);
     }
 
 }
