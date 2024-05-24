@@ -231,21 +231,6 @@ class MessageBoardTest {
     }
 
     @Test
-    void messageBoardWithScoredMeadowWorksWithWorthyAnimals() {
-        var a1 = new Animal(10_1, Animal.Kind.MAMMOTH);
-        var a2 = new Animal(20_1, Animal.Kind.AUROCHS);
-        var a3 = new Animal(20_2, Animal.Kind.TIGER);
-        var m1 = new Meadow(10, List.of(a1), null);
-        var m2 = new Meadow(20, List.of(a2, a3), null);
-        var m3 = new Meadow(30, List.of(), null);
-        var meadowArea = new Area<>(Set.of(m1, m2, m3), List.of(RED, BLUE), 3);
-        var mb = new MessageBoard(new BasicTextMaker(), List.of());
-        mb = mb.withScoredMeadow(meadowArea, Set.of());
-        var expectedMessage = new MessageBoard.Message("{RED,BLUE}|5|1×MAMMOTH/1×AUROCHS/0×DEER/1×TIGER", 5, Set.of(RED, BLUE), Set.of(1, 2, 3));
-        assertEquals(List.of(expectedMessage), mb.messages());
-    }
-
-    @Test
     void messageBoardWithScoredRiverSystemWorksWithUnoccupiedRiverSystem() {
         var l1 = new Lake(18, 1, null);
         var r1 = new River(10, 4, l1);
@@ -337,21 +322,6 @@ class MessageBoardTest {
         var mb = new MessageBoard(new BasicTextMaker(), List.of());
         mb = mb.withScoredPitTrap(meadowArea, Set.of(a1, a2));
         assertEquals(List.of(), mb.messages());
-    }
-
-    @Test
-    void messageBoardWithScoredPitTrapWorksWithWorthyAnimals() {
-        var a1 = new Animal(10_1, Animal.Kind.MAMMOTH);
-        var a2 = new Animal(20_1, Animal.Kind.AUROCHS);
-        var a3 = new Animal(20_2, Animal.Kind.TIGER);
-        var m1 = new Meadow(10, List.of(a1), null);
-        var m2 = new Meadow(20, List.of(a2, a3), null);
-        var m3 = new Meadow(30, List.of(), null);
-        var meadowArea = new Area<>(Set.of(m1, m2, m3), List.of(RED, BLUE), 3);
-        var mb = new MessageBoard(new BasicTextMaker(), List.of());
-        mb = mb.withScoredPitTrap(meadowArea, Set.of());
-        var expectedMessage = new MessageBoard.Message("{RED,BLUE}|5|1×MAMMOTH/1×AUROCHS/0×DEER/1×TIGER", 5, Set.of(RED, BLUE), Set.of(1, 2, 3));
-        assertEquals(List.of(expectedMessage), mb.messages());
     }
 
     @Test

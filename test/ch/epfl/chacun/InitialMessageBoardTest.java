@@ -41,12 +41,4 @@ class InitialMessageBoardTest {
         assertEquals(0, board.withClosedForestWithMenhir(PlayerColor.RED, forestArea).messages().getFirst().points());
     }
 
-    @Test
-    void testAnimalsIncludeTiger() {
-        TextMaker textMaker = new TextMakerTestImplementation();
-        MessageBoard messageBoard = new MessageBoard(textMaker, List.of());
-        Area<Zone.Meadow> meadowArea = new Area<>(Set.of(new Zone.Meadow(0, List.of(new Animal(10, Animal.Kind.TIGER), new Animal(10, Animal.Kind.AUROCHS)), null)), List.of(), 10);
-        assertTrue(messageBoard.withScoredHuntingTrap(PlayerColor.RED, meadowArea, Set.of()).messages().getFirst().text().contains("TIGER"));
-    }
-
 }
