@@ -5,6 +5,8 @@ import ch.epfl.chacun.PlayerColor;
 import javafx.scene.Node;
 import javafx.scene.shape.SVGPath;
 
+import java.util.Objects;
+
 /**
  * This class provides utility methods to create occupants' graphical representations
  *
@@ -35,6 +37,9 @@ public final class Icon {
      * @return a new node representing the occupant
      */
     public static Node newFor(PlayerColor playerColor, Occupant.Kind kind) {
+        Objects.requireNonNull(playerColor);
+        Objects.requireNonNull(kind);
+
         SVGPath svgPath = new SVGPath();
         svgPath.setContent(switch (kind) {
             case PAWN -> PAWN_SVG;
