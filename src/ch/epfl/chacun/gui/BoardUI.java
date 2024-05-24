@@ -233,6 +233,17 @@ public final class BoardUI {
                                 ))
                                 .toList();
                         group.getChildren().addAll(potentialOccupantsNodes);
+                    } else if (
+                            oldPlacedTile != null && placedTile == null
+                    ) {
+                        // this is the case where the game is reset
+                        // we remove all the nodes that are not the tile image
+                        // (markers, occupants, etc.)
+                        group.getChildren().removeAll(
+                                group.getChildren()
+                                    .stream().filter(node -> !node.equals(imageView))
+                                    .toList()
+                        );
                     }
                 });
             }
