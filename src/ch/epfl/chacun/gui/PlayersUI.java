@@ -55,7 +55,6 @@ public final class PlayersUI {
      */
     public static Node create(ObservableValue<GameState> gameStateO, ObservableValue<TextMaker> textMakerO) {
 
-        Objects.requireNonNull(textMaker);
         ObservableValue<Map<PlayerColor, Integer>> pointsO = gameStateO.map(gState -> gState.messageBoard().points());
 
         // create a new vbox that will be used to align elements (like players)
