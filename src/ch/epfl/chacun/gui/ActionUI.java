@@ -79,8 +79,8 @@ public final class ActionUI {
      */
     private static String actionsTextRepresentation(List<String> actions) {
         int actionSize = actions.size();
-        int actionIdxFirst = Math.max(0, actionSize - NUMBER_OF_ACTIONS);
-        return IntStream.range(actionIdxFirst, actionSize)
+        int firstActionIdx = Math.max(0, actionSize - NUMBER_OF_ACTIONS);
+        return IntStream.range(firstActionIdx, actionSize)
                 .mapToObj(i -> STR."\{i + 1}:\{actions.get(i)}")
                 .collect(Collectors.joining(", "));
     }
