@@ -1,5 +1,6 @@
 package ch.epfl.chacun.gui;
 
+import ch.epfl.chacun.Preconditions;
 import javafx.scene.image.Image;
 
 import java.util.FormatProcessor;
@@ -62,6 +63,7 @@ public final class ImageLoader {
      * @return the normal image for the tile with the given tile id
      */
     public static Image normalImageForTile(int tileId) {
+        Preconditions.checkArgument(tileId >= 0);
         return imageForTile(tileId, NORMAL_TILE_PIXEL_SIZE);
     }
 
@@ -72,6 +74,7 @@ public final class ImageLoader {
      * @return the large image for the tile with the given tile id
      */
     public static Image largeImageForTile(int tileId) {
+        Preconditions.checkArgument(tileId >= 0);
         return imageForTile(tileId, LARGE_TILE_PIXEL_SIZE);
     }
 

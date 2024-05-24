@@ -2,6 +2,7 @@ package ch.epfl.chacun;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * A utility class that offers methods
@@ -91,6 +92,7 @@ public final class ActionEncoder {
      * @return the new game state resulting from the action and the encoded action
      */
     public static StateAction withPlacedTile(GameState gameState, PlacedTile tile) {
+        Objects.requireNonNull(tile);
         List<Pos> fringeIndexes = fringeIndexes(gameState);
         int indexToEncode = fringeIndexes.indexOf(tile.pos()); // a number between 0 and 189
         int rotationToEncode = tile.rotation().ordinal(); // a number between 0 and 3
