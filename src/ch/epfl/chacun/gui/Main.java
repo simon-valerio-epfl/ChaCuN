@@ -64,8 +64,8 @@ public final class Main extends Application {
      * @param stateAction the state action to save
      * @param gameStateO  the observable game state
      * @param actionsO    the observable list of all actions since the start of the game
-     *
-     * Note: can also be used to dispatch the action to the server when the game is played online
+     *                    <p>
+     *                    Note: can also be used to dispatch the action to the server when the game is played online
      */
     private void saveState(
             ActionEncoder.StateAction stateAction,
@@ -112,7 +112,7 @@ public final class Main extends Application {
         // we make it possible to play without menhir tiles. On the other hand,
         // playing without normal tiles is not permitted
         List<Tile> menhirTiles = groupedTiles.getOrDefault(Tile.Kind.MENHIR, List.of());
-        
+
         return new TileDecks(
                 groupedTiles.get(Tile.Kind.START),
                 groupedTiles.get(Tile.Kind.NORMAL),
@@ -131,10 +131,11 @@ public final class Main extends Application {
 
     /**
      * Starts the ChaCuN game, creating the graphical nodes representing its components
+     *
      * @param primaryStage the primary stage for this application, onto which
-     * the application scene can be set.
-     * Applications may create other stages, if needed, but they will not be
-     * primary stages.
+     *                     the application scene can be set.
+     *                     Applications may create other stages, if needed, but they will not be
+     *                     primary stages.
      */
     @Override
     public void start(Stage primaryStage) {
@@ -285,7 +286,8 @@ public final class Main extends Application {
                             soundManager
                     );
                 }
-                default -> {}
+                default -> {
+                }
             }
         };
         // the rotation of the next tile to place

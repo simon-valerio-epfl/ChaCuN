@@ -52,6 +52,7 @@ public final class ActionEncoder {
      * The length of a Base32-encoded action where an occupant is removed.
      */
     private static final int WITH_OCCUPANT_REMOVED_ACTION_LENGTH = 1;
+
     /**
      * This class can not be instantiated.
      */
@@ -73,6 +74,7 @@ public final class ActionEncoder {
 
     /**
      * Creates a new list of occupants sorted by their zone ID
+     *
      * @param gameState the game state to get the occupants from
      * @return the list of occupants sorted by their zone ID
      */
@@ -221,7 +223,8 @@ public final class ActionEncoder {
      * @param gameState the game state
      * @param action    the action
      */
-    public record StateAction(GameState gameState, String action) {}
+    public record StateAction(GameState gameState, String action) {
+    }
 
     /**
      * An exception to be thrown when an action is invalid for the given game state.
@@ -229,5 +232,6 @@ public final class ActionEncoder {
      * @author Valerio De Santis (373247)
      * @author Simon Lefort (371918)
      */
-    private static class IllegalActionException extends Exception {}
+    private static class IllegalActionException extends Exception {
+    }
 }

@@ -1,8 +1,6 @@
 package ch.epfl.chacun.gui;
 
 import javafx.scene.image.Image;
-import javafx.scene.image.WritableImage;
-import javafx.scene.paint.Color;
 
 import java.util.FormatProcessor;
 

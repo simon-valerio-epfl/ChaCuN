@@ -76,7 +76,8 @@ public final class TextMakerFr implements TextMaker {
     /**
      * Creates a string representing the given game item in the given count,
      * according to the French language
-     * @param item the game item, should have a French name whose plural is regular
+     *
+     * @param item  the game item, should have a French name whose plural is regular
      * @param count the count of the game item, if it indicates a plural quantity, the item name will be pluralized
      * @return a string representing the given game item in the given count
      */
@@ -87,6 +88,7 @@ public final class TextMakerFr implements TextMaker {
     /**
      * Takes an ordered list, and returns a string representing the items in the list
      * in a human-readable way
+     *
      * @param items an ordered list of items
      * @return a string representing the items in the list in a human-readable way
      */
@@ -109,6 +111,7 @@ public final class TextMakerFr implements TextMaker {
     /**
      * Orders the given set of player colors and returns a string representing them, telling they earned (some points)
      * Example: Alice, Edgar et Bruno ont remporté (X points en tant qu'occupant-e-s majoritaires)
+     *
      * @param scorers the set of player colors that scored
      */
     private String earnMessage(Set<PlayerColor> scorers) {
@@ -128,8 +131,9 @@ public final class TextMakerFr implements TextMaker {
 
     /**
      * Returns a string representing the given set of player colors and the given points
+     *
      * @param scorers the set of player colors that scored
-     * @param points the points they scored
+     * @param points  the points they scored
      * @return a string representing the given set of player colors and the given points
      */
     private String earnMessagePoints(Set<PlayerColor> scorers, int points) {
@@ -141,10 +145,11 @@ public final class TextMakerFr implements TextMaker {
     /**
      * Returns a string representing the given set of player colors and the given points,
      * telling they earned the points as majority occupants
+     *
      * @param scorers the set of player colors that scored
-     * @param points the points they scored
+     * @param points  the points they scored
      * @return a string representing the given set of player colors and the given points,
-     *          telling they earned the points as majority occupants
+     * telling they earned the points as majority occupants
      */
     private String earnMessageMajorityOccupants(Set<PlayerColor> scorers, int points) {
         Preconditions.checkArgument(!scorers.isEmpty());
@@ -162,7 +167,8 @@ public final class TextMakerFr implements TextMaker {
     /**
      * Pluralizes the given word if the count is greater than 1,
      * according to the French language. The word has to be a regular one in French
-     * @param word it has to be a French regular word
+     *
+     * @param word  it has to be a French regular word
      * @param count the count of the word
      * @return the pluralized word if the count is greater than 1, the word otherwise
      */
@@ -172,6 +178,7 @@ public final class TextMakerFr implements TextMaker {
 
     /**
      * Returns a string representing the given map of animals and their counts
+     *
      * @param animals the map of animals to represent as a string
      * @return a string representing the given map of animals and their counts
      */
@@ -188,7 +195,7 @@ public final class TextMakerFr implements TextMaker {
         return itemsToString(animalsList);
     }
 
-    
+
     @Override
     public String playerName(PlayerColor playerColor) {
         Preconditions.checkArgument(names.containsKey(playerColor));
