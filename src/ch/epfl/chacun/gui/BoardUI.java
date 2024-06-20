@@ -13,6 +13,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 
 import java.util.HashMap;
@@ -45,6 +46,14 @@ public final class BoardUI {
      */
     private static final double VEIl_OPACITY = .5;
 
+    private static final ImageView placedTileEffect;
+
+    static {
+        placedTileEffect = new ImageView(new Image("effect.png"));
+        placedTileEffect.setFitWidth(ImageLoader.NORMAL_TILE_FIT_SIZE);
+        placedTileEffect.setFitHeight(ImageLoader.NORMAL_TILE_FIT_SIZE);
+    }
+
     /**
      * This is a utility class and therefore is not instantiable
      */
@@ -58,15 +67,16 @@ public final class BoardUI {
      * for a certain message when the player hovers over it. It also handles some graphical effects to
      * render the positions where a tile can be placed in the next turn and the mouse interactions.
      *
-     * @param reach             the reach of the board (the distance from the center to the borders),
-     *                          the board will be a square of size (2*range+1)²
-     * @param gameStateO        the observable value of the current game state
-     * @param rotationO         the observable value of the current rotation of the tile to be placed
-     * @param occupantsO        the observable value of the set containing the occupants on the board to show
-     * @param highlightedTilesO the observable value of the set containing the tiles to highlight
-     * @param rotationConsumer  the consumer that will be called when the player rotates the tile to be placed (right click)
-     * @param posConsumer       the consumer that will be called when the player places the tile (left click)
-     * @param occupantConsumer  the consumer that will be called when the player clicks on an occupant
+     * @param reach                       the reach of the board (the distance from the center to the borders),
+     *                                    the board will be a square of size (2*range+1)²
+     * @param gameStateO                  the observable value of the current game state
+     * @param rotationO                   the observable value of the current rotation of the tile to be placed
+     * @param occupantsO                  the observable value of the set containing the occupants on the board to show
+     * @param highlightedTilesO           the observable value of the set containing the tiles to highlight
+     * @param isLocalPlayerCurrentPlayerO the observable value of the boolean that is true if the local player is the current player
+     * @param rotationConsumer            the consumer that will be called when the player rotates the tile to be placed (right click)
+     * @param posConsumer                 the consumer that will be called when the player places the tile (left click)
+     * @param occupantConsumer            the consumer that will be called when the player clicks on an occupant
      * @return a graphical node representing the board of the game
      */
     public static Node create(
@@ -75,6 +85,7 @@ public final class BoardUI {
             ObservableValue<Rotation> rotationO,
             ObservableValue<Set<Occupant>> occupantsO,
             ObservableValue<Set<Integer>> highlightedTilesO,
+            ObservableValue<Boolean> isLocalPlayerCurrentPlayerO,
 
             Consumer<Rotation> rotationConsumer,
             Consumer<Pos> posConsumer,
@@ -90,13 +101,18 @@ public final class BoardUI {
         ObservableValue<Set<Animal>> cancelledAnimalsO = boardO.map(Board::cancelledAnimals);
         // the fringe only exists when the next action is to place a tile
         ObservableValue<Set<Pos>> fringeTilesO = gameStateO.map(
-                gState -> gState.nextAction() == GameState.Action.PLACE_TILE
+                gState -> (
+                        gState.nextAction() == GameState.Action.PLACE_TILE
+                        && gState.players().size() > 1
+                    )
                         // we can not use boardO.getValue() here!
                         // because this map may be triggered before boardO gets updated!
                         // therefore we would be using the old board
                         ? gState.board().insertionPositions()
                         : Set.of()
         );
+
+        PlacedTileStackPaneCell lastPlacedTileStackPane = new PlacedTileStackPaneCell();
 
         for (int x = -reach; x <= reach; x++) {
             for (int y = -reach; y <= reach; y++) {
@@ -153,7 +169,10 @@ public final class BoardUI {
                     if (isAlreadyPlaced) return new CellData(placedTile,
                             darkVeilEnabledO.getValue() ? Color.BLACK : Color.TRANSPARENT);
                     // else, if the tile is not placed yet, nor in the fringe, display it as an empty image
-                    if (!isInFringeO.getValue()) return new CellData(Color.TRANSPARENT);
+                    if (
+                            !isInFringeO.getValue()
+                                    || !isLocalPlayerCurrentPlayerO.getValue()
+                    ) return new CellData(Color.TRANSPARENT);
 
                     GameState currentGameState = gameStateO.getValue();
                     PlayerColor currentPlayer = currentGameState.currentPlayer();
@@ -170,46 +189,63 @@ public final class BoardUI {
                     }
                     // finally, if the tile is in the fringe but the mouse is not on it,
                     // we display it with a veil of the current player's color
-
                     // this can not be null because if we are at that point, the game state action is OCCUPY_TILE
                     assert currentPlayer != null;
 
                     return new CellData(ColorMap.fillColor(currentPlayer));
                     // these arguments are the sensibility of the code,
                     // every time one of them changes, the code is re-executed
-                }, isInFringeO, group.hoverProperty(), rotationO, darkVeilEnabledO, placedTileO);
+                }, isInFringeO, group.hoverProperty(), rotationO, darkVeilEnabledO, placedTileO, isLocalPlayerCurrentPlayerO);
 
                 // we bind the graphical properties of the group to the cell data's values
                 group.rotateProperty().bind(cellDataO.map(cellData -> cellData.tileRotation().degreesCW()));
                 imageView.imageProperty().bind(cellDataO.map(CellData::tileImage));
                 blend.topInputProperty().bind(cellDataO.map(CellData::blendTopInput));
 
+                StackPane stackPane = new StackPane(group);
                 // we add range and position in order to translate our tile from the left corner to the center
-                grid.add(group, x + reach, y + reach);
+                grid.add(stackPane, x + reach, y + reach);
 
                 // when a tile is placed, we add the animals and the occupants on it
                 placedTileO.addListener((_, oldPlacedTile, placedTile) -> {
                     // if the tile is already placed or is not yet, we do not have to add the animals and the occupants
-                    if (oldPlacedTile != null || placedTile == null) return;
+                    if (oldPlacedTile == null && placedTile != null) {
 
-                    double negatedTileRotation = placedTile.rotation().negated().degreesCW();
-
-                    // handle "jeton d'annulation", a marker that signals that an animal is cancelled
-                    List<Node> cancelledAnimalsNodes = placedTile.meadowZones().stream()
-                            .flatMap(meadow -> meadow.animals().stream())
-                            .map(animal -> getCancelledAnimalNode(animal, cancelledAnimalsO, negatedTileRotation))
-                            .toList();
-                    group.getChildren().addAll(cancelledAnimalsNodes);
-                    // here we handle the graphical representation of the occupants
-                    List<Node> potentialOccupantsNodes = placedTile.potentialOccupants()
-                            .stream()
-                            .map(occupant -> getOccupantNode(
-                                    placedTile.placer(), occupant,
-                                    occupantsO, occupantConsumer, negatedTileRotation
-                            ))
-                            .toList();
-
-                    group.getChildren().addAll(potentialOccupantsNodes);
+                        stackPane.getChildren().add(placedTileEffect);
+                        StackPane lastPlacedTileStackPaneV = lastPlacedTileStackPane.placedTileStackPane;
+                        if (lastPlacedTileStackPaneV != null) {
+                            lastPlacedTileStackPaneV.getChildren().remove(placedTileEffect);
+                        }
+                        lastPlacedTileStackPane.placedTileStackPane = stackPane;
+                        double negatedTileRotation = placedTile.rotation().negated().degreesCW();
+                        // handle "jeton d'annulation", a marker that signals that an animal is cancelled
+                        List<Node> cancelledAnimalsNodes =
+                                placedTile.meadowZones().stream()
+                                        .flatMap(meadow -> meadow.animals().stream())
+                                        .map(animal -> getCancelledAnimalNode(animal, cancelledAnimalsO, negatedTileRotation))
+                                        .toList();
+                        group.getChildren().addAll(cancelledAnimalsNodes);
+                        // here we handle the graphical representation of the occupants
+                        List<Node> potentialOccupantsNodes = placedTile.potentialOccupants()
+                                .stream()
+                                .map(occupant -> getOccupantNode(
+                                        placedTile.placer(), occupant,
+                                        occupantsO, occupantConsumer, negatedTileRotation
+                                ))
+                                .toList();
+                        group.getChildren().addAll(potentialOccupantsNodes);
+                    } else if (
+                            oldPlacedTile != null && placedTile == null
+                    ) {
+                        // this is the case where the game is reset
+                        // we remove all the nodes that are not the tile image
+                        // (markers, occupants, etc.)
+                        group.getChildren().removeAll(
+                                group.getChildren()
+                                    .stream().filter(node -> !node.equals(imageView))
+                                    .toList()
+                        );
+                    }
                 });
             }
         }
@@ -321,5 +357,9 @@ public final class BoardUI {
                     0, 0, ImageLoader.NORMAL_TILE_FIT_SIZE, ImageLoader.NORMAL_TILE_FIT_SIZE, this.veilColor
             );
         }
+    }
+
+    private final static class PlacedTileStackPaneCell {
+        public StackPane placedTileStackPane;
     }
 }

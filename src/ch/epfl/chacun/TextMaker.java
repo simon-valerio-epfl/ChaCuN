@@ -147,4 +147,41 @@ public interface TextMaker {
      * @return le texte en question
      */
     String clickToUnoccupy();
+
+    /**
+     * Retourne un texte demandant au joueur actuel de rentrer un message dans le chat.
+     *
+     * @return le texte en question
+     */
+    String enterChatMessage();
+
+    /**
+     * Retourne un texte annonçant que personne n'a rejoint la partie pour le moment.
+     *
+     * @param gameName le nom de la partie
+     * @return le texte en question
+     */
+    String emptyGame(String gameName);
+
+    /**
+     * Retourne un texte annonçant qu'un joueur a rejoint la partie.
+     *
+     * @param playerName le nom du joueur ayant rejoint la partie
+     * @return le texte en question
+     */
+    String playerJoined(String playerName);
+
+    /**
+     * Retourne un texte annonçant que le plateau a été réinitialisé car un joueur a quitté la partie.
+     *
+     * @return le texte en question
+     */
+    String gameLeaveReset();
+
+    /**
+     * Retourne un texte annonçant que la partie s'est terminée.
+     *
+     * @return le texte en question
+     */
+    String gameEnded();
 }

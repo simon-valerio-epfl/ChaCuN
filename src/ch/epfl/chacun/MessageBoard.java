@@ -343,6 +343,29 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
     }
 
     /**
+     * Returns a new message board with the given text maker
+     * @param textMaker the text maker to use
+     * @return a new message board with the given text maker
+     */
+    public MessageBoard withTextMaker(TextMaker textMaker) {
+        return new MessageBoard(textMaker, messages);
+    }
+
+    /**
+     * Returns a new message board with the given message added
+     * @param message the message to add
+     * @return a new message board with the given message added
+     */
+    public MessageBoard withGameChatMessage(String message) {
+        return withNewMessage(
+                message,
+                0,
+                Set.of(),
+                Set.of()
+        );
+    }
+
+    /**
      * Represents a message on the message board.
      *
      * @param text    the text of the message, non-null

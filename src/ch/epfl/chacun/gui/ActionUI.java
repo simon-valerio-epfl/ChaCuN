@@ -40,9 +40,14 @@ public final class ActionUI {
      * @param actionsO the observable list of all actions since the start of the game
      * @param handler  an event handler whose method has to be applied when the player
      *                 inserts a new action in the field
+     * @param isLocalPlayerCurrentPlayerO the observable value of a boolean that is true if the local player is the current player
      * @return a node containing the last actions of the game state and a field where one may insert a new action
      */
-    public static Node create(ObservableValue<List<String>> actionsO, Consumer<String> handler) {
+    public static Node create(
+            ObservableValue<List<String>> actionsO,
+            Consumer<String> handler,
+            ObservableValue<Boolean> isLocalPlayerCurrentPlayerO
+    ) {
 
         Text text = new Text();
         text.textProperty().bind(actionsO.map(ActionUI::actionsTextRepresentation));
@@ -57,6 +62,7 @@ public final class ActionUI {
             handler.accept(textField.getText());
             textField.clear();
         });
+        textField.disableProperty().bind(isLocalPlayerCurrentPlayerO.map(b -> !b));
 
         HBox hbox = new HBox(text, textField);
         hbox.setId("actions");
