@@ -33,12 +33,17 @@ public final class Submit {
     // CONFIGURATION
     // -------------
     // Jeton du premier membre du groupe
-    private static final String TOKEN_1 = "peepei4X";
+    private static final String TOKEN_1 = "lohmu8Ai";
     // Jeton du second membre (identique au premier pour les personnes travaillant seules)
-    private static final String TOKEN_2 = "soX6au1T";
+    private static final String TOKEN_2 = "aeQuaez0";
     // Noms des éventuels fichiers Java additionnels à inclure (p.ex. "MyClass.java")
     private static final List<String> ADDITIONAL_FILES =
-            List.of();
+            List.of(
+                    "src/ch/epfl/chacun/audio/SoundManager.java",
+                    "src/ch/epfl/chacun/gui/MessageBoardChatUI.java",
+                    "src/ch/epfl/chacun/net/WSClient.java",
+                    "build.gradle"
+            );
     // -------------
 
     private static final String ZIP_ENTRY_NAME_PREFIX = "CS108/";

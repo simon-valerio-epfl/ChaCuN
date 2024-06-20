@@ -9,6 +9,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -139,6 +140,7 @@ public final class Main extends Application {
      */
     @Override
     public void start(Stage primaryStage) {
+
 
         SoundManager soundManager = new SoundManager();
 
